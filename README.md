@@ -346,6 +346,21 @@ Tensor, Unisoc e tambem x86.
 - Mesas do **Pinball Arcade/Farsight** no PC (sistema `pc-windows`) continuam na rota
   Winlator, na pasta `pc/` da varredura funda.
 
+### Onde baixar mesas de pinball (e como instalar)
+
+| Site | O que tem |
+|---|---|
+| [VPUniverse](https://vpuniverse.com) | milhares de mesas `.vpx`,backglasses (`.directb2s`), roms de pinball (PinMAME) |
+| [VPForums](https://www.vpforums.org) | mesas VPX/Future Pinball, tutoriais e utilitarios |
+| [Virtual Pinball Spreadsheet](https://virtualpinballspreadsheet.github.io) | catalogo/busca: onde baixar cada mesa, rom e backglass |
+| [github.com/vpinball/vpinball](https://github.com/vpinball/vpinball/releases) | APK Android oficial do VPX (10.8.0 arm64 + legacy) |
+
+Como instalar a mesa baixada: solte o `NomeDaMesa.vpx` na pasta `pinball/` do cartao; se a
+mesa tiver, junte na MESMA pasta `NomeDaMesa.directb2s` (backglass) e a rom dentro de
+`pinball/roms/` (formato VPX android) ou `vpmroms/<nome>/` — o VPX Android resolve. O
+Advmenu reconhece `.vpx`, `.vpt`, `.fpt` automaticamente e mostra na lista unica, com
+snapshot se voce colocar `snapshot/NomeDaMesa.jpg|.mp4`.
+
 ### HBMAME 0.289 (duas vias)
 
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
