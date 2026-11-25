@@ -71,9 +71,19 @@ superior com relogio e o nome do sistema, e o contador de jogos no rodape. Naveg
 pelo d-pad de gamepad/teclado, e ao tocar (ou apertar A/Enter) inicia o `advmame` na ROM escolhida.
 
 O instalador extrai `assets/data` para o `filesDir` e cria os arquivos de configuracao em
-`/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`). Como o nome visual (capa) do jogo, se
-quiser, coloque uma imagem em `Android/data/com.edsonmfernando.advancemame/files/media/<rom>.png`
-(tambem aceita `.jpg/.jpeg/.webp`).
+`/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`).
+
+### Snapshots (estilo ES-DE)
+
+Por jogo `<rom>`, coloque as midias em `Android/data/com.edsonmfernando.advancemame/files/media/`:
+
+- **Video de fundo** (looping, sem som): `<rom>.mp4`, `<rom>.webm` ou `<rom>.mkv`
+- **AVI tambem e tentado** — o Android nativo nao garante AVI; se o aparelho nao tiver o
+decodificador, o front-end cai automaticamente na imagem
+- **Imagem de fundo e miniatura na lista**: `<rom>.jpg`, `.jpeg`, `.png`, `.webp` ou `.gif`
+- Sem midia, o jogo aparece so com o nome
+
+Prioridade: video primeiro, imagem como fallback.
 
 As ROMs de exemplo (zips binarios) nao vao no repositorio. Para jogar, coloque as ROMs em
 `Android/data/com.edsonmfernando.advancemame/files/rom` OU, antes de compilar, coloque os zips
