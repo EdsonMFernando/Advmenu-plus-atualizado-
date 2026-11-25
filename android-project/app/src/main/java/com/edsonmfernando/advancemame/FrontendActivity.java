@@ -1924,7 +1924,7 @@ public class FrontendActivity extends Activity {
             }
         }
         if ("ps4".equals(sysKey)) {
-            String[] ps4 = {"bachata", "shadps4", "shad"};
+            String[] ps4 = {"bachata", "shadps4", "shandroid", "shad"};
             String shad = findEmuByPrefixes(ps4);
             if (shad != null) {
                 pkg = shad;
