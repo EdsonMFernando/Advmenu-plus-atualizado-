@@ -5,7 +5,7 @@
 
     <application
         android:label="AdvanceMAME"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:hasCode="true"
         android:largeHeap="true"
         android:hardwareAccelerated="true">
