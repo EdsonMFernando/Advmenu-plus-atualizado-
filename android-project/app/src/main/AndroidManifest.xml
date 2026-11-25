@@ -10,6 +10,27 @@
         android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <queries>
+        <package android:name="com.winlator" />
+        <package android:name="com.gamesir.gamehub" />
+        <package android:name="com.retroarch" />
+        <package android:name="org.vpinball.VPinballX" />
+        <package android:name="org.vpinball.app.gl" />
+        <package android:name="com.retroeki.pinball" />
+        <package android:name="com.zenstudios.PinballFx" />
+        <package android:name="com.zenstudios.zenpinball2" />
+        <package android:name="com.zenstudios.PinballFX3" />
+        <package android:name="com.zenstudios.zenpinball" />
+        <package android:name="com.farsight.PinballArcade" />
+        <package android:name="dev.eden.eden_emulator" />
+        <package android:name="net.rpcs3.rpcs3" />
+        <package android:name="org.vita3k.emulator" />
+        <package android:name="org.openbor.engine" />
+        <package android:name="xyz.aethersx2.android" />
+    </queries>
 
     <application
         android:label="AdvanceMAME"

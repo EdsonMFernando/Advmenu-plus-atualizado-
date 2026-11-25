@@ -90,7 +90,8 @@ public class FrontendActivity extends Activity {
             {"com.gamesir.gamehub", "GameHub — jogos de PC"},
             {"com.retroarch", "RetroArch — todos os sistemas"},
             {"org.vpinball.VPinballX", "Visual Pinball X — pinball"},
-            {"com.retroeki.pinball", "Visual Pinball X Standalone — pinball"},
+            {"org.vpinball.app.gl", "Visual Pinball X Android — pinball"},
+            {"com.retroeki.pinball", "Pocket Pinball (VPX Standalone) — pinball"},
             {"com.zenstudios.PinballFx", "Pinball FX (Zen) — pinball"},
             {"com.farsight.PinballArcade", "Pinball Arcade (Farsight)"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
@@ -1699,6 +1700,9 @@ public class FrontendActivity extends Activity {
                 if (label == null) {
                     continue;
                 }
+                if (PINBALL_SCAN_KEYS.contains(n)) {
+                    label = "PINBALL (tudo)";
+                }
                 SystemEntry entry = byLabel.get(label);
                 if (entry == null) {
                     entry = new SystemEntry(n, label);
@@ -1718,6 +1722,10 @@ public class FrontendActivity extends Activity {
         }
         return out;
     }
+
+    /** Pastas de pinball fundem numa tela unica; a rota por jogo escolhe o emulador. */
+    private static final HashSet<String> PINBALL_SCAN_KEYS = new HashSet<>(java.util.Arrays.asList(
+            "pinball", "pinballfx", "pinballfx2", "pinballfx3", "pinballarcade", "futurepinball"));
 
     /** Sistemas de Windows: varrem mais fundo (jogos ficam aninhados de verdade). */
     private static final HashSet<String> PC_SCAN_SYSTEMS = new HashSet<>(java.util.Arrays.asList(
@@ -1828,7 +1836,7 @@ public class FrontendActivity extends Activity {
     /** App do Visual Pinball (VPX) instalado: port Android oficial ou forks conhecidos. */
     private String pinballPackage() {
         PackageManager pm = getPackageManager();
-        String[] known = {"org.vpinball.VPinballX", "com.retroeki.pinball"};
+        String[] known = {"org.vpinball.VPinballX", "org.vpinball.app.gl", "com.retroeki.pinball"};
         for (String k : known) {
             if (pm.getLaunchIntentForPackage(k) != null) {
                 return k;
@@ -1859,6 +1867,16 @@ public class FrontendActivity extends Activity {
             }
         }
         String pkg = sysKey == null ? null : SYSTEM_PACKAGES.get(sysKey);
+        if ("pinball".equals(sysKey) && !nl.endsWith(".exe")) {
+            if (nl.endsWith(".vpx") || nl.endsWith(".vpt")) {
+                String vpx = pinballPackage();
+                if (vpx != null) {
+                    pkg = vpx;
+                }
+            } else {
+                pkg = "com.winlator";
+            }
+        }
         if ("pinball".equals(sysKey)) {
             String vpx = pinballPackage();
             if (vpx != null) {
