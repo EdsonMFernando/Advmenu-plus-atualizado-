@@ -363,7 +363,7 @@ Tensor, Unisoc e tambem x86.
 | [github.com/vpinball/vpinball](https://github.com/vpinball/vpinball/releases) | APK Android oficial do VPX (10.8.0 arm64 + legacy) |
 | [ravarcade.pl](https://www.ravarcade.pl) | site OFICIAL do Future Pinball (freeware, Windows — no Android roda pela rota Winlator) |
 
-#### Projetos open source (cгódigo-fonte e downloads oficiais)
+#### Projetos open source (código-fonte e downloads oficiais)
 
 | Projeto | O que é | Fonte/download |
 |---|---|---|
