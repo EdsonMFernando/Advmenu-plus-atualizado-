@@ -84,6 +84,41 @@ Alem das pastas internas do app, o front-end varre CADA armazenamento do aparelh
 | `layout/` (ou `layouts`) | `background.jpg`/`background.png` (ou qualquer imagem solta) usada como fundo do menu |
 | `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** |
 | pastas de sistema (lista abaixo) | jogos soltos ou em zip — aparecem no botao **EMULADORES** e abrem no emulador instalado |
+
+### Temas (EmulationStation) — vem pronto, nativamente, e aceita temas avulsos
+
+O front-end já vem com **DOIS temas nativos embutidos no APK** (funcionam offline, sem baixar
+nada, e são ativos já na primeira abertura — não precisa permissão de cartão):
+
+- **`NATIVO: adv-multi`** (PADRÃO) — tema **autoral criado do zero para o Advmenu Android**, no
+  mesmo estilo dos multijogos de PC do canal Clandoordie: fundo grafite escuro com trama sutil,
+  item selecionado branco e maior, vizinhos acinzentados e destaque **azul**. Esse tema foi
+  desenhado para este projeto (não existe em nenhum site).
+- **`NATIVO: carbon`** — o tema clássico do EmulationStation/RetroPie, com fundo textura de
+  carbono e destaque vermelho (crédito e licença CC BY-NC-SA em `LICENCA.txt` dentro da pasta).
+
+- Botao **TEMA** no rodape: lista todos os temas encontrados e troca na hora (escolha salva).
+- Temas avulsos: baixe qualquer tema do EmulationStation e jogue em `layout/<nome-do-tema>/theme.xml`
+  (subpastas ate 2 niveis) — o app le as cores (`background`, `selected`, `primary`, `secondary`,
+  `textColor`), variaveis `${}` e includes, e **auto-ajusta**: nada para editar manualmente.
+  Tema solto na raiz de `layout/` aparece como `(na pasta layout)`.
+- O tema pinta TUDO: fundo do menu (imagem `background` do tema ou `background.jpg` avulso),
+  nome do sistema, jogos selecionados/vizinhos, relogio, contador, mensagem de lista vazia —
+  e tambem o **menu de navegacao de SISTEMAS/EMULADORES** e o menu de **jogos de cada sistema**
+  (mesmo menu, mesmo visual, para cada emulador/sistema da navegacao).
+
+### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
+
+Como nos multijogos de PC (estilo Clandoordie/AdvMenu Plus):
+
+- **SISTEMAS**: abre o menu de navegacao com TODAS as pastas de sistema/emuladores detectadas
+  (ex.: `PSP (90)`, `PS2 (30)`, `PC GAMES (325)`) — clique num sistema e a lista de jogos abre
+  **dentro do menu principal, com o tema aplicado** (nome completo do jogo + snapshot de
+  video/imagem como fundo). Tecla B/botao voltar retorna um nivel.
+- **FAVORITOS**: filtra a lista so com os favoritos.
+- Toque longo num jogo do menu principal: marca/desmarca **favoritos** (aparece com ★).
+- O jogo sempre aparece com o NOME COMPLETO e o snapshot (video MP4/AVI/WebM/MKV ou imagem
+  JPG/PNG/WebP) toca como fundo do menu, igual no video.
 Pastas de sistema aceitas em qualquer armazenamento (o NOME da pasta define o sistema
 — nomes no mesmo espirito da base ScreenScraper www.screenscraper.fr, mais de 100 sistemas):
 

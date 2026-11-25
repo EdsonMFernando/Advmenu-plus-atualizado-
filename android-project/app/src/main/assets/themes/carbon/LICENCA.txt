@@ -1,0 +1,4 @@
+Tema Carbon (pasta carbon/): credito a Eric Hettervik (Rookervik) e Fobaasso/Tekojo,
+originalmente baseado em "simple" de Nils Bonenberger. Licenca CC BY-NC-SA
+(https://github.com/RetroPie/es-theme-carbon). Proibido uso comercial — incluido aqui
+apenas para uso pessoal do dono deste repositorio, como credito exigido pela licenca.

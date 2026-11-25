@@ -25,16 +25,24 @@ final class AssetInstaller {
 
     static void install(Context ctx) {
         File marker = new File(ctx.getFilesDir(), ".installed");
-        if (marker.exists()) {
-            return;
+        if (!marker.exists()) {
+            try {
+                new File(ctx.getFilesDir(), "rom").mkdirs();
+                unpackDir(ctx, "data", ctx.getFilesDir());
+                unpackDir(ctx, "rom", new File(ctx.getFilesDir(), "rom"));
+                marker.createNewFile();
+            } catch (IOException e) {
+                Log.e(TAG, "erro extraindo assets", e);
+            }
         }
-        try {
-            new File(ctx.getFilesDir(), "rom").mkdirs();
-            unpackDir(ctx, "data", ctx.getFilesDir());
-            unpackDir(ctx, "rom", new File(ctx.getFilesDir(), "rom"));
-            marker.createNewFile();
-        } catch (IOException e) {
-            Log.e(TAG, "erro extraindo assets", e);
+        File themesMarker = new File(ctx.getFilesDir(), ".themes_installed");
+        if (!themesMarker.exists()) {
+            try {
+                unpackDir(ctx, "themes", new File(ctx.getFilesDir(), "themes"));
+                themesMarker.createNewFile();
+            } catch (IOException e) {
+                Log.e(TAG, "erro extraindo temas", e);
+            }
         }
     }
 

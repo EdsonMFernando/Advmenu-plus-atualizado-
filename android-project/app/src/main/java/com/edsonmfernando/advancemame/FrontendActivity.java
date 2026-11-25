@@ -32,6 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.core.content.FileProvider;
@@ -67,10 +68,15 @@ import java.util.Locale;
  */
 public class FrontendActivity extends Activity {
 
-    private static final int COR_FUNDO = Color.rgb(16, 24, 32);
-    private static final int COR_TEXTO = Color.rgb(255, 255, 255);
-    private static final int COR_NEIGHBOR = Color.rgb(120, 144, 156);
-    private static final int COR_DETALHE = Color.rgb(138, 180, 200);
+    private static int COR_FUNDO = Color.rgb(16, 24, 32);
+    private static int COR_TEXTO = Color.rgb(255, 255, 255);
+    private static int COR_NEIGHBOR = Color.rgb(120, 144, 156);
+    private static int COR_DETALHE = Color.rgb(138, 180, 200);
+
+    private static final int COR_FUNDO_PADRAO = Color.rgb(16, 24, 32);
+    private static final int COR_TEXTO_PADRAO = Color.rgb(255, 255, 255);
+    private static final int COR_NEIGHBOR_PADRAO = Color.rgb(120, 144, 156);
+    private static final int COR_DETALHE_PADRAO = Color.rgb(138, 180, 200);
 
     private static final String[] VIDEO_EXTS = {".mp4", ".webm", ".mkv", ".avi"};
     private static final String[] IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"};
@@ -269,8 +275,18 @@ public class FrontendActivity extends Activity {
     private TextView emptyView;
     private TextView emuButton;
     private TextView padToggle;
+    private TextView topTitle;
+    private TextView topSystem;
     private View padView;
     private boolean storageGranted;
+    private LinkedHashMap<String, File> themeDirs = new LinkedHashMap<>();
+    private String activeTheme;
+    private boolean systemsMode;
+    private boolean systemGamesMode;
+    private boolean showFavs;
+    private SystemEntry currentSystem;
+    private TextView favToggle;
+    private TextView sysToggle;
 
     private FrameLayout root;
     private TextView clockView;
@@ -302,6 +318,11 @@ public class FrontendActivity extends Activity {
         computeMediaDirs();
         storageGranted = hasStoragePermission();
 
+        String savedTheme = getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                .getString("theme", null);
+        activeTheme = savedTheme == null ? "NATIVO: adv-multi"
+                : (savedTheme.isEmpty() ? null : savedTheme);
+
         adapter = new GameAdapter();
         adapter.load(this);
 
@@ -316,7 +337,23 @@ public class FrontendActivity extends Activity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                launch(adapter.romAt(position));
+                if (systemsMode) {
+                    openSystemAt(position);
+                } else if (systemGamesMode) {
+                    openGameFile(adapter.fileAt(position), currentSystem.key);
+                } else {
+                    launch(adapter.romAt(position));
+                }
+            }
+        });
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if (systemsMode || systemGamesMode) {
+                    return false;
+                }
+                showGameMenu(position);
+                return true;
             }
         });
         list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -324,7 +361,7 @@ public class FrontendActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 adapter.selected = position;
                 list.invalidateViews();
-                snapshotHost.show(adapter.romAt(position));
+                snapshotHost.show(systemsMode ? null : adapter.romAt(position));
             }
 
             @Override
@@ -348,6 +385,7 @@ public class FrontendActivity extends Activity {
         title.setTextColor(COR_DETALHE);
         title.setShadowLayer(dp(2), 0, 0, Color.BLACK);
         topbar.addView(title);
+        topTitle = title;
 
         TextView system = new TextView(this);
         system.setText("ARCADE  •  ADVANCEMAME");
@@ -356,6 +394,7 @@ public class FrontendActivity extends Activity {
         system.setTextColor(COR_TEXTO);
         system.setShadowLayer(dp(2), 0, 0, Color.BLACK);
         topbar.addView(system);
+        topSystem = system;
 
         root.addView(topbar, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
@@ -377,6 +416,63 @@ public class FrontendActivity extends Activity {
         countView.setPadding(pad, 0, 0, pad);
         root.addView(countView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
+
+        TextView themeBtn = new TextView(this);
+        themeBtn.setText("TEMA");
+        themeBtn.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        themeBtn.setTextSize(14);
+        themeBtn.setTextColor(COR_DETALHE);
+        themeBtn.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        themeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showThemePicker();
+            }
+        });
+        root.addView(themeBtn, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
+
+        TextView sysBtn = new TextView(this);
+        sysBtn.setText("SISTEMAS");
+        sysBtn.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        sysBtn.setTextSize(14);
+        sysBtn.setTextColor(COR_DETALHE);
+        sysBtn.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        sysBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSystemsView();
+            }
+        });
+        FrameLayout.LayoutParams slp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        slp.rightMargin = dp(4);
+        slp.bottomMargin = dp(40);
+        root.addView(sysBtn, slp);
+        sysToggle = sysBtn;
+        sysToggle.setAlpha(0.45f);
+
+        TextView favBtn = new TextView(this);
+        favBtn.setText("FAVORITOS");
+        favBtn.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        favBtn.setTextSize(14);
+        favBtn.setTextColor(COR_DETALHE);
+        favBtn.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        favBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleFavs();
+            }
+        });
+        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        flp.rightMargin = dp(4);
+        flp.bottomMargin = dp(76);
+        root.addView(favBtn, flp);
+        favToggle = favBtn;
 
         TextView padBtn = new TextView(this);
         padBtn.setText("CONTROLE");
@@ -692,6 +788,125 @@ public class FrontendActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
+    /** Menu de navegacao de SISTEMAS/EMULADORES com o tema ativo; volta com o mesmo botao. */
+    private void toggleSystemsView() {
+        if (systemGamesMode) {
+            backToSystems();
+            return;
+        }
+        if (systemsMode) {
+            backToArcade();
+            return;
+        }
+        systemsMode = true;
+        sysToggle.setAlpha(1f);
+        topSystem.setText("SISTEMAS  \u2022  EMULADORES");
+        adapter.load(this);
+        list.setSelection(0);
+        snapshotHost.show(null);
+        updateEmptyState();
+        updateCount(0);
+    }
+
+    private void backToSystems() {
+        systemGamesMode = false;
+        currentSystem = null;
+        systemsMode = true;
+        sysToggle.setAlpha(1f);
+        topSystem.setText("SISTEMAS  \u2022  EMULADORES");
+        adapter.load(this);
+        list.setSelection(0);
+        snapshotHost.show(null);
+        updateEmptyState();
+        updateCount(0);
+    }
+
+    private void backToArcade() {
+        systemsMode = false;
+        systemGamesMode = false;
+        currentSystem = null;
+        sysToggle.setAlpha(0.45f);
+        topSystem.setText("ARCADE  \u2022  ADVANCEMAME");
+        adapter.load(this);
+        list.setSelection(0);
+        if (adapter.getCount() > 0) {
+            snapshotHost.show(adapter.romAt(0));
+        } else {
+            snapshotHost.show(null);
+        }
+        updateEmptyState();
+        updateCount(0);
+    }
+
+    private void openSystemAt(int position) {
+        if (position >= systems.size()) {
+            return;
+        }
+        SystemEntry e = systems.get(position);
+        if (e.games.isEmpty()) {
+            android.widget.Toast.makeText(this,
+                    e.label + ": nenhum jogo (coloque ROMs na pasta " + e.key.toUpperCase(Locale.US)
+                            + ")", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        systemGamesMode = true;
+        currentSystem = e;
+        topSystem.setText(e.label.toUpperCase(Locale.US) + "  (" + e.games.size() + " JOGOS)");
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        updateCount(0);
+    }
+
+    private void toggleFavs() {
+        showFavs = !showFavs;
+        favToggle.setAlpha(showFavs ? 1f : 0.45f);
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        updateCount(0);
+    }
+
+    private boolean isFavorite(String rom) {
+        return getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                .getBoolean("fav:" + rom, false);
+    }
+
+    /** Toque longo no jogo: marca/desmarca favorito. */
+    private void showGameMenu(final int position) {
+        final String rom = adapter.romAt(position);
+        boolean fav = isFavorite(rom);
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(adapter.titles.get(position))
+                .setItems(fav
+                                ? new String[]{"REMOVER DOS FAVORITOS"}
+                                : new String[]{"ADICIONAR AOS FAVORITOS"},
+                        new android.content.DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(android.content.DialogInterface dialog, int which) {
+                                boolean now = !isFavorite(rom);
+                                getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                                        .edit().putBoolean("fav:" + rom, now).apply();
+                                adapter.load(FrontendActivity.this);
+                                list.invalidateViews();
+                            }
+                        })
+                .show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (systemGamesMode) {
+            backToSystems();
+            return;
+        }
+        if (systemsMode) {
+            backToArcade();
+            return;
+        }
+        super.onBackPressed();
+    }
+
     private void showEmulatorsList() {
         ArrayList<String> labels = new ArrayList<>();
         final ArrayList<String> pkgs = new ArrayList<>();
@@ -752,27 +967,23 @@ public class FrontendActivity extends Activity {
             sysHits.add(null);
         }
         String title = gameTotal > 0
-                ? "SISTEMAS + EMULADORES  (" + gameTotal + " jogos)"
+                ? "SISTEMAS + EMULADORES  (" + gameTotal + " JOGOS)"
                 : "EMULADORES / PC";
-        new android.app.AlertDialog.Builder(this)
-                .setTitle(title)
-                .setItems(labels.toArray(new String[0]),
-                        new android.content.DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(android.content.DialogInterface dialog, int which) {
-                                String pkg = pkgs.get(which);
-                                if ("".equals(pkg)) {
-                                    return;
-                                }
-                                if (pkg == null && apks.get(which) == null && which < sysHits.size()
-                                        && sysHits.get(which) != null) {
-                                    showSystemGames(sysHits.get(which));
-                                    return;
-                                }
-                                launchEmulator(pkg, apks.get(which));
-                            }
-                        })
-                .show();
+        themedDialog(title, labels, new android.content.DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(android.content.DialogInterface dialog, int which) {
+                String pkg = pkgs.get(which);
+                if ("".equals(pkg)) {
+                    return;
+                }
+                if (pkg == null && apks.get(which) == null && which < sysHits.size()
+                        && sysHits.get(which) != null) {
+                    showSystemGames(sysHits.get(which));
+                    return;
+                }
+                launchEmulator(pkg, apks.get(which));
+            }
+        });
     }
 
     private void launchEmulator(String pkg, File apk) {
@@ -836,56 +1047,421 @@ public class FrontendActivity extends Activity {
         }
     }
 
-    /** Fundo do menu da pasta layout: background.(jpg|png|...) ou imagem solta. */
+    /** Fundo do menu: imagem do tema ES (background) ou background.(jpg|png|...) da pasta layout. */
     private void applyLayoutBackground() {
+        COR_FUNDO = COR_FUNDO_PADRAO;
+        COR_TEXTO = COR_TEXTO_PADRAO;
+        COR_NEIGHBOR = COR_NEIGHBOR_PADRAO;
+        COR_DETALHE = COR_DETALHE_PADRAO;
+        File themeDir = activeTheme != null ? themeDirs.get(activeTheme) : null;
+        ThemeColors tc = new ThemeColors();
+        if (themeDir != null && themeDir.isDirectory()) {
+            parseThemeXml(new File(themeDir, "theme.xml"), tc, new HashMap<String, String>());
+        }
+        if (tc.bg != null) {
+            COR_FUNDO = tc.bg;
+        }
+        if (tc.text != null) {
+            COR_TEXTO = tc.text;
+        }
+        if (tc.neighbor != null) {
+            COR_NEIGHBOR = tc.neighbor;
+        }
+        if (tc.detail != null) {
+            COR_DETALHE = tc.detail;
+        } else if (tc.accent != null) {
+            COR_DETALHE = tc.accent;
+        }
+        recolorViews();
+
         if (layoutBg != null) {
             root.removeView(layoutBg);
             layoutBg = null;
         }
-        if (layoutDir == null) {
-            return;
-        }
-        File found = null;
-        for (String ext : IMAGE_EXTS) {
-            File f = new File(layoutDir, "background" + ext);
-            if (f.isFile()) {
-                found = f;
-                break;
+        File img = null;
+        if (tc.bgImage != null) {
+            File cand = new File(tc.bgImage);
+            if (!cand.isAbsolute() && themeDir != null) {
+                cand = new File(themeDir, tc.bgImage);
+            }
+            if (cand.isFile()) {
+                img = cand;
             }
         }
-        if (found == null) {
-            File[] files = layoutDir.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    String n = f.getName().toLowerCase(Locale.US);
-                    for (String ext : IMAGE_EXTS) {
-                        if (f.isFile() && n.endsWith(ext)) {
-                            found = f;
-                            break;
+        if (img == null && layoutDir != null) {
+            File known = new File(layoutDir, "background.jpg");
+            if (!known.isFile()) {
+                known = new File(layoutDir, "background.png");
+            }
+            if (known.isFile()) {
+                img = known;
+            } else {
+                File[] fs = layoutDir.listFiles();
+                if (fs != null) {
+                    for (File f : fs) {
+                        String n = f.getName().toLowerCase(Locale.US);
+                        if (f.isFile()) {
+                            for (String ext : IMAGE_EXTS) {
+                                if (n.endsWith(ext)) {
+                                    img = f;
+                                }
+                            }
                         }
-                    }
-                    if (found != null) {
-                        break;
                     }
                 }
             }
         }
-        if (found == null) {
+        if (img != null) {
+            Bitmap bmp = decodeCover(img, Math.max(
+                    getResources().getDisplayMetrics().widthPixels / 2,
+                    getResources().getDisplayMetrics().heightPixels / 2));
+            if (bmp != null) {
+                layoutBg = new ImageView(this);
+                layoutBg.setImageBitmap(bmp);
+                layoutBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                layoutBg.setAlpha(0.55f);
+                root.addView(layoutBg, 1, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+        }
+    }
+
+    /** Recolore o menu inteiro (barra, relogio, rodape, itens) com o tema ativo. */
+    private void recolorViews() {
+        root.setBackgroundColor(COR_FUNDO);
+        if (topTitle != null) {
+            topTitle.setTextColor(COR_DETALHE);
+        }
+        if (topSystem != null) {
+            topSystem.setTextColor(COR_TEXTO);
+        }
+        if (clockView != null) {
+            clockView.setTextColor(COR_TEXTO);
+        }
+        if (countView != null) {
+            countView.setTextColor(COR_DETALHE);
+        }
+        if (emptyView != null) {
+            emptyView.setTextColor(COR_NEIGHBOR);
+        }
+        if (emuButton != null) {
+            emuButton.setTextColor(COR_DETALHE);
+        }
+        if (padToggle != null) {
+            padToggle.setTextColor(COR_DETALHE);
+        }
+        if (favToggle != null) {
+            favToggle.setTextColor(COR_DETALHE);
+        }
+        if (sysToggle != null) {
+            sysToggle.setTextColor(COR_DETALHE);
+        }
+        if (list != null) {
+            list.invalidateViews();
+        }
+    }
+
+    /** Seletor de temas: padrao Advmenu + temas ES (pastas nativas ou do cartao). */
+    private void showThemePicker() {
+        ArrayList<String> names = new ArrayList<>();
+        final ArrayList<String> keys = new ArrayList<>();
+        names.add("PADRAO (ADVMENU)");
+        keys.add(null);
+        for (String k : themeDirs.keySet()) {
+            names.add(k.toUpperCase(Locale.US));
+            keys.add(k);
+        }
+        final String[] arr = names.toArray(new String[0]);
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("TEMA (EMULATIONSTATION)")
+                .setItems(arr, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        activeTheme = keys.get(which);
+                        getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                                .edit().putString("theme", activeTheme == null ? "" : activeTheme)
+                                .apply();
+                        applyLayoutBackground();
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * Dialogo com as cores do tema ativo: menus de SISTEMAS/EMULADORES e de jogos
+     * de cada sistema ficam no mesmo visual do menu principal (tema aplicado).
+     */
+    private android.app.AlertDialog themedDialog(String title, ArrayList<String> labels,
+            final android.content.DialogInterface.OnClickListener onClick) {
+        final ListView lv = new ListView(this);
+        lv.setDivider(null);
+        lv.setVerticalScrollBarEnabled(false);
+        lv.setVerticalFadingEdgeEnabled(true);
+        lv.setFadingEdgeLength(dp(40));
+        TextView head = new TextView(this);
+        head.setText(title);
+        head.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        head.setTextSize(18);
+        head.setTextColor(COR_DETALHE);
+        int hp = dp(14);
+        head.setPadding(hp, hp, hp, hp / 2);
+        lv.addHeaderView(head, null, false);
+        lv.setAdapter(new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return labels.size();
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return labels.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView tv = new TextView(FrontendActivity.this);
+                tv.setText(labels.get(position));
+                tv.setSingleLine(true);
+                tv.setTypeface(Typeface.create("sans-serif-condensed",
+                        position == lv.getSelectedItemPosition() ? Typeface.BOLD : Typeface.NORMAL));
+                tv.setTextSize(position == lv.getSelectedItemPosition() ? 20 : 16);
+                tv.setTextColor(position == lv.getSelectedItemPosition() ? COR_TEXTO : COR_NEIGHBOR);
+                tv.setShadowLayer(dp(2), 0, dp(1), Color.BLACK);
+                int p = dp(14);
+                tv.setPadding(p, p / 2, p, p / 2);
+                return tv;
+            }
+        });
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int real = position - lv.getHeaderViewsCount();
+                if (real >= 0) {
+                    onClick.onClick(null, real);
+                }
+            }
+        });
+        android.app.AlertDialog dlg = new android.app.AlertDialog.Builder(this).create();
+        dlg.setView(lv);
+        dlg.show();
+        dlg.getWindow().setBackgroundDrawable(
+                new android.graphics.drawable.ColorDrawable(COR_FUNDO));
+        return dlg;
+    }
+    private void findThemes(ArrayList<File> roots) {
+        themeDirs.clear();
+        for (File rootDir : roots) {
+            File[] children = rootDir.listFiles();
+            if (children == null) {
+                continue;
+            }
+            for (File child : children) {
+                String n = child.getName().toLowerCase(Locale.US);
+                File ld = null;
+                for (String want : LAYOUT_DIR_NAMES) {
+                    if (n.equals(want)) {
+                        ld = child;
+                    }
+                }
+                if (ld == null || !ld.isDirectory()) {
+                    continue;
+                }
+                if (new File(ld, "theme.xml").isFile()) {
+                    themeDirs.put("(na pasta layout)", ld);
+                }
+                File[] subs = ld.listFiles();
+                if (subs == null) {
+                    continue;
+                }
+                for (File sub : subs) {
+                    if (!sub.isDirectory()) {
+                        continue;
+                    }
+                    File td = findThemeXmlDir(sub, 2);
+                    if (td != null) {
+                        themeDirs.put(sub.getName(), td);
+                    }
+                }
+            }
+        }
+        File nativeThemes = new File(getFilesDir(), "themes");
+        File[] nat = nativeThemes.listFiles();
+        if (nat != null) {
+            for (File t : nat) {
+                if (!t.isDirectory()) {
+                    continue;
+                }
+                String name = "NATIVO: " + t.getName();
+                File td = findThemeXmlDir(t, 1);
+                if (td != null && !themeDirs.containsKey(name)) {
+                    themeDirs.put(name, td);
+                }
+            }
+        }
+    }
+
+    private File findThemeXmlDir(File dir, int depth) {
+        if (new File(dir, "theme.xml").isFile()) {
+            return dir;
+        }
+        if (depth <= 0) {
+            return null;
+        }
+        File[] fs = dir.listFiles();
+        if (fs == null) {
+            return null;
+        }
+        for (File f : fs) {
+            if (f.isDirectory()) {
+                File td = findThemeXmlDir(f, depth - 1);
+                if (td != null) {
+                    return td;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Cores/imagem extraidas de qualquer theme.xml ES (auto-ajusta, nada manual). */
+    private static final class ThemeColors {
+        Integer bg;
+        Integer text;
+        Integer neighbor;
+        Integer detail;
+        Integer accent;
+        String bgImage;
+    }
+
+    private static String substVars(String v, java.util.HashMap<String, String> vars) {
+        if (v == null) {
+            return null;
+        }
+        for (int i = 0; i < 3 && vars.size() > 0; i++) {
+            String out = v;
+            for (java.util.Map.Entry<String, String> e : vars.entrySet()) {
+                out = out.replace("${" + e.getKey() + "}", e.getValue());
+            }
+            if (out.equals(v)) {
+                break;
+            }
+            v = out;
+        }
+        return v;
+    }
+
+    private static Integer parseColor(String v) {
+        if (v == null) {
+            return null;
+        }
+        String h = v.trim().replace("#", "");
+        if (h.equals("transparent")) {
+            return 0;
+        }
+        if (h.length() != 6 && h.length() != 8) {
+            return null;
+        }
+        try {
+            long val = Long.parseLong(h, 16);
+            return h.length() == 6 ? (int) (0xFF000000L | val) : (int) val;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static void themeColor(ThemeColors tc, String name, Integer c) {
+        if (c == null || name == null) {
             return;
         }
-        Bitmap bmp = decodeCover(found, Math.max(
-                getResources().getDisplayMetrics().widthPixels,
-                getResources().getDisplayMetrics().heightPixels));
-        if (bmp == null) {
-            return;
+        name = name.toLowerCase(Locale.US);
+        if (name.contains("background")) {
+            tc.bg = c;
+        } else if (name.contains("selected")) {
+            tc.detail = c;
+        } else if (name.contains("selector")) {
+            tc.detail = c & 0xFFFFFF | 0x33000000;
+        } else if (name.contains("primary")) {
+            tc.text = c;
+        } else if (name.contains("secondary")) {
+            tc.neighbor = c;
+        } else if (name.contains("textcolor")) {
+            tc.text = c;
         }
-        ImageView bg = new ImageView(this);
-        bg.setImageBitmap(bmp);
-        bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        bg.setAlpha(0.55f);
-        layoutBg = bg;
-        root.addView(bg, 1, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    private void parseThemeXml(File xml, ThemeColors tc, java.util.HashMap<String, String> vars) {
+        try {
+            org.xmlpull.v1.XmlPullParser p = android.util.Xml.newPullParser();
+            p.setInput(new java.io.FileReader(xml));
+            int evt = p.getEventType();
+            while (evt != org.xmlpull.v1.XmlPullParser.END_DOCUMENT) {
+                if (evt == org.xmlpull.v1.XmlPullParser.START_TAG) {
+                    String tag = p.getName();
+                    if ("variables".equals(tag)) {
+                        while (p.next() == org.xmlpull.v1.XmlPullParser.TEXT
+                                || p.getEventType() == org.xmlpull.v1.XmlPullParser.START_TAG) {
+                            if (p.getEventType() == org.xmlpull.v1.XmlPullParser.START_TAG) {
+                                vars.put(p.getName(), p.nextText());
+                            }
+                        }
+                    } else if ("colorproperty".equals(tag) || "color".equals(tag)) {
+                        themeColor(tc, p.getAttributeValue(null, "name"),
+                                parseColor(substVars(p.nextText(), vars)));
+                    } else if ("imageproperty".equals(tag) || "image".equals(tag)
+                            || "staticimage".equals(tag)) {
+                        String nm = p.getAttributeValue(null, "name");
+                        boolean isBg = nm != null
+                                && nm.toLowerCase(Locale.US).contains("background");
+                        String tagEnd = tag;
+                        int inner = p.getEventType();
+                        while (inner != org.xmlpull.v1.XmlPullParser.END_DOCUMENT) {
+                            inner = p.next();
+                            if (inner == org.xmlpull.v1.XmlPullParser.START_TAG) {
+                                String ct = p.getName();
+                                if ("path".equals(ct)) {
+                                    String path = substVars(p.nextText(), vars);
+                                    if (isBg && path != null) {
+                                        File img = new File(path);
+                                        if (!img.isAbsolute()) {
+                                            img = new File(xml.getParentFile(), path);
+                                        }
+                                        if (img.isFile()) {
+                                            tc.bgImage = img.getAbsolutePath();
+                                        }
+                                    }
+                                } else if ("color".equals(ct)) {
+                                    Integer c = parseColor(substVars(p.nextText(), vars));
+                                    if (c != null && (c >>> 24) >= 0xC0 && tc.accent == null) {
+                                        tc.accent = c;
+                                    }
+                                }
+                            } else if (inner == org.xmlpull.v1.XmlPullParser.END_TAG
+                                    && tagEnd.equals(p.getName())) {
+                                break;
+                            }
+                        }
+                    } else if ("include".equals(tag)) {
+                        String inc = substVars(p.nextText(), vars);
+                        if (inc != null) {
+                            File f = new File(xml.getParentFile(), inc);
+                            if (!f.isFile()) {
+                                f = new File(xml.getParentFile(), inc.replaceFirst("^\\./", ""));
+                            }
+                            if (f.isFile()) {
+                                parseThemeXml(f, tc, vars);
+                            }
+                        }
+                    }
+                }
+                evt = p.next();
+            }
+        } catch (Throwable ignored) {
+            // tema malformado: segue com o que ja foi lido (auto-ajuste, sem travar)
+        }
     }
 
     /** Raizes de armazenamento: memoria interna emulada + cartao de memoria fisico. */
@@ -931,6 +1507,7 @@ public class FrontendActivity extends Activity {
     }
 
     private void computeMediaDirs() {
+        findThemes(storageRoots());
         romDirs = new ArrayList<>();
         romDirs.add(new File(getFilesDir(), "rom"));
         snapDirs = new ArrayList<>();
@@ -1106,16 +1683,13 @@ public class FrontendActivity extends Activity {
             int dot = n.lastIndexOf('.');
             names.add(dot > 0 ? n.substring(0, dot) : n);
         }
-        new android.app.AlertDialog.Builder(this)
-                .setTitle(system.label + " (" + names.size() + " jogos)")
-                .setItems(names.toArray(new String[0]),
-                        new android.content.DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(android.content.DialogInterface dialog, int which) {
-                                openGameFile(system.games.get(which), system.key);
-                            }
-                        })
-                .show();
+        themedDialog(system.label + "  (" + names.size() + " JOGOS)", names,
+                new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        openGameFile(system.games.get(which), system.key);
+                    }
+                });
     }
 
     private static final class SystemEntry {
@@ -1393,20 +1967,49 @@ public class FrontendActivity extends Activity {
 
         private final ArrayList<String> roms = new ArrayList<>();
         private final ArrayList<String> titles = new ArrayList<>();
+        private final ArrayList<File> files = new ArrayList<>();
         private int selected;
         private final HashMap<String, Bitmap> thumbs = new HashMap<>();
 
         void load(FrontendActivity act) {
             roms.clear();
             titles.clear();
+            files.clear();
+            if (act.systemsMode) {
+                for (SystemEntry e : act.systems) {
+                    roms.add(e.key);
+                    titles.add(e.label + "  (" + e.games.size() + ")");
+                }
+                return;
+            }
+            if (act.systemGamesMode && act.currentSystem != null) {
+                for (File g : act.currentSystem.games) {
+                    String n = g.getName();
+                    int dot = n.lastIndexOf('.');
+                    String b = dot > 0 ? n.substring(0, dot) : n;
+                    roms.add(b);
+                    titles.add(prettyName(n));
+                    files.add(g);
+                }
+                return;
+            }
             HashSet<String> seen = new HashSet<>();
+            SharedPreferences pfav = act.getSharedPreferences("advmenu", Context.MODE_PRIVATE);
             for (File dir : act.romDirs) {
                 scanRomDir(dir, seen, 2);
             }
             Collections.sort(roms);
+            ArrayList<String> keep = new ArrayList<>();
             for (String rom : roms) {
-                titles.add(prettyName(rom));
+                boolean fav = pfav.getBoolean("fav:" + rom, false);
+                if (act.showFavs && !fav) {
+                    continue;
+                }
+                titles.add((fav ? "\u2605 " : "") + prettyName(rom));
+                keep.add(rom);
             }
+            roms.clear();
+            roms.addAll(keep);
         }
 
         private void scanRomDir(File dir, HashSet<String> seen, int depth) {
@@ -1429,6 +2032,10 @@ public class FrontendActivity extends Activity {
 
         String romAt(int position) {
             return roms.get(position);
+        }
+
+        File fileAt(int position) {
+            return files.get(position);
         }
 
         private Bitmap thumb(String rom, int sizePx) {
