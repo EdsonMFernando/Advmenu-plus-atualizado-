@@ -194,11 +194,12 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("stv", "Arcade Sega ST-V");
         SYSTEM_FOLDERS.put("lindbergh", "Arcade Sega Lindbergh");
         SYSTEM_FOLDERS.put("daphne", "Arcade LaserDisc (Daphne)");
-        SYSTEM_FOLDERS.put("pinball", "Pinball (Visual Pinball)");
+        SYSTEM_FOLDERS.put("pinball", "Pinball (Visual/Future Pinball)");
         SYSTEM_FOLDERS.put("pinballfx", "Pinball FX");
         SYSTEM_FOLDERS.put("pinballfx2", "Pinball FX 2");
         SYSTEM_FOLDERS.put("pinballfx3", "Pinball FX 3");
         SYSTEM_FOLDERS.put("pinballarcade", "Pinball Arcade");
+        SYSTEM_FOLDERS.put("futurepinball", "Future Pinball (antes Winlator)");
         SYSTEM_FOLDERS.put("arcade", "Arcade");
         SYSTEM_FOLDERS.put("nesicaxlive", "Nesica X Live (arcade SEGA)");
         SYSTEM_FOLDERS.put("nesica", "Nesica X Live (arcade SEGA)");
@@ -252,6 +253,7 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("pinballfx2", "com.zenstudios.zenpinball2");
         SYSTEM_PACKAGES.put("pinballfx3", "com.zenstudios.PinballFX3");
         SYSTEM_PACKAGES.put("pinballarcade", "com.farsight.PinballArcade");
+        SYSTEM_PACKAGES.put("futurepinball", "com.winlator");
         SYSTEM_PACKAGES.put("pc", "com.winlator");
         SYSTEM_PACKAGES.put("windows", "com.winlator");
         SYSTEM_PACKAGES.put("winlator", "com.winlator");
@@ -277,7 +279,7 @@ public class FrontendActivity extends Activity {
             ".pce", ".sg", ".vpk", ".xex", ".wad", ".wbfs",
             ".gcm", ".rvz", ".adf", ".d64", ".t64", ".tap", ".tzx", ".m3u", ".prg",
             ".rar", ".cab", ".gcz", ".ciso", ".dol", ".elf", ".mdf",
-            ".vpx", ".vpt", ".b2s",
+            ".vpx", ".vpt", ".fpt", ".b2s",
     };
     private static final long WIPE_DELAY_MS = 250;
 
