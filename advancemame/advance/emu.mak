@@ -1,0 +1,1426 @@
+############################################################################
+# system
+
+ADVANCECFLAGS += \
+	-I$(srcdir)/advance/osd \
+	-I$(srcdir)/advance/lib \
+	-I$(srcdir)/advance/blit
+
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance \
+	$(OBJ)/advance/lib \
+	$(OBJ)/advance/osd \
+	$(OBJ)/advance/blit
+
+ifeq ($(CONF_SYSTEM),unix)
+
+# Dependencies on DATADIR/SYSCONFDIR
+$(OBJ)/advance/linux/file.o: Makefile
+$(MESSOBJ)/advance/linux/file.o: Makefile
+
+# Allow external customization for special targets
+ifndef DATADIR
+DATADIR=$(datadir)/advance
+endif
+ifndef SYSCONFDIR
+SYSCONFDIR=$(sysconfdir)
+endif
+
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/linux
+ADVANCECFLAGS += \
+	-I$(srcdir)/advance/linux \
+	-DADV_DATADIR=\"$(DATADIR)\" \
+	-DADV_SYSCONFDIR=\"$(SYSCONFDIR)\" \
+	-DUSE_VIDEO_NONE \
+	-DUSE_SOUND_NONE \
+	-DUSE_KEYBOARD_NONE \
+	-DUSE_MOUSE_NONE \
+	-DUSE_JOYSTICK_NONE \
+	-DUSE_LCD
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/file.o \
+	$(OBJ)/advance/linux/target.o \
+	$(OBJ)/advance/linux/os.o \
+	$(OBJ)/advance/lib/lcd.o
+ifeq ($(CONF_LIB_PTHREAD),yes)
+CFLAGS += -D_REENTRANT
+ADVANCECFLAGS += -DUSE_SMP
+ADVANCELIBS += -lpthread
+ADVANCEOBJS += $(OBJ)/advance/osd/thdouble.o
+else
+ADVANCEOBJS += $(OBJ)/advance/osd/thmono.o
+endif
+ifeq ($(CONF_LIB_SDL),yes)
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/sdl
+ADVANCECFLAGS += \
+	$(SDLCFLAGS) \
+	-I$(srcdir)/advance/sdl \
+	-DUSE_VIDEO_SDL \
+	-DUSE_SOUND_SDL \
+	-DUSE_KEYBOARD_SDL \
+	-DUSE_MOUSE_SDL \
+	-DUSE_JOYSTICK_SDL
+ADVANCELIBS += $(SDLLIBS)
+ADVANCEOBJS += \
+	$(OBJ)/advance/sdl/ssdl.o \
+	$(OBJ)/advance/sdl/msdl.o \
+	$(OBJ)/advance/sdl/ksdl.o \
+	$(OBJ)/advance/sdl/jsdl.o \
+	$(OBJ)/advance/sdl/vsdl.o
+endif
+ifeq ($(CONF_LIB_FREETYPE),yes)
+ADVANCECFLAGS += \
+	$(FREETYPECFLAGS) \
+	-DUSE_FREETYPE
+ADVANCELIBS += $(FREETYPELIBS)
+endif
+ifeq ($(CONF_LIB_FB),yes)
+ADVANCECFLAGS += \
+	-DUSE_VIDEO_FB
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/vfb.o
+endif
+ifeq ($(CONF_LIB_VC),yes)
+ADVANCECFLAGS += \
+	$(VCCFLAGS) \
+	-DUSE_VC
+ADVANCELIBS += $(VCLIBS)
+endif
+ifeq ($(CONF_LIB_SVGALIB),yes)
+ADVANCECFLAGS += \
+	-DUSE_VIDEO_SVGALIB \
+	-DUSE_KEYBOARD_SVGALIB \
+	-DUSE_MOUSE_SVGALIB \
+	-DUSE_JOYSTICK_SVGALIB
+ADVANCELIBS += -lvga
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/vsvgab.o \
+	$(OBJ)/advance/linux/jsvgab.o \
+	$(OBJ)/advance/linux/ksvgab.o \
+	$(OBJ)/advance/linux/msvgab.o
+endif
+ifeq ($(CONF_LIB_ALSA),yes)
+ADVANCECFLAGS += \
+	-DUSE_SOUND_ALSA
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/salsa.o
+ADVANCELIBS += -lasound
+endif
+ifeq ($(CONF_LIB_OSS),yes)
+ADVANCECFLAGS += \
+	-DUSE_SOUND_OSS
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/soss.o
+endif
+ifeq ($(CONF_LIB_KRAW),yes)
+ADVANCECFLAGS += \
+	-DUSE_KEYBOARD_RAW
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/kraw.o
+endif
+ifeq ($(CONF_LIB_JRAW),yes)
+ADVANCECFLAGS += \
+	-DUSE_JOYSTICK_RAW
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/jraw.o
+endif
+ifeq ($(CONF_LIB_MRAW),yes)
+ADVANCECFLAGS += \
+	-DUSE_MOUSE_RAW
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/mraw.o
+endif
+ifeq ($(CONF_LIB_KEVENT),yes)
+ADVANCECFLAGS += \
+	-DUSE_KEYBOARD_EVENT
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/kevent.o
+endif
+ifeq ($(CONF_LIB_MEVENT),yes)
+ADVANCECFLAGS += \
+	-DUSE_MOUSE_EVENT
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/mevent.o
+endif
+ifeq ($(CONF_LIB_JEVENT),yes)
+ADVANCECFLAGS += \
+	-DUSE_JOYSTICK_EVENT
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/jevent.o
+endif
+ifneq (,$(findstring _EVENT,$(ADVANCECFLAGS)))
+ADVANCEOBJS += \
+	$(OBJ)/advance/linux/event.o
+endif
+endif
+
+ifeq ($(CONF_SYSTEM),dos)
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/dos
+ADVANCECFLAGS += \
+	-DUSE_CONFIG_ALLEGRO_WRAPPER \
+	-DUSE_ADV_SVGALIB_DOS \
+	-I$(srcdir)/advance/dos \
+	-I$(srcdir)/advance/card \
+	-I$(srcdir)/alien/svgalib \
+	-I$(srcdir)/alien/svgalib/clockchi \
+	-I$(srcdir)/alien/svgalib/ramdac \
+	-I$(srcdir)/alien/svgalib/drivers \
+	-I$(srcdir)/alien/svgalib/svgados
+ADVANCECFLAGS += \
+	-DUSE_VIDEO_SVGALINE -DUSE_VIDEO_VBELINE -DUSE_VIDEO_VGALINE -DUSE_VIDEO_VBE -DUSE_VIDEO_NONE \
+	-DUSE_SOUND_ALLEGRO -DUSE_SOUND_SEAL -DUSE_SOUND_VSYNC -DUSE_SOUND_NONE \
+	-DUSE_KEYBOARD_ALLEGRO -DUSE_KEYBOARD_NONE \
+	-DUSE_MOUSE_ALLEGRO -DUSE_MOUSE_NONE \
+	-DUSE_JOYSTICK_ALLEGRO -DUSE_JOYSTICK_LGALLEGRO -DUSE_JOYSTICK_NONE
+ADVANCELDFLAGS += -Xlinker --wrap -Xlinker _mixer_init
+ADVANCELIBS += -laudio -lalleg
+ADVANCELDFLAGS += \
+	-Xlinker --wrap -Xlinker get_config_string \
+	-Xlinker --wrap -Xlinker get_config_int \
+	-Xlinker --wrap -Xlinker set_config_string \
+	-Xlinker --wrap -Xlinker set_config_int \
+	-Xlinker --wrap -Xlinker get_config_id \
+	-Xlinker --wrap -Xlinker set_config_id
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/card \
+	$(OBJ)/advance/svgalib \
+	$(OBJ)/advance/svgalib/ramdac \
+	$(OBJ)/advance/svgalib/clockchi \
+	$(OBJ)/advance/svgalib/drivers \
+	$(OBJ)/advance/svgalib/svgados
+ADVANCEOBJS += \
+	$(OBJ)/advance/dos/file.o \
+	$(OBJ)/advance/dos/target.o \
+	$(OBJ)/advance/dos/os.o \
+	$(OBJ)/advance/dos/sseal.o \
+	$(OBJ)/advance/dos/salleg.o \
+	$(OBJ)/advance/dos/svsync.o \
+	$(OBJ)/advance/dos/vvbe.o \
+	$(OBJ)/advance/dos/vvgal.o \
+	$(OBJ)/advance/dos/vvbel.o \
+	$(OBJ)/advance/dos/vsvgal.o \
+	$(OBJ)/advance/dos/scrvbe.o \
+	$(OBJ)/advance/dos/scrvga.o \
+	$(OBJ)/advance/dos/jalleg.o \
+	$(OBJ)/advance/dos/jlgalleg.o \
+	$(OBJ)/advance/dos/kalleg.o \
+	$(OBJ)/advance/dos/malleg.o \
+	$(OBJ)/advance/card/card.o \
+	$(OBJ)/advance/dos/pci.o \
+	$(OBJ)/advance/dos/pcimap.o \
+	$(OBJ)/advance/dos/map.o \
+	$(OBJ)/advance/card/board.o \
+	$(OBJ)/advance/svgalib/svgalib.o \
+	$(OBJ)/advance/svgalib/svgados/svgados.o \
+	$(OBJ)/advance/svgalib/accel.o \
+	$(OBJ)/advance/svgalib/vgaio.o \
+	$(OBJ)/advance/svgalib/vgammvga.o \
+	$(OBJ)/advance/svgalib/vgaregs.o \
+	$(OBJ)/advance/svgalib/vgarelvg.o \
+	$(OBJ)/advance/svgalib/drivers/apm.o \
+	$(OBJ)/advance/svgalib/drivers/ark.o \
+	$(OBJ)/advance/svgalib/drivers/banshee.o \
+	$(OBJ)/advance/svgalib/drivers/et6000.o \
+	$(OBJ)/advance/svgalib/drivers/g400.o \
+	$(OBJ)/advance/svgalib/drivers/pm2.o \
+	$(OBJ)/advance/svgalib/drivers/laguna.o \
+	$(OBJ)/advance/svgalib/drivers/millenni.o \
+	$(OBJ)/advance/svgalib/drivers/mx.o \
+	$(OBJ)/advance/svgalib/drivers/nv3.o \
+	$(OBJ)/advance/svgalib/drivers/nv319.o \
+	$(OBJ)/advance/svgalib/drivers/r128.o \
+	$(OBJ)/advance/svgalib/drivers/rage.o \
+	$(OBJ)/advance/svgalib/drivers/s3.o \
+	$(OBJ)/advance/svgalib/drivers/savage.o \
+	$(OBJ)/advance/svgalib/drivers/savage18.o \
+	$(OBJ)/advance/svgalib/drivers/sis.o \
+	$(OBJ)/advance/svgalib/drivers/trident.o \
+	$(OBJ)/advance/svgalib/drivers/renditio.o \
+	$(OBJ)/advance/svgalib/drivers/unichrom.o \
+	$(OBJ)/advance/svgalib/ramdac/ibmrgb52.o \
+	$(OBJ)/advance/svgalib/ramdac/attdacs.o \
+	$(OBJ)/advance/svgalib/ramdac/icw.o \
+	$(OBJ)/advance/svgalib/ramdac/normal.o \
+	$(OBJ)/advance/svgalib/ramdac/ramdac.o \
+	$(OBJ)/advance/svgalib/ramdac/s3dacs.o \
+	$(OBJ)/advance/svgalib/ramdac/sierra.o \
+	$(OBJ)/advance/svgalib/ramdac/btdacs.o \
+	$(OBJ)/advance/svgalib/ramdac/ics_gend.o \
+	$(OBJ)/advance/svgalib/clockchi/icd2061a.o
+ADVANCEOBJS += $(OBJ)/advance/osd/thmono.o
+ifeq ($(CONF_LIB_FREETYPE),yes)
+ADVANCECFLAGS += \
+	$(FREETYPECFLAGS) \
+	-DUSE_FREETYPE
+ADVANCELIBS += $(FREETYPELIBS)
+endif
+endif
+
+ifeq ($(CONF_SYSTEM),windows)
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/windows \
+	$(OBJ)/advance/dos
+ADVANCECFLAGS += \
+	-I$(srcdir)/advance/windows \
+	-DUSE_VIDEO_NONE \
+	-DUSE_SOUND_NONE \
+	-DUSE_KEYBOARD_NONE \
+	-DUSE_MOUSE_NONE \
+	-DUSE_JOYSTICK_NONE
+ADVANCEOBJS += \
+	$(OBJ)/advance/dos/file.o \
+	$(OBJ)/advance/windows/target.o \
+	$(OBJ)/advance/lib/resource.o \
+	$(OBJ)/advance/windows/os.o
+ifeq ($(CONF_LIB_PTHREAD),yes)
+CFLAGS += -D_REENTRANT
+ADVANCECFLAGS += -DUSE_SMP
+# pthread-win32 library without exceptions management
+ADVANCELIBS += -lpthread
+ADVANCEOBJS += $(OBJ)/advance/osd/thdouble.o
+else
+ADVANCEOBJS += $(OBJ)/advance/osd/thmono.o
+endif
+ifeq ($(CONF_LIB_SDL),yes)
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/sdl
+ADVANCECFLAGS += \
+	$(SDLCFLAGS) \
+	-I$(srcdir)/advance/sdl \
+	-DUSE_VIDEO_SDL \
+	-DUSE_SOUND_SDL \
+	-DUSE_KEYBOARD_SDL \
+	-DUSE_MOUSE_SDL \
+	-DUSE_JOYSTICK_SDL
+ADVANCELIBS += $(SDLLIBS)
+ADVANCEOBJS += \
+	$(OBJ)/advance/sdl/vsdl.o \
+	$(OBJ)/advance/sdl/ssdl.o \
+	$(OBJ)/advance/sdl/jsdl.o \
+	$(OBJ)/advance/sdl/ksdl.o \
+	$(OBJ)/advance/sdl/msdl.o
+# Customize the SDL_main function
+ADVANCECFLAGS += -DNO_STDIO_REDIRECT
+ADVANCEOBJS += $(OBJ)/advance/windows/sdlmain.o
+endif
+ifeq ($(CONF_LIB_SVGAWIN),yes)
+ADVANCEOBJDIRS += \
+	$(OBJ)/advance/svgalib \
+	$(OBJ)/advance/svgalib/ramdac \
+	$(OBJ)/advance/svgalib/clockchi \
+	$(OBJ)/advance/svgalib/drivers \
+	$(OBJ)/advance/svgalib/svgawin
+ADVANCECFLAGS += \
+	-DUSE_ADV_SVGALIB_WIN \
+	-I$(srcdir)/alien/svgalib \
+	-I$(srcdir)/alien/svgalib/clockchi \
+	-I$(srcdir)/alien/svgalib/ramdac \
+	-I$(srcdir)/alien/svgalib/drivers \
+	-I$(srcdir)/alien/svgalib/svgawin \
+	-DUSE_VIDEO_SVGAWIN
+ADVANCEOBJS += \
+	$(OBJ)/advance/windows/vsvgawin.o \
+	$(OBJ)/advance/svgalib/svgalib.o \
+	$(OBJ)/advance/svgalib/svgawin/svgawin.o \
+	$(OBJ)/advance/svgalib/accel.o \
+	$(OBJ)/advance/svgalib/vgaio.o \
+	$(OBJ)/advance/svgalib/vgammvga.o \
+	$(OBJ)/advance/svgalib/vgaregs.o \
+	$(OBJ)/advance/svgalib/vgarelvg.o \
+	$(OBJ)/advance/svgalib/drivers/apm.o \
+	$(OBJ)/advance/svgalib/drivers/ark.o \
+	$(OBJ)/advance/svgalib/drivers/banshee.o \
+	$(OBJ)/advance/svgalib/drivers/et6000.o \
+	$(OBJ)/advance/svgalib/drivers/g400.o \
+	$(OBJ)/advance/svgalib/drivers/pm2.o \
+	$(OBJ)/advance/svgalib/drivers/laguna.o \
+	$(OBJ)/advance/svgalib/drivers/millenni.o \
+	$(OBJ)/advance/svgalib/drivers/mx.o \
+	$(OBJ)/advance/svgalib/drivers/nv3.o \
+	$(OBJ)/advance/svgalib/drivers/nv319.o \
+	$(OBJ)/advance/svgalib/drivers/r128.o \
+	$(OBJ)/advance/svgalib/drivers/rage.o \
+	$(OBJ)/advance/svgalib/drivers/s3.o \
+	$(OBJ)/advance/svgalib/drivers/savage.o \
+	$(OBJ)/advance/svgalib/drivers/savage18.o \
+	$(OBJ)/advance/svgalib/drivers/sis.o \
+	$(OBJ)/advance/svgalib/drivers/trident.o \
+	$(OBJ)/advance/svgalib/drivers/renditio.o \
+	$(OBJ)/advance/svgalib/drivers/unichrom.o \
+	$(OBJ)/advance/svgalib/ramdac/ibmrgb52.o \
+	$(OBJ)/advance/svgalib/ramdac/attdacs.o \
+	$(OBJ)/advance/svgalib/ramdac/icw.o \
+	$(OBJ)/advance/svgalib/ramdac/normal.o \
+	$(OBJ)/advance/svgalib/ramdac/ramdac.o \
+	$(OBJ)/advance/svgalib/ramdac/s3dacs.o \
+	$(OBJ)/advance/svgalib/ramdac/sierra.o \
+	$(OBJ)/advance/svgalib/ramdac/btdacs.o \
+	$(OBJ)/advance/svgalib/ramdac/ics_gend.o \
+	$(OBJ)/advance/svgalib/clockchi/icd2061a.o
+endif
+ifeq ($(CONF_LIB_MCPN),yes)
+ADVANCECFLAGS += \
+	-DUSE_MOUSE_CPN
+ADVANCEOBJS += \
+	$(OBJ)/advance/windows/mcpn.o
+ADVANCELIBS += -lsetupapi
+endif
+ifeq ($(CONF_LIB_MRAWINPUT),yes)
+ADVANCECFLAGS += \
+	-DUSE_MOUSE_RAWINPUT
+ADVANCEOBJS += \
+	$(OBJ)/advance/windows/mraw.o
+endif
+ifeq ($(CONF_LIB_JLGRAWINPUT),yes)
+ADVANCECFLAGS += \
+	-DUSE_JOYSTICK_LGRAWINPUT
+ADVANCEOBJS += \
+	$(OBJ)/advance/windows/jlgraw.o
+endif
+ifeq ($(CONF_LIB_FREETYPE),yes)
+ADVANCECFLAGS += \
+	$(FREETYPECFLAGS) \
+	-DUSE_FREETYPE
+ADVANCELIBS += $(FREETYPELIBS)
+endif
+endif
+
+############################################################################
+# emu
+
+# Dependencies on VERSION/DATADIR/SYSCONFDIR
+$(OBJ)/advance/osd/emu.o: Makefile
+$(OBJ)/advance/osd/video.o: $(srcdir)/advance/osd/startup.dat
+$(OBJ)/advance/osd/video.o: $(srcdir)/advance/osd/blitmax.dat
+$(OBJ)/advance/linux/jevent.o: $(srcdir)/advance/linux/joverride.dat
+$(OBJ)/romload.o: $(srcdir)/mame/fallback.dat
+$(MESSOBJ)/romload.o: $(srcdir)/mame/fallback.dat
+$(OBJ)/advance/linux/file.o: Makefile
+$(OBJ)/advance/osd/ui.o: Makefile
+$(MESSOBJ)/advance/osd/emu.o: Makefile
+$(MESSOBJ)/advance/linux/file.o: Makefile
+$(MESSOBJ)/advance/osd/ui.o: Makefile
+
+ADVANCECFLAGS += -DADV_VERSION=\"$(VERSION)\" -DADV_EMU
+MAMECFLAGS += -DMAME
+MESSCFLAGS += -DMESS
+
+ifeq ($(CONF_SYSTEM),unix)
+EMUCFLAGS += \
+	-DPI=M_PI \
+	-Dstricmp=strcasecmp \
+	-Dstrnicmp=strncasecmp
+endif
+
+ifeq ($(CONF_SYSTEM),windows)
+EMUCFLAGS += \
+	-DPI=3.1415927 \
+	-DM_PI=3.1415927
+endif
+
+EMUCFLAGS += -I$(srcdir)/advance/osd
+
+MAMEOBJS += \
+	$(COREOBJS) \
+	$(sort $(CPUOBJS)) \
+	$(sort $(SOUNDOBJS))
+
+MESSOBJS += \
+	$(MESSCOREOBJS) \
+	$(sort $(MESSCPUOBJS)) \
+	$(sort $(MESSSOUNDOBJS))
+
+ifeq ($(CONF_DEBUGGER),yes)
+MAMEOBJS += $(sort $(DBGOBJS))
+MESSOBJS += $(sort $(MESSDBGOBJS))
+endif
+
+ADVANCEOBJS += \
+	$(OBJ)/advance/osd/emu.o \
+	$(OBJ)/advance/osd/glue.o \
+	$(OBJ)/advance/osd/dvg.o \
+	$(OBJ)/advance/osd/global.o \
+	$(OBJ)/advance/osd/ui.o \
+	$(OBJ)/advance/osd/video.o \
+	$(OBJ)/advance/osd/frame.o \
+	$(OBJ)/advance/osd/sync.o \
+	$(OBJ)/advance/osd/mode.o \
+	$(OBJ)/advance/osd/menu.o \
+	$(OBJ)/advance/osd/estimate.o \
+	$(OBJ)/advance/osd/record.o \
+	$(OBJ)/advance/osd/sound.o \
+	$(OBJ)/advance/osd/input.o \
+	$(OBJ)/advance/osd/lexyy.o \
+	$(OBJ)/advance/osd/y_tab.o \
+	$(OBJ)/advance/osd/script.o \
+	$(OBJ)/advance/osd/hscript.o \
+	$(OBJ)/advance/osd/safequit.o \
+	$(OBJ)/advance/osd/fileio.o \
+	$(OBJ)/advance/osd/fuzzy.o \
+	$(OBJ)/advance/blit/blit.o \
+	$(OBJ)/advance/blit/xbr2x.o \
+	$(OBJ)/advance/blit/xbr2x_sse.o \
+	$(OBJ)/advance/blit/xbr2x_neon.o \
+	$(OBJ)/advance/blit/xbr3x.o \
+	$(OBJ)/advance/blit/xbr3x_sse.o \
+	$(OBJ)/advance/blit/xbr3x_neon.o \
+	$(OBJ)/advance/blit/xbr4x.o \
+	$(OBJ)/advance/blit/xbr4x_sse.o \
+	$(OBJ)/advance/blit/xbr4x_neon.o \
+	$(OBJ)/advance/blit/xbrz2x.o \
+	$(OBJ)/advance/blit/xbrz2x_sse.o \
+	$(OBJ)/advance/blit/xbrz2x_neon.o \
+	$(OBJ)/advance/blit/xbrz3x.o \
+	$(OBJ)/advance/blit/xbrz3x_sse.o \
+	$(OBJ)/advance/blit/xbrz3x_neon.o \
+	$(OBJ)/advance/blit/xbrz4x.o \
+	$(OBJ)/advance/blit/xbrz4x_sse.o \
+	$(OBJ)/advance/blit/xbrz4x_neon.o \
+	$(OBJ)/advance/blit/scale2x.o \
+	$(OBJ)/advance/blit/scale2x_sse.o \
+	$(OBJ)/advance/blit/scale2x_neon.o \
+	$(OBJ)/advance/blit/scale3x.o \
+	$(OBJ)/advance/blit/scale2k.o \
+	$(OBJ)/advance/blit/scale2k_sse.o \
+	$(OBJ)/advance/blit/scale2k_neon.o \
+	$(OBJ)/advance/blit/scale3k.o \
+	$(OBJ)/advance/blit/scale3k_sse.o \
+	$(OBJ)/advance/blit/scale3k_neon.o \
+	$(OBJ)/advance/blit/scale4k.o \
+	$(OBJ)/advance/blit/scale4k_sse.o \
+	$(OBJ)/advance/blit/scale4k_neon.o \
+	$(OBJ)/advance/blit/interp.o \
+	$(OBJ)/advance/blit/clear.o \
+	$(OBJ)/advance/blit/slice.o \
+	$(OBJ)/advance/lib/portable.o \
+	$(OBJ)/advance/lib/snstring.o \
+	$(OBJ)/advance/lib/log.o \
+	$(OBJ)/advance/lib/video.o \
+	$(OBJ)/advance/lib/measure.o \
+	$(OBJ)/advance/lib/rgb.o \
+	$(OBJ)/advance/lib/conf.o \
+	$(OBJ)/advance/lib/incstr.o \
+	$(OBJ)/advance/lib/fz.o \
+	$(OBJ)/advance/lib/font.o \
+	$(OBJ)/advance/lib/fontdef.o \
+	$(OBJ)/advance/lib/bitmap.o \
+	$(OBJ)/advance/lib/filter.o \
+	$(OBJ)/advance/lib/dft.o \
+	$(OBJ)/advance/lib/complex.o \
+	$(OBJ)/advance/lib/png.o \
+	$(OBJ)/advance/lib/pngdef.o \
+	$(OBJ)/advance/lib/mng.o \
+	$(OBJ)/advance/lib/unzip.o \
+	$(OBJ)/advance/lib/videoio.o \
+	$(OBJ)/advance/lib/update.o \
+	$(OBJ)/advance/lib/generate.o \
+	$(OBJ)/advance/lib/crtc.o \
+	$(OBJ)/advance/lib/crtcbag.o \
+	$(OBJ)/advance/lib/monitor.o \
+	$(OBJ)/advance/lib/sounddrv.o \
+	$(OBJ)/advance/lib/snone.o \
+	$(OBJ)/advance/lib/vnone.o \
+	$(OBJ)/advance/lib/device.o \
+	$(OBJ)/advance/lib/videoall.o \
+	$(OBJ)/advance/lib/soundall.o \
+	$(OBJ)/advance/lib/joy.o \
+	$(OBJ)/advance/lib/joyall.o \
+	$(OBJ)/advance/lib/joydrv.o \
+	$(OBJ)/advance/lib/jnone.o \
+	$(OBJ)/advance/lib/keyall.o \
+	$(OBJ)/advance/lib/keydrv.o \
+	$(OBJ)/advance/lib/knone.o \
+	$(OBJ)/advance/lib/key.o \
+	$(OBJ)/advance/lib/mouse.o \
+	$(OBJ)/advance/lib/mouseall.o \
+	$(OBJ)/advance/lib/mousedrv.o \
+	$(OBJ)/advance/lib/mnone.o \
+	$(OBJ)/advance/lib/error.o \
+	$(OBJ)/advance/lib/wave.o
+
+############################################################################
+# libchdr
+
+LIBCHDRCFLAGS = \
+	-I$(srcdir)/alien/libchdr/include \
+	-DCHDR_SYSTEM_ZLIB \
+	-DCHDR_SYSTEM_ZSTD
+
+LIBCHDR_OBJS = \
+	$(OBJ)/alien/libchdr/src/libchdr_bitstream.o \
+	$(OBJ)/alien/libchdr/src/libchdr_cdrom.o \
+	$(OBJ)/alien/libchdr/src/libchdr_chd.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_avhuff.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_cdfl.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_cdlz.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_cdzl.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_cdzs.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_flac.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_huff.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_lzma.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_zlib.o \
+	$(OBJ)/alien/libchdr/src/libchdr_codec_zstd.o \
+	$(OBJ)/alien/libchdr/src/libchdr_flac.o \
+	$(OBJ)/alien/libchdr/src/libchdr_huffman.o
+
+$(OBJ)/advance/libchdr.a: $(LIBCHDR_OBJS)
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/libchdr/include
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/libchdr \
+	$(OBJ)/alien/libchdr/src
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libchdr.a
+
+############################################################################
+# expat
+
+$(OBJ)/advance/libexpat.a: $(OBJ)/alien/expat/xmlparse.o $(OBJ)/alien/expat/xmlrole.o $(OBJ)/alien/expat/xmltok.o
+	$(ECHO) $@
+	$(AR) crs $@ $^
+
+ifeq ($(CONF_LIB_EXPAT),yes)
+ADVANCELIBS += -lexpat
+else
+CFLAGS += \
+	-I$(srcdir)/alien/expat
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/expat
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libexpat.a
+endif
+
+############################################################################
+# zlib
+
+$(OBJ)/advance/libz.a: $(OBJ)/alien/zlib/adler32.o $(OBJ)/alien/zlib/crc32.o $(OBJ)/alien/zlib/deflate.o \
+	$(OBJ)/alien/zlib/inffast.o $(OBJ)/alien/zlib/inflate.o \
+	$(OBJ)/alien/zlib/infback.o $(OBJ)/alien/zlib/inftrees.o $(OBJ)/alien/zlib/trees.o \
+	$(OBJ)/alien/zlib/zutil.o $(OBJ)/alien/zlib/uncompr.o $(OBJ)/alien/zlib/compress.o
+	$(ECHO) $@
+	$(AR) crs $@ $^
+
+ifeq ($(CONF_LIB_ZLIB),yes)
+ADVANCELIBS += -lz
+else
+CFLAGS += \
+	-I$(srcdir)/alien/zlib
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/zlib
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libz.a
+endif
+
+############################################################################
+# sljit
+
+$(OBJ)/advance/libsljit.a: $(OBJ)/alien/sljit/sljit_mame.o
+	$(ECHO) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/sljit
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/sljit
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libsljit.a
+
+############################################################################
+# nanojpeg
+
+$(OBJ)/advance/libnanojpeg.a: $(OBJ)/alien/nanojpeg/nanojpeg.o
+	$(ECHO) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/nanojpeg
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/nanojpeg
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libnanojpeg.a
+
+############################################################################
+# lzma
+
+LZMACFLAGS = -I$(srcdir)/alien/lzma -I$(srcdir)/alien/lzma/include
+
+LZMA_OBJS = \
+	$(OBJ)/alien/lzma/src/LzmaDec.o
+
+$(OBJ)/advance/liblzma.a: $(LZMA_OBJS)
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/lzma/include
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/lzma \
+	$(OBJ)/alien/lzma/src
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/liblzma.a
+
+############################################################################
+# zstd
+
+ZSTDCFLAGS = -I$(srcdir)/alien/zstd
+
+ZSTD_OBJS = \
+	$(OBJ)/alien/zstd/zstddeclib.o
+
+$(OBJ)/advance/libzstd.a: $(ZSTD_OBJS)
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/zstd
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/zstd
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libzstd.a
+
+############################################################################
+# dr_flac
+
+DRFLACCFLAGS = -I$(srcdir)/alien/dr_flac
+
+DRFLAC_OBJS = \
+	$(OBJ)/alien/dr_flac/dr_flac.o
+
+$(OBJ)/advance/libdrflac.a: $(DRFLAC_OBJS)
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/dr_flac
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/dr_flac
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libdrflac.a
+
+############################################################################
+# minimp3
+
+MINIMP3CFLAGS = -I$(srcdir)/alien/minimp3
+
+MINIMP3_OBJS = \
+	$(OBJ)/alien/minimp3/minimp3.o
+
+$(OBJ)/advance/libminimp3.a: $(MINIMP3_OBJS)
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+CFLAGS += \
+	-I$(srcdir)/alien/minimp3
+ADVANCEOBJDIRS += \
+	$(OBJ)/alien/minimp3
+ADVANCEBUILDLIBS += \
+	$(OBJ)/advance/libminimp3.a
+
+############################################################################
+# advance compile
+
+$(OBJ)/advance/osd/%.o: $(srcdir)/advance/osd/%.c $(srcdir)/advance/osd/emu.h
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(EMUCFLAGS) $(MAMECFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(OBJ)/advance/%.o: $(srcdir)/advance/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(OBJ)/alien/libchdr/%.o: $(srcdir)/alien/libchdr/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(LIBCHDRCFLAGS) -c $< -o $@
+
+$(OBJ)/alien/lzma/%.o: $(srcdir)/alien/lzma/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(LZMACFLAGS) -c $< -o $@
+
+$(OBJ)/alien/zstd/%.o: $(srcdir)/alien/zstd/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(ZSTDCFLAGS) -c $< -o $@
+
+$(OBJ)/alien/dr_flac/%.o: $(srcdir)/alien/dr_flac/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(DRFLACCFLAGS) -c $< -o $@
+
+$(OBJ)/alien/minimp3/%.o: $(srcdir)/alien/minimp3/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(MINIMP3CFLAGS) -c $< -o $@
+
+$(OBJ)/alien/%.o: $(srcdir)/alien/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(OBJ)/advance/%.o: $(srcdir)/advance/%.rc
+	$(ECHO) $@ $(MSG)
+	$(RC) $(RCFLAGS) -DADV_EMU $< -o $@
+
+$(MESSOBJ)/advance/osd/%.o: $(srcdir)/advance/osd/%.c $(srcdir)/advance/osd/emu.h
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(EMUCFLAGS) $(MESSCFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(MESSOBJ)/advance/%.o: $(srcdir)/advance/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/libchdr/%.o: $(srcdir)/alien/libchdr/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(LIBCHDRCFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/lzma/%.o: $(srcdir)/alien/lzma/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(LZMACFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/zstd/%.o: $(srcdir)/alien/zstd/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(ZSTDCFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/dr_flac/%.o: $(srcdir)/alien/dr_flac/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(DRFLACCFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/minimp3/%.o: $(srcdir)/alien/minimp3/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) $(MINIMP3CFLAGS) -c $< -o $@
+
+$(MESSOBJ)/alien/%.o: $(srcdir)/alien/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(ADVANCECFLAGS) -c $< -o $@
+
+$(MESSOBJ)/advance/%.o: $(srcdir)/advance/%.rc
+	$(ECHO) $@ $(MSG)
+	$(RC) $(RCFLAGS) -DADV_EMU $< -o $@
+
+############################################################################
+# emu compile
+
+# Target CFLAGS
+# Don't enable internam MAME assembler macros
+# There are issues in the z80 emulator when using modern gcc compilers like 6.4.0
+# For example, puckman/pengo games have video issues.
+#EMUCFLAGS += -DX86_ASM
+
+ifneq (,$(findstring USE_LSB,$(CFLAGS)))
+EMUCFLAGS += -DLSB_FIRST
+endif
+
+ifneq (,$(findstring USE_MSB,$(CFLAGS)))
+EMUCFLAGS += -DMSB_FIRST
+endif
+
+MESSCFLAGS += \
+	-I$(srcdir)/mess \
+	-Dvga_init=mess_vga_init
+# -Dvga_init=mess_vga_init prevent a name clash with the vga_init SVGALIB function
+
+EMUCFLAGS += \
+	-DINLINE="static __inline__" \
+	-Dasm=__asm__
+
+# Map
+ifeq ($(CONF_MAP),yes)
+ADVANCELDFLAGS += -Xlinker -Map -Xlinker $(OBJ)/advmame.map
+endif
+
+# MAME
+include $(srcdir)/mame/core.mak
+include $(srcdir)/mame/cpu/cpu.mak
+include $(srcdir)/mame/sound/sound.mak
+$(eval $(call EMU_CORE,,$(OBJ),mame))
+include $(srcdir)/mame/mame.mak
+$(eval $(call EMU_CPU,,$(OBJ),mame))
+$(eval $(call EMU_SOUND,,$(OBJ),mame))
+
+# MESS
+$(eval $(call EMU_CORE,MESS,$(MESSOBJ),mess))
+include $(srcdir)/mess/mess.mak
+$(eval $(call EMU_CPU,MESS,$(MESSOBJ),mess))
+$(eval $(call EMU_SOUND,MESS,$(MESSOBJ),mess))
+include $(srcdir)/mess/sound/sound.mak
+
+# Special search paths required by the CPU core rules
+VPATH=$(wildcard $(srcdir)/mame/cpu/* $(srcdir)/mame/sound)
+
+OBJDIRS += \
+	$(ADVANCEOBJDIRS) \
+	$(OBJ)/cpu \
+	$(OBJ)/sound \
+	$(OBJ)/drivers \
+	$(OBJ)/machine \
+	$(OBJ)/vidhrdw \
+	$(OBJ)/sndhrdw \
+	$(OBJ)/debug
+MESSOBJDIRS += \
+	$(subst $(OBJ),$(MESSOBJ),$(ADVANCEOBJDIRS)) \
+	$(MESSOBJ)/cpu \
+	$(MESSOBJ)/sound \
+	$(MESSOBJ)/drivers \
+	$(MESSOBJ)/machine \
+	$(MESSOBJ)/vidhrdw \
+	$(MESSOBJ)/sndhrdw \
+	$(MESSOBJ)/debug \
+	$(MESSOBJ)/mess \
+	$(MESSOBJ)/mess/systems \
+	$(MESSOBJ)/mess/devices \
+	$(MESSOBJ)/mess/expat \
+	$(MESSOBJ)/mess/machine \
+	$(MESSOBJ)/mess/vidhrdw \
+	$(MESSOBJ)/mess/sndhrdw \
+	$(MESSOBJ)/mess/formats \
+	$(MESSOBJ)/mess/sound \
+	$(MESSOBJ)/mess/cpu
+
+ifeq ($(CONF_DEBUGGER),yes)
+# CPU instruction hooks are defined in these headers; rebuild cores when they change.
+$(sort $(CPUOBJS)): $(srcdir)/mame/debugger.h
+$(sort $(MESSCPUOBJS)): $(srcdir)/mame/debugger.h
+EMUDEFS += -DMAME_DEBUG
+EMUCFLAGS += -DMAME_DEBUG
+else
+# don't include the debug only modules
+DBGOBJS =
+MESSDBGOBJS =
+endif
+
+MAMECFLAGS += \
+	$(EMUCFLAGS) \
+	-I$(srcdir)/mame \
+	-I$(srcdir)/mame/includes \
+	-I$(srcdir)/mame/debug \
+	-I$(OBJ)/cpu/m68000 \
+	-I$(srcdir)/mame/cpu/m68000
+
+MESSCFLAGS += \
+	$(EMUCFLAGS) \
+	-I$(MESSOBJ)/cpu/m68000 \
+	-I$(srcdir)/mame \
+	-I$(srcdir)/mame/includes \
+	-I$(srcdir)/mame/debug \
+	-I$(srcdir)/mame/cpu/m68000
+
+MAMEDEFS += $(EMUDEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS)
+MESSDEFS += $(EMUDEFS) $(MESSCOREDEFS) $(MESSCPUDEFS) $(MESSSOUNDDEFS) $(MESSASMDEFS)
+
+MAMELIBS += $(EMULIBS) $(DRVLIBS)
+MESSLIBS += $(EMULIBS) $(MESSDRVLIBS)
+
+# Only opt in sources whose quoted-include dependencies have also been checked.
+# Static pattern rules keep the existing MESS object paths and flags, without
+# allowing VPATH to choose a different source.
+MESS_SHARED_SOURCES = md5.c sha1.c
+MESS_SHARED_OBJS = $(addprefix $(MESSOBJ)/,$(MESS_SHARED_SOURCES:.c=.o))
+MAME_SHARED_OBJS = $(addprefix $(OBJ)/,$(MESS_SHARED_SOURCES:.c=.o))
+
+$(MAME_SHARED_OBJS): $(OBJ)/%.o: $(srcdir)/mame/%.c $(srcdir)/advance/emu.mak
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MAMECFLAGS) $(MAMEDEFS) -c $< -o $@
+
+$(MESS_SHARED_OBJS): $(MESSOBJ)/%.o: $(srcdir)/mame/%.c $(srcdir)/advance/emu.mak
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MESSCFLAGS) $(MESSDEFS) -c $< -o $@
+
+$(OBJ)/advmame$(EXE): $(sort $(OBJDIRS)) $(ADVANCEOBJS) $(MAMEOBJS) $(MAMELIBS) $(ADVANCEBUILDLIBS)
+	$(ECHO) $@ $(MSG)
+	$(LD) $(ADVANCEOBJS) $(MAMEOBJS) $(ADVANCELDFLAGS) $(LDFLAGS) $(MAMELIBS) $(ADVANCEBUILDLIBS) $(ADVANCELIBS) $(LIBS) -o $@
+ifeq ($(CONF_PERF),yes)
+	$(RM) advmamep$(EXE)
+	$(LN_S) $(OBJ)/advmame$(EXE) advmamep$(EXE)
+else ifeq ($(CONF_DEBUG),yes)
+	$(RM) advmamed$(EXE)
+	$(LN_S) $(OBJ)/advmame$(EXE) advmamed$(EXE)
+else
+	$(RM) advmame$(EXE)
+	$(LN_S) $(OBJ)/advmame$(EXE) advmame$(EXE)
+endif
+
+$(OBJ)/%.o: $(srcdir)/mame/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MAMECFLAGS) $(MAMEDEFS) -c $< -o $@
+
+# Generate C source files for the 68000 emulator
+$(subst .c,.o,$(M68000_GENERATED_FILES)): $(OBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD)
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MAMECFLAGS) $(MAMEDEFS) -c $*.c -o $@
+
+# Additional rule, because m68kcpu.c includes the generated m68kops.h
+$(OBJ)/cpu/m68000/m68kcpu.o: $(OBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD)
+
+$(OBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD): $(srcdir)/mame/cpu/m68000/m68kmake.c $(srcdir)/mame/cpu/m68000/m68k_in.c
+	$(ECHO) $@
+	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) -o $(OBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD) $<
+	@$(OBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD) $(OBJ)/cpu/m68000 $(srcdir)/mame/cpu/m68000/m68k_in.c
+
+$(OBJ)/%.a:
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+$(OBJ):
+	$(ECHO) $@
+	$(MD) $@
+
+$(sort $(OBJDIRS)):
+	$(ECHO) $@
+	$(MD) $@
+
+MESSADVANCEOBJS = $(subst $(OBJ),$(MESSOBJ),$(ADVANCEOBJS))
+
+$(MESSOBJ)/advmess$(EXE): $(sort $(MESSOBJDIRS)) $(MESSADVANCEOBJS) $(MESSOBJS) $(MESSLIBS) $(ADVANCEBUILDLIBS)
+	$(ECHO) $@ $(MSG)
+	$(LD) $(MESSADVANCEOBJS) $(MESSOBJS) $(ADVANCELDFLAGS) $(LDFLAGS) $(MESSLIBS) $(ADVANCEBUILDLIBS) $(ADVANCELIBS) $(LIBS) -o $@
+ifeq ($(CONF_PERF),yes)
+	$(RM) advmessp$(EXE)
+	$(LN_S) $(MESSOBJ)/advmess$(EXE) advmessp$(EXE)
+else ifeq ($(CONF_DEBUG),yes)
+	$(RM) advmessd$(EXE)
+	$(LN_S) $(MESSOBJ)/advmess$(EXE) advmessd$(EXE)
+else
+	$(RM) advmess$(EXE)
+	$(LN_S) $(MESSOBJ)/advmess$(EXE) advmess$(EXE)
+endif
+
+# Compile shared sources with target-specific flags and object paths.
+$(MESSOBJ)/%.o: $(srcdir)/mame/%.c $(srcdir)/advance/emu.mak
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MESSCFLAGS) $(MESSDEFS) -c $< -o $@
+
+$(MESSOBJ)/mess/%.o: $(srcdir)/mess/%.c
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MESSCFLAGS) $(MESSDEFS) -c $< -o $@
+
+# Generate C source files for the 68000 emulator
+$(subst .c,.o,$(MESSM68000_GENERATED_FILES)): $(MESSOBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD)
+	$(ECHO) $@ $(MSG)
+	$(CC) $(CFLAGS) $(MESSCFLAGS) $(MESSDEFS) -c $*.c -o $@
+
+# Additional rule, because m68kcpu.c includes the generated m68kops.h
+$(MESSOBJ)/cpu/m68000/m68kcpu.o: $(MESSOBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD)
+
+$(MESSOBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD): $(srcdir)/mame/cpu/m68000/m68kmake.c $(srcdir)/mame/cpu/m68000/m68k_in.c
+	$(ECHO) $@
+	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) -o $(MESSOBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD) $<
+	@$(MESSOBJ)/cpu/m68000/m68kmake$(EXE_FOR_BUILD) $(MESSOBJ)/cpu/m68000 $(srcdir)/mame/cpu/m68000/m68k_in.c
+
+$(MESSOBJ)/%.a:
+	$(ECHO) $@
+	$(RM) $@
+	$(AR) crs $@ $^
+
+$(MESSOBJ):
+	$(ECHO) $@
+	$(MD) $@
+
+$(sort $(MESSOBJDIRS)):
+	$(ECHO) $@
+	$(MD) $@
+
+############################################################################
+# EMU dist
+
+EMU_ROOT_SRC = \
+	$(CONF_SRC)
+
+EMU_ADVANCE_SRC = \
+	$(srcdir)/advance/advance.mak \
+	$(srcdir)/advance/emu.mak \
+	$(srcdir)/advance/menu.mak \
+	$(srcdir)/advance/v.mak \
+	$(srcdir)/advance/cfg.mak \
+	$(srcdir)/advance/k.mak \
+	$(srcdir)/advance/s.mak \
+	$(srcdir)/advance/i.mak \
+	$(srcdir)/advance/j.mak \
+	$(srcdir)/advance/m.mak \
+	$(srcdir)/advance/line.mak \
+	$(srcdir)/advance/d2.mak
+
+EMU_CONTRIB_SRC = \
+	$(wildcard $(srcdir)/contrib/*)
+
+EMU_SUPPORT_SRC += \
+	$(srcdir)/support/debian.armhf \
+	$(srcdir)/support/debian.i386 \
+	$(srcdir)/support/event.dat \
+	$(srcdir)/support/history.dat \
+	$(srcdir)/support/hiscore.dat \
+	$(srcdir)/support/sysinfo.dat  \
+	$(srcdir)/support/cheat.dat  \
+	$(srcdir)/support/category.ini \
+	$(srcdir)/support/genre.ini \
+	$(srcdir)/support/advmess.1 \
+	$(srcdir)/support/advmessv.bat \
+	$(srcdir)/support/advmessc.bat \
+	$(srcdir)/support/advmenuv.bat \
+	$(srcdir)/support/advmenuc.bat
+
+EMU_DOC_SRC = \
+	$(srcdir)/doc/advdev.d \
+	$(srcdir)/doc/advmame.d \
+	$(srcdir)/doc/authors.d \
+	$(srcdir)/doc/script.d \
+	$(srcdir)/doc/readme.d \
+	$(srcdir)/doc/release.d \
+	$(srcdir)/doc/history.d \
+	$(srcdir)/doc/faq.d \
+	$(srcdir)/doc/build.d \
+	$(srcdir)/doc/cost.d \
+	$(srcdir)/doc/advv.d \
+	$(srcdir)/doc/advcfg.d \
+	$(srcdir)/doc/advk.d \
+	$(srcdir)/doc/advs.d \
+	$(srcdir)/doc/advj.d \
+	$(srcdir)/doc/advm.d \
+	$(srcdir)/doc/advline.d \
+	$(srcdir)/doc/carddos.d \
+	$(srcdir)/doc/cardlinx.d \
+	$(srcdir)/doc/cardwin.d \
+	$(srcdir)/doc/install.d \
+	$(srcdir)/doc/svgawin.d \
+	$(srcdir)/doc/advdev.txt \
+	$(srcdir)/doc/advmame.txt \
+	$(srcdir)/doc/authors.txt \
+	$(srcdir)/doc/script.txt \
+	$(srcdir)/doc/advmenu.txt \
+	$(srcdir)/doc/readme.txt \
+	$(srcdir)/doc/release.txt \
+	$(srcdir)/doc/history.txt \
+	$(srcdir)/doc/faq.txt \
+	$(srcdir)/doc/build.txt \
+	$(srcdir)/doc/cost.txt \
+	$(srcdir)/doc/advv.txt \
+	$(srcdir)/doc/advcfg.txt \
+	$(srcdir)/doc/advk.txt \
+	$(srcdir)/doc/advs.txt \
+	$(srcdir)/doc/advj.txt \
+	$(srcdir)/doc/advm.txt \
+	$(srcdir)/doc/advline.txt \
+	$(srcdir)/doc/carddos.txt \
+	$(srcdir)/doc/cardlinx.txt \
+	$(srcdir)/doc/cardwin.txt \
+	$(srcdir)/doc/install.txt \
+	$(srcdir)/doc/svgawin.txt \
+	$(srcdir)/doc/advmenu.d \
+	$(srcdir)/doc/advdev.html \
+	$(srcdir)/doc/advmame.html \
+	$(srcdir)/doc/authors.html \
+	$(srcdir)/doc/script.html \
+	$(srcdir)/doc/readme.html \
+	$(srcdir)/doc/release.html \
+	$(srcdir)/doc/history.html \
+	$(srcdir)/doc/faq.html \
+	$(srcdir)/doc/build.html \
+	$(srcdir)/doc/cost.html \
+	$(srcdir)/doc/advv.html \
+	$(srcdir)/doc/advcfg.html \
+	$(srcdir)/doc/advk.html \
+	$(srcdir)/doc/advs.html \
+	$(srcdir)/doc/advj.html \
+	$(srcdir)/doc/advm.html \
+	$(srcdir)/doc/advline.html \
+	$(srcdir)/doc/carddos.html \
+	$(srcdir)/doc/cardlinx.html \
+	$(srcdir)/doc/cardwin.html \
+	$(srcdir)/doc/install.html \
+	$(srcdir)/doc/svgawin.html \
+	$(srcdir)/doc/advmenu.html \
+	$(srcdir)/doc/advdev.1 \
+	$(srcdir)/doc/advmame.1 \
+	$(srcdir)/doc/advv.1 \
+	$(srcdir)/doc/advcfg.1 \
+	$(srcdir)/doc/advk.1 \
+	$(srcdir)/doc/advs.1 \
+	$(srcdir)/doc/advj.1 \
+	$(srcdir)/doc/advm.1 \
+	$(srcdir)/doc/advmenu.1 \
+
+EMU_DOC_BIN = \
+	$(DOCOBJ)/advdev.txt \
+	$(DOCOBJ)/advmame.txt \
+	$(DOCOBJ)/build.txt \
+	$(DOCOBJ)/cost.txt \
+	$(DOCOBJ)/authors.txt \
+	$(DOCOBJ)/script.txt \
+	$(DOCOBJ)/readme.txt \
+	$(DOCOBJ)/release.txt \
+	$(DOCOBJ)/history.txt \
+	$(DOCOBJ)/faq.txt \
+	$(DOCOBJ)/install.txt \
+	$(DOCOBJ)/advv.txt \
+	$(DOCOBJ)/advcfg.txt \
+	$(DOCOBJ)/advmenu.txt \
+	$(DOCOBJ)/advdev.html \
+	$(DOCOBJ)/advmame.html \
+	$(DOCOBJ)/build.html \
+	$(DOCOBJ)/cost.html \
+	$(DOCOBJ)/authors.html \
+	$(DOCOBJ)/script.html \
+	$(DOCOBJ)/readme.html \
+	$(DOCOBJ)/release.html \
+	$(DOCOBJ)/history.html \
+	$(DOCOBJ)/faq.html \
+	$(DOCOBJ)/install.html \
+	$(DOCOBJ)/advv.html \
+	$(DOCOBJ)/advcfg.html \
+	$(DOCOBJ)/advmenu.html
+ifeq ($(CONF_SYSTEM),unix)
+EMU_DOC_BIN += \
+	$(DOCOBJ)/cardlinx.txt \
+	$(DOCOBJ)/advk.txt \
+	$(DOCOBJ)/advs.txt \
+	$(DOCOBJ)/advj.txt \
+	$(DOCOBJ)/advm.txt \
+	$(DOCOBJ)/cardlinx.html \
+	$(DOCOBJ)/advk.html \
+	$(DOCOBJ)/advs.html \
+	$(DOCOBJ)/advj.html \
+	$(DOCOBJ)/advm.html
+endif
+ifeq ($(CONF_SYSTEM),dos)
+EMU_DOC_BIN += \
+	$(DOCOBJ)/carddos.txt \
+	$(DOCOBJ)/advk.txt \
+	$(DOCOBJ)/advs.txt \
+	$(DOCOBJ)/advj.txt \
+	$(DOCOBJ)/advm.txt \
+	$(DOCOBJ)/carddos.html \
+	$(DOCOBJ)/advk.html \
+	$(DOCOBJ)/advs.html \
+	$(DOCOBJ)/advj.html \
+	$(DOCOBJ)/advm.html
+endif
+ifeq ($(CONF_SYSTEM),windows)
+EMU_DOC_BIN += \
+	$(DOCOBJ)/svgawin.txt \
+	$(DOCOBJ)/cardwin.txt \
+	$(DOCOBJ)/svgawin.html \
+	$(DOCOBJ)/cardwin.html
+endif
+
+EMU_ROOT_BIN = \
+	$(OBJ)/advmame$(EXE) \
+	$(MESSOBJ)/advmess$(EXE) \
+	$(MENUOBJ)/advmenu$(EXE)
+EMU_ROOT_BIN += \
+	$(srcdir)/support/event.dat \
+	$(srcdir)/support/history.dat \
+	$(srcdir)/support/hiscore.dat \
+	$(srcdir)/support/sysinfo.dat \
+	$(srcdir)/support/cheat.dat \
+	$(srcdir)/support/category.ini \
+	$(srcdir)/support/genre.ini
+ifeq ($(CONF_SYSTEM),unix)
+EMU_ROOT_BIN += \
+	$(VOBJ)/advv$(EXE) \
+	$(CFGOBJ)/advcfg$(EXE) \
+	$(KOBJ)/advk$(EXE) \
+	$(SOBJ)/advs$(EXE) \
+	$(JOBJ)/advj$(EXE) \
+	$(MOBJ)/advm$(EXE) \
+	$(DOCOBJ)/advmame.1 \
+	$(DOCOBJ)/advmenu.1 \
+	$(DOCOBJ)/advdev.1 \
+	$(DOCOBJ)/advv.1 \
+	$(DOCOBJ)/advcfg.1 \
+	$(DOCOBJ)/advk.1 \
+	$(DOCOBJ)/advs.1 \
+	$(DOCOBJ)/advj.1 \
+	$(DOCOBJ)/advm.1
+EMU_ROOT_BIN += \
+	$(srcdir)/support/advmess.1
+endif
+ifeq ($(CONF_SYSTEM),dos)
+EMU_ROOT_BIN += \
+	$(srcdir)/support/cwsdpmi.exe \
+	$(VOBJ)/advv$(EXE) \
+	$(CFGOBJ)/advcfg$(EXE) \
+	$(KOBJ)/advk$(EXE) \
+	$(SOBJ)/advs$(EXE) \
+	$(JOBJ)/advj$(EXE) \
+	$(MOBJ)/advm$(EXE) \
+	$(srcdir)/support/advmessv.bat \
+	$(srcdir)/support/advmessc.bat \
+	$(srcdir)/support/advmenuv.bat \
+	$(srcdir)/support/advmenuc.bat
+endif
+ifeq ($(CONF_SYSTEM),windows)
+ifeq ($(CONF_LIB_DIRECT),yes)
+EMU_ROOT_BIN += \
+	$(VOBJ)/advv$(EXE) \
+	$(CFGOBJ)/advcfg$(EXE) \
+	$(srcdir)/alien/svgalib/svgawin/driver/svgawin.sys \
+	$(srcdir)/alien/svgalib/svgawin/install/svgawin.exe \
+	$(srcdir)/support/advmessv.bat \
+	$(srcdir)/support/advmessc.bat \
+	$(srcdir)/support/advmenuv.bat \
+	$(srcdir)/support/advmenuc.bat
+endif
+endif
+
+EMU_DIST_FILE_SRC = advancemame-$(VERSION)
+EMU_DIST_FILE_BIN = advancemame-$(VERSION)-$(BINARYTAG)
+EMU_DIST_DIR_SRC = $(EMU_DIST_FILE_SRC)
+EMU_DIST_DIR_BIN = $(EMU_DIST_FILE_BIN)
+
+dist: $(DOCOBJ)/readme.txt $(DOCOBJ)/release.txt $(DOCOBJ)/history.txt $(DOCOBJ)/build.txt
+	mkdir $(EMU_DIST_DIR_SRC)
+	cp -R $(srcdir)/LICENSES $(EMU_DIST_DIR_SRC)/LICENSES
+	$(srcdir)/autover.sh > $(EMU_DIST_DIR_SRC)/.version
+	cp $(DOCOBJ)/readme.txt $(EMU_DIST_DIR_SRC)/README
+	cp $(DOCOBJ)/release.txt $(EMU_DIST_DIR_SRC)/RELEASE
+	cp $(DOCOBJ)/history.txt $(EMU_DIST_DIR_SRC)/HISTORY
+	cp $(DOCOBJ)/build.txt $(EMU_DIST_DIR_SRC)/BUILD
+	cp $(srcdir)/COPYING $(EMU_DIST_DIR_SRC)/COPYING
+	cp $(EMU_ROOT_SRC) $(EMU_DIST_DIR_SRC)
+	mkdir $(EMU_DIST_DIR_SRC)/doc
+	cp $(EMU_DOC_SRC) $(EMU_DIST_DIR_SRC)/doc
+	mkdir $(EMU_DIST_DIR_SRC)/advance
+	cp $(EMU_ADVANCE_SRC) $(EMU_DIST_DIR_SRC)/advance
+	mkdir $(EMU_DIST_DIR_SRC)/support
+	cp $(EMU_SUPPORT_SRC) $(EMU_DIST_DIR_SRC)/support
+	cp -R $(srcdir)/support/free $(EMU_DIST_DIR_SRC)/support
+	mkdir $(EMU_DIST_DIR_SRC)/advance/linux
+	cp $(LINUX_SRC) $(EMU_DIST_DIR_SRC)/advance/linux
+	mkdir $(EMU_DIST_DIR_SRC)/advance/dos
+	cp $(DOS_SRC) $(EMU_DIST_DIR_SRC)/advance/dos
+	mkdir $(EMU_DIST_DIR_SRC)/advance/windows
+	cp $(WINDOWS_SRC) $(EMU_DIST_DIR_SRC)/advance/windows
+	mkdir $(EMU_DIST_DIR_SRC)/advance/sdl
+	cp $(SDL_SRC) $(EMU_DIST_DIR_SRC)/advance/sdl
+	mkdir $(EMU_DIST_DIR_SRC)/advance/osd
+	cp $(SRCOSD) $(EMU_DIST_DIR_SRC)/advance/osd
+	mkdir $(EMU_DIST_DIR_SRC)/advance/lib
+	cp $(LIB_SRC) $(EMU_DIST_DIR_SRC)/advance/lib
+	mkdir $(EMU_DIST_DIR_SRC)/advance/blit
+	cp $(BLIT_SRC) $(EMU_DIST_DIR_SRC)/advance/blit
+	mkdir $(EMU_DIST_DIR_SRC)/advance/card
+	cp $(CARD_SRC) $(EMU_DIST_DIR_SRC)/advance/card
+	mkdir $(EMU_DIST_DIR_SRC)/alien
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib
+	cp $(SVGALIB_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/clockchi
+	cp $(SVGALIBCLOCKCHI_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/clockchi
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/ramdac
+	cp $(SVGALIBRAMDAC_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/ramdac
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/drivers
+	cp $(SVGALIBDRIVERS_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/drivers
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/svgados
+	cp $(SVGALIBSVGADOS_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/svgados
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin
+	cp $(SVGALIBSVGAWIN_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/sys
+	cp $(SVGALIBSVGAWINSYS_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/sys
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/install
+	cp $(SVGALIBSVGAWININSTALL_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/install
+	mkdir $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/driver
+	cp $(SVGALIBSVGAWINDRIVER_SRC) $(EMU_DIST_DIR_SRC)/alien/svgalib/svgawin/driver
+	mkdir $(EMU_DIST_DIR_SRC)/alien/mpglib
+	cp $(MPGLIB_SRC) $(EMU_DIST_DIR_SRC)/alien/mpglib
+	mkdir $(EMU_DIST_DIR_SRC)/advance/v
+	cp $(V_SRC) $(EMU_DIST_DIR_SRC)/advance/v
+	mkdir $(EMU_DIST_DIR_SRC)/advance/k
+	cp $(K_SRC) $(EMU_DIST_DIR_SRC)/advance/k
+	mkdir $(EMU_DIST_DIR_SRC)/advance/j
+	cp $(J_SRC) $(EMU_DIST_DIR_SRC)/advance/j
+	mkdir $(EMU_DIST_DIR_SRC)/advance/m
+	cp $(M_SRC) $(EMU_DIST_DIR_SRC)/advance/m
+	mkdir $(EMU_DIST_DIR_SRC)/advance/s
+	cp $(S_SRC) $(EMU_DIST_DIR_SRC)/advance/s
+	mkdir $(EMU_DIST_DIR_SRC)/advance/i
+	cp $(I_SRC) $(EMU_DIST_DIR_SRC)/advance/i
+	mkdir $(EMU_DIST_DIR_SRC)/advance/cfg
+	cp $(CFG_SRC) $(EMU_DIST_DIR_SRC)/advance/cfg
+	mkdir $(EMU_DIST_DIR_SRC)/advance/menu
+	cp $(MENU_SRC) $(EMU_DIST_DIR_SRC)/advance/menu
+	mkdir $(EMU_DIST_DIR_SRC)/advance/line
+	cp $(LINE_SRC) $(EMU_DIST_DIR_SRC)/advance/line
+	mkdir $(EMU_DIST_DIR_SRC)/advance/d2
+	cp $(D2_SRC) $(EMU_DIST_DIR_SRC)/advance/d2
+	mkdir $(EMU_DIST_DIR_SRC)/alien/zlib
+	cp $(ZLIB_SRC) $(EMU_DIST_DIR_SRC)/alien/zlib
+	mkdir $(EMU_DIST_DIR_SRC)/alien/expat
+	cp $(EXPAT_SRC) $(EMU_DIST_DIR_SRC)/alien/expat
+	mkdir $(EMU_DIST_DIR_SRC)/alien/nanojpeg
+	cp $(NANOJPEG_SRC) $(EMU_DIST_DIR_SRC)/alien/nanojpeg
+	mkdir $(EMU_DIST_DIR_SRC)/alien/sljit
+	cp $(wildcard $(srcdir)/alien/sljit/*.c) $(EMU_DIST_DIR_SRC)/alien/sljit
+	cp $(wildcard $(srcdir)/alien/sljit/*.h) $(EMU_DIST_DIR_SRC)/alien/sljit
+	cp $(srcdir)/alien/sljit/README $(EMU_DIST_DIR_SRC)/alien/sljit
+	cp -R $(srcdir)/alien/sljit/allocator_src $(EMU_DIST_DIR_SRC)/alien/sljit
+	mkdir $(EMU_DIST_DIR_SRC)/alien/lzma
+	cp $(srcdir)/alien/lzma/LICENSE $(EMU_DIST_DIR_SRC)/alien/lzma
+	cp -R $(srcdir)/alien/lzma/include $(EMU_DIST_DIR_SRC)/alien/lzma
+	cp -R $(srcdir)/alien/lzma/src $(EMU_DIST_DIR_SRC)/alien/lzma
+	mkdir $(EMU_DIST_DIR_SRC)/alien/zstd
+	cp $(wildcard $(srcdir)/alien/zstd/*.c) $(EMU_DIST_DIR_SRC)/alien/zstd
+	cp $(wildcard $(srcdir)/alien/zstd/*.h) $(EMU_DIST_DIR_SRC)/alien/zstd
+	cp $(srcdir)/alien/zstd/LICENSE $(EMU_DIST_DIR_SRC)/alien/zstd
+	mkdir $(EMU_DIST_DIR_SRC)/alien/dr_flac
+	cp $(wildcard $(srcdir)/alien/dr_flac/*.c) $(EMU_DIST_DIR_SRC)/alien/dr_flac
+	cp $(wildcard $(srcdir)/alien/dr_flac/*.h) $(EMU_DIST_DIR_SRC)/alien/dr_flac
+	mkdir $(EMU_DIST_DIR_SRC)/alien/minimp3
+	cp $(wildcard $(srcdir)/alien/minimp3/*.c) $(EMU_DIST_DIR_SRC)/alien/minimp3
+	cp $(wildcard $(srcdir)/alien/minimp3/*.h) $(EMU_DIST_DIR_SRC)/alien/minimp3
+	cp $(srcdir)/alien/minimp3/LICENSE $(EMU_DIST_DIR_SRC)/alien/minimp3
+	cp $(srcdir)/alien/minimp3/README $(EMU_DIST_DIR_SRC)/alien/minimp3
+	mkdir $(EMU_DIST_DIR_SRC)/alien/libchdr
+	cp $(srcdir)/alien/libchdr/LICENSE.txt $(EMU_DIST_DIR_SRC)/alien/libchdr
+	cp -R $(srcdir)/alien/libchdr/include $(EMU_DIST_DIR_SRC)/alien/libchdr
+	cp -R $(srcdir)/alien/libchdr/src $(EMU_DIST_DIR_SRC)/alien/libchdr
+	mkdir $(EMU_DIST_DIR_SRC)/contrib
+ifneq ($(EMU_CONTRIB_SRC),)
+	cp -R $(EMU_CONTRIB_SRC) $(EMU_DIST_DIR_SRC)/contrib
+endif
+	cp -R $(srcdir)/mame $(EMU_DIST_DIR_SRC)
+	cp -R $(srcdir)/mess $(EMU_DIST_DIR_SRC)
+	find $(EMU_DIST_DIR_SRC) \( -name "*.dat" \) -type f -exec dos2unix {} \;
+	rm -f $(EMU_DIST_FILE_SRC).tar.gz
+	tar cfzo $(EMU_DIST_FILE_SRC).tar.gz $(EMU_DIST_DIR_SRC)
+	rm -r $(EMU_DIST_DIR_SRC)
+
+distbin: $(EMU_ROOT_BIN) $(EMU_DOC_BIN)
+	mkdir $(EMU_DIST_DIR_BIN)
+	cp -R $(srcdir)/LICENSES $(EMU_DIST_DIR_BIN)/LICENSES
+ifeq ($(CONF_SYSTEM),unix)
+	cp $(DOCOBJ)/readme.txt $(EMU_DIST_DIR_BIN)/README
+	cp $(DOCOBJ)/release.txt $(EMU_DIST_DIR_BIN)/RELEASE
+	cp $(DOCOBJ)/history.txt $(EMU_DIST_DIR_BIN)/HISTORY
+	cp $(srcdir)/COPYING $(EMU_DIST_DIR_BIN)/COPYING
+else
+	cp $(DOCOBJ)/readme.txt $(EMU_DIST_DIR_BIN)/readme.txt
+	cp $(DOCOBJ)/release.txt $(EMU_DIST_DIR_BIN)/release.txt
+	cp $(DOCOBJ)/history.txt $(EMU_DIST_DIR_BIN)/history.txt
+	cp $(srcdir)/COPYING $(EMU_DIST_DIR_BIN)/copying.txt
+endif
+	cp $(EMU_ROOT_BIN) $(EMU_DIST_DIR_BIN)
+	cp -R $(srcdir)/support/free/rom $(EMU_DIST_DIR_BIN)
+	cp -R $(srcdir)/support/free/image $(EMU_DIST_DIR_BIN)
+	cp -R $(srcdir)/support/free/sample $(EMU_DIST_DIR_BIN)
+	cp -R $(srcdir)/support/free/snap $(EMU_DIST_DIR_BIN)
+	mkdir $(EMU_DIST_DIR_BIN)/doc
+	cp $(EMU_DOC_BIN) $(EMU_DIST_DIR_BIN)/doc
+	mkdir $(EMU_DIST_DIR_BIN)/contrib
+	cp -R $(EMU_CONTRIB_SRC) $(EMU_DIST_DIR_BIN)/contrib
+ifeq ($(CONF_SYSTEM),unix)
+	find $(EMU_DIST_DIR_BIN) \( -name "*.dat" \) -type f -exec dos2unix {} \;
+	rm -f $(EMU_DIST_FILE_BIN).tar.gz
+	tar cfzo $(EMU_DIST_FILE_BIN).tar.gz $(EMU_DIST_DIR_BIN)
+else
+	find $(EMU_DIST_DIR_BIN) \( -name "*.txt" \) -type f -exec unix2dos {} \;
+	find $(EMU_DIST_DIR_BIN) \( -name "*.bat" \) -type f -exec unix2dos {} \;
+	find $(EMU_DIST_DIR_BIN) \( -name "*.dat" \) -type f -exec unix2dos {} \;
+	rm -f $(EMU_DIST_FILE_BIN).zip
+	cd $(EMU_DIST_DIR_BIN) && zip -r ../$(EMU_DIST_FILE_BIN).zip *
+endif
+	rm -r $(EMU_DIST_DIR_BIN)
+

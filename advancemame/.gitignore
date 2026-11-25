@@ -1,0 +1,85 @@
+# upload
+makepush.sh
+makeftp.sh
+makessh.sh
+
+# autotools
+Makefile
+autom4te.cache/
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+install-sh
+missing
+stamp-h1
+advance/lib/config.h
+advance/lib/config.hin~
+config.guess~
+config.sub~
+configure~
+install-sh~
+
+# projects
+*.dst
+*.epr
+*.geany
+
+# archive
+archive/
+*.zip
+*.tar.gz
+*.deb
+
+# objects
+advcfg
+advj
+advk
+advm
+advmame
+advmamed
+advmess
+advmessd
+advmenu
+advmenud
+advbare
+advs
+advv
+advblue
+*.exe
+*.o
+
+# generated
+*.dif
+
+# generated doc
+doc/*.1
+doc/*.hh
+doc/*.html
+doc/*.txt
+
+# extra dirs
+reference/
+resource/
+contrib/
+obj/
+www/
+support/*.sh
+support/catver.ini
+support/renameSET.dat
+
+# raspberry
+raspberry/*.sh
+raspberry/*.img
+raspberry/CONFIG
+raspberry/FIRMWARE
+raspberry/SPEED
+raspberry/TODO
+raspberry/distro/
+raspberry/firmware/
+raspberry/image/
+raspberry/joystick_logs/
+raspberry/support/

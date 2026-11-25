@@ -1,0 +1,764 @@
+// license:BSD-3-Clause
+// copyright-holders:R. Belmont, ElSemi
+/*
+    Namco System FL
+    Driver by R. Belmont and ElSemi
+
+    IMPORTANT (for Manual Calibration, MAME now loads these defaults instead)
+    ---------
+    To calibrate the steering, do the following:
+    1) Delete the .nv file
+    2) Start the game.  Speed Racer will guide you through the calibration
+       (the "jump button" is the "Start / Jump" input, on button 3).
+       For Final Lap R, hold down service (9) and tap test (F2).  If you do
+       not get an "initializing" message followed by the input test, keep doing
+       it until you do.
+    3) Exit MAME and restart the game, it's now calibrated.
+
+
+PCB Layout
+----------
+
+SYSTEM-FL MAIN PCB 8636960100 (8636970100)
+       |--------------------------------------------------------------------------------------------|
+       |                                                                       |-----------------|  |
+       |                                                                       |       4Z IC3 IC1| Z|
+       |                21Y 20Y 19Y 18Y     16Y     14Y 13Y 12Y                |       4Y        | Y|
+       |                    20X                                                |       4X        | X|
+    |--|                                                                       |          IC4 IC2| W|
+    |               22U 21U         18U     16U     14U 13U 12U                |    Sub Board    | U|
+    |               22T             18T                                        |-----------------| T|
+    |                                                                                               |
+    |J          23S                                         12S                        4S    2S    S|
+    |                                                                                               |
+    |A          23R                                     13R                                        R|
+    |                                                                                               |
+    |M                  21P 20P 19P 18P                             10P    8P 7P    5P             P|
+    |                       20N                                                               OSC1 N|
+    |M                                                                                    OSC2      |
+    |           23L     21L                             OSC3                              3L       L|
+    |A                                              14K         11K                                K|
+    |                                                                                               |
+    |                           19J 18J 17J 16J                                                    J|
+    |--|        23F     21F                                                                        F|
+       |                                                                                            |
+    |--|        23E                                     13E                                        E|
+    |N          23D             19D                     13D                               3D       D|
+    |A                                                                                              |
+    |M          23C                                                                                C|
+    |C  25B             21B                                                                        B|
+    |O                                                                                              |
+    |4              22A 21A     19A 18A     16A 15A 14A 13A 12A 11A 10A 9A 8A 7A 6A 5A    3A       A|
+    |4                                                                                              |
+    |--|                                                                                            |
+       |25  24  23  22  21  20  19  18  17  16  15  14  13  12  11  10  9  8  7  6  5  4  3  2  1   |
+       |--------------------------------------------------------------------------------------------|
+
+CUSTOM
+------
+4X : NAMCO C355 (sprite chip)
+18Y: NAMCO 156
+20X: NAMCO C116
+21U: NAMCO 145
+18T: NAMCO 123
+23R: NAMCO C352
+3D : NAMCO C380
+4S : NAMCO 187
+23L: NAMCO 75 (M37702 MCU)
+11K: NAMCO 137
+21B: NAMCO C345  9348EV  333791  VY06436A  NX25024K JAPAN
+21F: NAMCO 195
+
+
+ROMs - Main Board
+-----------------
+23S: MASK ROM - SE1_VOI.23S (PCB LABEL 'VOICE'), mounted on a small plug-in PCB
+     labelled MEMEXT 32M MROM PCB 8635909200 (8635909300). This chip is programmed in BYTE mode.
+18U: MB834000 MASK ROM - SE1_SSH.18U (PCB LABEL 'SSHAPE')
+21P: MB838000 MASK ROM - SE1_SCH0.21P (PCB LABEL 'SCHA0')
+20P: MB838000 MASK ROM - SE1_SCH1.20P (PCB LABEL 'SCHA1')
+19P: MB838000 MASK ROM - SE1_SCH2.19P (PCB LABEL 'SCHA2')
+18P: MB838000 MASK ROM - SE1_SCH3.18P (PCB LABEL 'SCHA3')
+21L: M27C4002 EPROM - SE1_SPR.21L (PCB LABEL 'SPROG')
+14K: MB834000 MASK ROM - SE1_RSH.14K (PCB LABEL 'RSHAPE')
+19J: MB838000 MASK ROM - SE1_RCH0.19J (PCB LABEL 'RCHA0')
+18J: MB838000 MASK ROM - SE1_RCH1.18J (PCB LABEL 'RCHA1')
+17J, 16J: RCH2, RCH3 but sockets not populated
+19A: D27C4096 EPROM - SE2MPEA4.19A (PCB LABEL 'PROGE')
+18A: D27C4096 EPROM - SE2MPOA4.18A (PCB LABEL 'PROGO')
+16A: AM27C040 EPROM - SE1_DAT3.16A (PCB LABEL 'DATA3')
+15A: AM27C040 EPROM - SE1_DAT2.15A (PCB LABEL 'DATA2')
+14A: AM27C040 EPROM - SE1_DAT1.14A (PCB LABEL 'DATA1')
+13A: AM27C040 EPROM - SE1_DAT0.13A (PCB LABEL 'DATA0')
+
+
+ROMs - Sub Board
+----------------
+IC1: MB8316200 SOP44 MASK ROM - SE1OBJ0L.IC1 (PCB LABEL 'OBJ0L')
+IC2: MB8316200 SOP44 MASK ROM - SE1OBJ0U.IC2 (PCB LABEL 'OBJ0U')
+IC3: MB8316200 SOP44 MASK ROM - SE1OBJ1L.IC3 (PCB LABEL 'OBJ1L')
+IC4: MB8316200 SOP44 MASK ROM - SE1OBJ1U.IC4 (PCB LABEL 'OBJ1U')
+
+
+PALs
+----
+2S : PAL16L8BCN (PCB LABEL 'SYSFL-1')
+3L : PAL16L8BCN (PCB LABEL 'SYSFL-2')
+12S: PALCE16V8H (PCB LABEL 'SYSFL-3')
+20N: PAL20L8BCN (PCB LABEL 'SYSFL-4')
+19D: PALCE16V8H (PCB LABEL 'SYSFL-5')
+
+
+OTHER
+-----
+OSC1: 80.000MHz
+OSC2: 27.800MHz
+OSC3: 48.384MHz
+13D : KEYCUS2 (not populated)
+3A  : Intel NG80960KA-20 (i960 CPU)
+25B : Sharp PC9D10
+23C : IR2C24AN
+23D : IR2C24AN
+13E : HN58C65 EEPROM
+
+*/
+
+#include "driver.h"
+#include "machine/eeprom.h"
+#include "namconb1.h"
+#include "namcos2.h"
+#include "namcoic.h"
+#include "cpu/i960/i960.h"
+#include "sndhrdw/namcoc7x.h"
+
+VIDEO_START( namcofl );
+VIDEO_UPDATE( namcofl );
+
+extern UINT32 *namcofl_spritebank32;
+extern UINT32 *namcofl_mcuram;
+extern WRITE32_HANDLER(namcofl_spritebank_w);
+
+static UINT32 *namcofl_workram;
+
+static READ32_HANDLER( fl_unk1_r )
+{
+	return 0xffffffff;
+}
+
+/* only the byte lanes 0 and 2 are connected, as in MAME */
+static READ32_HANDLER( fl_network_r )
+{
+	if (offset == 0)
+		return 0x007d00ff;
+
+	return 0x00ff00ff;
+}
+
+static READ32_HANDLER( namcofl_sysreg_r )
+{
+	return 0;
+}
+
+static WRITE32_HANDLER( namcofl_sysreg_w )
+{
+	if ((offset == 2) && !(mem_mask & 0xff))  // address space configuration
+	{
+		if (data == 0)	// RAM at 00000000, ROM at 10000000
+		{
+			memory_set_bankptr( 1, namcofl_workram );
+			memory_set_bankptr( 2, memory_region(REGION_CPU1) );
+		}
+		else		// ROM at 00000000, RAM at 10000000
+		{
+			memory_set_bankptr( 1, memory_region(REGION_CPU1) );
+			memory_set_bankptr( 2, namcofl_workram );
+		}
+	}
+	else if (offset >= 0x10 && offset <= 0x13)	// clear i960 IRQ line
+	{
+		// data value doesn't seem to matter
+		static const int irq_type[4] = { I960_IRQ0, I960_IRQ1, I960_IRQ2, I960_IRQ3 };
+		cpunum_set_input_line(0, irq_type[offset & 3], CLEAR_LINE);
+	}
+}
+
+/* MCU: the C75 runs its internal BIOS, which reads the inputs through the
+   port 7 (selected with the port 6) and the pedals and wheel through the ADC */
+static int fl_wheel_port;
+static int fl_brake_port;
+static UINT8 fl_mcu_port6;
+
+static READ16_HANDLER( fl_mcu_shared_r )
+{
+	UINT32 data = namcofl_mcuram[offset >> 1];
+
+	return (offset & 1) ? (data >> 16) : (data & 0xffff);
+}
+
+static WRITE16_HANDLER( fl_mcu_shared_w )
+{
+	UINT32 *ram = &namcofl_mcuram[offset >> 1];
+	/* in this MAME version mem_mask has the bits to keep set */
+	UINT32 mask = (UINT16)~mem_mask;
+
+	if (offset & 1)
+		*ram = (*ram & ~(mask << 16)) | ((data & mask) << 16);
+	else
+		*ram = (*ram & ~mask) | (data & mask);
+
+	/* the BIOS has a very short window on the CPU sync signal, so let the i960 run at once */
+	if (offset == 0x6000 / 2 && (data & 0x80))
+		cpu_yield();
+}
+
+static READ8_HANDLER( fl_mcu_port6_r )
+{
+	return fl_mcu_port6;
+}
+
+static WRITE8_HANDLER( fl_mcu_port6_w )
+{
+	fl_mcu_port6 = data;
+}
+
+static READ8_HANDLER( fl_mcu_port7_r )
+{
+	switch (fl_mcu_port6 & 0xf0)
+	{
+	case 0x00: return readinputport(1);	/* IN0 */
+	case 0x20: return readinputport(0);	/* MISC */
+	case 0x40: return readinputport(2);	/* IN1 */
+	case 0x60: return readinputport(3);	/* IN2 */
+	}
+
+	return 0xff;
+}
+
+/* the result is 8 bit, in the low byte of the ADC register */
+static READ8_HANDLER( fl_mcu_adc_r )
+{
+	if (offset & 1)
+		return 0;
+
+	switch (offset >> 1)
+	{
+	case 7: return readinputport(5);	/* ACCEL */
+	case 6: return fl_brake_port ? readinputport(fl_brake_port) : 0xff;
+	case 5: return readinputport(fl_wheel_port);	/* WHEEL */
+	}
+
+	return 0xff;
+}
+
+static ADDRESS_MAP_START( fl_mcu_map, ADDRESS_SPACE_PROGRAM, 16 )
+	AM_RANGE(0x002000, 0x002fff) AM_READWRITE( c352_0_r, c352_0_w )
+	AM_RANGE(0x004000, 0x00bfff) AM_READWRITE( fl_mcu_shared_r, fl_mcu_shared_w )
+	AM_RANGE(0x00c000, 0x00ffff) AM_ROM AM_REGION(REGION_USER4, 0x8c000)	/* internal BIOS */
+	AM_RANGE(0x200000, 0x27ffff) AM_ROM AM_REGION(REGION_USER4, 0)
+ADDRESS_MAP_END
+
+static ADDRESS_MAP_START( fl_mcu_io, ADDRESS_SPACE_IO, 8 )
+	AM_RANGE(M37710_PORT6, M37710_PORT6) AM_READWRITE( fl_mcu_port6_r, fl_mcu_port6_w )
+	AM_RANGE(M37710_PORT7, M37710_PORT7) AM_READ( fl_mcu_port7_r )
+	AM_RANGE(M37710_ADC0_L, M37710_ADC7_H) AM_READ( fl_mcu_adc_r )
+ADDRESS_MAP_END
+
+static ADDRESS_MAP_START( sysfl_mem, ADDRESS_SPACE_PROGRAM, 32 )
+	AM_RANGE(0x00000000, 0x000fffff) AM_READWRITE(MRA32_BANK1, MWA32_BANK1)
+	AM_RANGE(0x10000000, 0x100fffff) AM_READWRITE(MRA32_BANK2, MWA32_BANK2)
+	AM_RANGE(0x20000000, 0x201fffff) AM_ROM AM_REGION(REGION_USER1, 0)	/* data */
+	AM_RANGE(0x30000000, 0x30001fff) AM_RAM	AM_BASE((UINT32 **)&generic_nvram) AM_SIZE(&generic_nvram_size) /* nvram */
+	AM_RANGE(0x30100000, 0x30100003) AM_WRITE(namcofl_spritebank_w)
+	AM_RANGE(0x30284000, 0x3028bfff) AM_RAM	AM_BASE(&namcofl_mcuram) /* shared RAM with C75 MCU */
+	AM_RANGE(0x30300000, 0x30303fff) AM_RAM /* COMRAM */
+	AM_RANGE(0x30380000, 0x303800ff) AM_READ( fl_network_r )	/* network registers */
+	AM_RANGE(0x30400000, 0x3040ffff) AM_RAM AM_BASE(&paletteram32)
+	AM_RANGE(0x30800000, 0x3080ffff) AM_READWRITE(namco_tilemapvideoram32_le_r, namco_tilemapvideoram32_le_w )
+	AM_RANGE(0x30a00000, 0x30a0003f) AM_READWRITE(namco_tilemapcontrol32_le_r, namco_tilemapcontrol32_le_w )
+	AM_RANGE(0x30c00000, 0x30c1ffff) AM_READWRITE(namco_rozvideoram32_le_r,namco_rozvideoram32_le_w)
+	AM_RANGE(0x30d00000, 0x30d0001f) AM_READWRITE(namco_rozcontrol32_le_r,namco_rozcontrol32_le_w)
+	AM_RANGE(0x30e00000, 0x30e1ffff) AM_READWRITE(namco_obj32_le_r, namco_obj32_le_w)
+	AM_RANGE(0x30f00000, 0x30f0000f) AM_RAM /* NebulaM2 code says this is int enable at 0000, int request at 0004, but doesn't do much about it */
+	AM_RANGE(0x40000000, 0x4000005f) AM_READWRITE( namcofl_sysreg_r, namcofl_sysreg_w )
+	AM_RANGE(0xfffffffc, 0xffffffff) AM_READ( fl_unk1_r )
+ADDRESS_MAP_END
+
+INPUT_PORTS_START( speedrcr )
+	PORT_START	/* MISC */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_COIN2 )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_COIN1 )
+	PORT_SERVICE( 0x40, IP_ACTIVE_LOW )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_SERVICE1 ) // enters pages in test menu
+
+	PORT_START	/* IN0 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* IN1 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN ) // no gear button on this
+	PORT_DIPNAME( 0x20, 0x20, "Freeze Screen" )
+	PORT_DIPSETTING(    0x20, DEF_STR( Off ) )
+	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* IN2 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_BUTTON7 ) PORT_NAME("Weapon 3 / Test Menu Down")
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_BUTTON5 ) PORT_NAME("Weapon 1 / Test Menu Modify")
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_BUTTON6 ) PORT_NAME("Weapon 2 / Test Menu Up")
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_BUTTON3 ) PORT_NAME("Start / Jump")
+	PORT_START	/* IN3 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* ACCEL */
+	PORT_BIT( 0xff, 0x00, IPT_PEDAL ) PORT_MINMAX(0x00,0xff) PORT_SENSITIVITY(100) PORT_KEYDELTA(20)
+	/* no brake */
+
+	PORT_START	/* WHEEL */
+	PORT_BIT( 0xff, 0x80, IPT_PADDLE ) PORT_MINMAX(0x00,0xff) PORT_SENSITIVITY(100) PORT_KEYDELTA(4)
+INPUT_PORTS_END
+
+INPUT_PORTS_START( finalapr )
+	PORT_START	/* MISC */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_COIN2 )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_COIN1 )
+	PORT_SERVICE( 0x40, IP_ACTIVE_LOW )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_SERVICE1 )
+
+	PORT_START	/* IN0 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* IN1 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_BUTTON4 ) PORT_NAME("Shifter") PORT_TOGGLE // gear
+	PORT_DIPNAME( 0x20, 0x20, "Freeze Screen" )
+	PORT_DIPSETTING(    0x20, DEF_STR( Off ) )
+	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* IN2 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN ) // freezes the game
+	PORT_START	/* IN3 */
+	PORT_BIT( 0x01, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNKNOWN )
+	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
+
+	PORT_START	/* ACCEL */
+	PORT_BIT( 0xff, 0x00, IPT_PEDAL ) PORT_MINMAX(0x00,0xff) PORT_SENSITIVITY(100) PORT_KEYDELTA(6)
+
+	PORT_START	/* BRAKE */
+	PORT_BIT( 0xff, 0x00, IPT_PEDAL2 ) PORT_MINMAX(0x00,0xff) PORT_SENSITIVITY(100) PORT_KEYDELTA(6)
+
+	PORT_START	/* WHEEL */
+	PORT_BIT( 0xff, 0x80, IPT_PADDLE ) PORT_MINMAX(0x00,0xff) PORT_SENSITIVITY(100) PORT_KEYDELTA(6)
+INPUT_PORTS_END
+
+static const gfx_layout obj_layout =
+{
+	16,16,
+	RGN_FRAC(1,1),
+	8, /* bits per pixel */
+	{
+		/* plane offsets */
+		0,1,2,3,4,5,6,7,
+	},
+	{
+		0*16+8,1*16+8,0*16,1*16,
+		2*16+8,3*16+8,2*16,3*16,
+		4*16+8,5*16+8,4*16,5*16,
+		6*16+8,7*16+8,6*16,7*16
+	},
+	{
+		0x0*128,0x1*128,0x2*128,0x3*128,0x4*128,0x5*128,0x6*128,0x7*128,
+		0x8*128,0x9*128,0xa*128,0xb*128,0xc*128,0xd*128,0xe*128,0xf*128
+	},
+	16*128
+};
+
+static const gfx_layout tile_layout =
+{
+	8,8,
+	RGN_FRAC(1,1),
+	8,
+	{ 0,1,2,3,4,5,6,7 },
+	{ 0*8,1*8,2*8,3*8,4*8,5*8,6*8,7*8 },
+	{ 0*64,1*64,2*64,3*64,4*64,5*64,6*64,7*64 },
+	8*64
+};
+
+static const gfx_layout roz_layout =
+{
+	16,16,
+	RGN_FRAC(1,1),
+	8,
+	{ 0,1,2,3,4,5,6,7 },
+	{ 0*8,1*8,2*8,3*8,4*8,5*8,6*8,7*8,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 },
+	{
+		0*128,1*128,2*128,3*128,4*128,5*128,6*128,7*128,8*128,9*128,10*128,11*128,12*128,13*128,14*128,15*128
+	},
+	16*128
+};
+
+static const gfx_decode gfxdecodeinfo2[] =
+{
+	{ NAMCONB1_TILEGFXREGION,	0, &tile_layout,	0x1000, 0x08 },
+	{ NAMCONB1_SPRITEGFXREGION,	0, &obj_layout,		0x0000, 0x10 },
+	{ NAMCONB1_ROTGFXREGION,	0, &roz_layout,		0x1800, 0x08 },
+	{ -1 }
+};
+
+
+static INTERRUPT_GEN(namcofl_interrupt)
+{
+	int currentscanline=224-cpu_getiloops();
+	int v=(paletteram32[0x1808/4]>>16)&0xffff;
+	int triggerscanline=(((v>>8)&0xff)|((v&0xff)<<8))-(32+1);
+
+	if (triggerscanline==currentscanline)
+	{
+		force_partial_update(currentscanline);
+		cpunum_set_input_line(0, I960_IRQ1, ASSERT_LINE);
+	}
+
+
+	switch (cpu_getiloops())
+	{
+		case 0:
+			cpunum_set_input_line(0, I960_IRQ2, ASSERT_LINE); //VSYNC
+			break;
+		case 2:
+			cpunum_set_input_line(0, I960_IRQ0, ASSERT_LINE); //Network
+			break;
+	}
+}
+NAMCO_C7X_HARDWARE
+
+/* the NVRAM starts with the default settings of the set, calibration included
+   (the nvram region of the ROMs), or with all bits set if it has none */
+static NVRAM_HANDLER( namcofl )
+{
+	if (read_or_write)
+		mame_fwrite(file, generic_nvram, generic_nvram_size);
+	else if (file)
+		mame_fread(file, generic_nvram, generic_nvram_size);
+	else if (memory_region(REGION_USER5))
+		memcpy(generic_nvram, memory_region(REGION_USER5), generic_nvram_size);
+	else
+		memset(generic_nvram, 0xff, generic_nvram_size);
+}
+
+static MACHINE_DRIVER_START( sysfl )
+	MDRV_CPU_ADD(I960, 20000000)	// i80960KA-20 == 20 MHz part
+	MDRV_CPU_PROGRAM_MAP(sysfl_mem, 0)
+	MDRV_CPU_VBLANK_INT(namcofl_interrupt, 224)
+
+	MDRV_CPU_ADD_TAG("mcu", M37702, 16128000)
+	MDRV_CPU_PROGRAM_MAP(fl_mcu_map, 0)
+	MDRV_CPU_IO_MAP(fl_mcu_io, 0)
+	MDRV_CPU_VBLANK_INT(namcoc7x_interrupt, 2)
+
+	MDRV_FRAMES_PER_SECOND(60)
+	MDRV_INTERLEAVE(100)
+	MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
+
+	MDRV_NVRAM_HANDLER(namcofl)
+
+	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_UPDATE_AFTER_VBLANK/* | VIDEO_RGB_DIRECT*/)
+	MDRV_SCREEN_SIZE(NAMCONB1_COLS*8, NAMCONB1_ROWS*8) /* 288x224 pixels */
+	MDRV_VISIBLE_AREA(0*8, NAMCONB1_COLS*8-1, 0*8, NAMCONB1_ROWS*8-1)
+	MDRV_PALETTE_LENGTH(8192)
+
+	MDRV_GFXDECODE(gfxdecodeinfo2)
+
+	MDRV_VIDEO_START(namcofl)
+	MDRV_VIDEO_UPDATE(namcofl)
+
+	NAMCO_C7X_SOUND( 16384000 )
+MACHINE_DRIVER_END
+
+ROM_START( speedrcr )
+	ROM_REGION( 0x200000, REGION_CPU1, 0 ) // i960 program
+	ROM_LOAD32_WORD("se2_mp_ea4.19a",   0x000000, 0x080000, CRC(95ab3fd7) SHA1(273a536f8512f3c55260ac1b78533bc35b8390ed) )
+	ROM_LOAD32_WORD("se2_mp_oa4.18a",   0x000002, 0x080000, CRC(5b5ef1eb) SHA1(3e9e4abb1a32269baef772079de825dfe1ea230c) )
+
+	ROM_REGION( 0x200000, REGION_USER1, 0 ) // Data
+	ROM_LOAD32_BYTE("se1_dat0.13a",   0x000000, 0x080000, CRC(cc5d6ff5) SHA1(6fad40a1fac75bc64d3b7a7562cf7ce2a3abd36a) )
+	ROM_LOAD32_BYTE("se1_dat1.14a",   0x000001, 0x080000, CRC(ddc8b306) SHA1(f169d521b800c108deffdef9fc6b0058621ee909) )
+	ROM_LOAD32_BYTE("se1_dat2.15a",   0x000002, 0x080000, CRC(2a29abbb) SHA1(945419ed61e9a656a340214a63a01818396fbe98) )
+	ROM_LOAD32_BYTE("se1_dat3.16a",   0x000003, 0x080000, CRC(49849aff) SHA1(b7c7eea1d56304e40e996ee998c971313ff03614) )
+
+	ROM_REGION( 0x200000, NAMCONB1_ROTGFXREGION, 0 )	// "RCHAR" (roz characters)
+	ROM_LOAD("se1_rch0.19j",   0x000000, 0x100000, CRC(a0827288) SHA1(13691ef4d402a6dc91851de4f82cfbdf96d417cb) )
+	ROM_LOAD("se1_rch1.18j",   0x100000, 0x100000, CRC(af7609ad) SHA1(b16041f0eb47d7566011d9d762a3083411dc422e) )
+
+	ROM_REGION( 0x400000, NAMCONB1_TILEGFXREGION, 0 ) // "SCHAR" (regular BG characters)
+	ROM_LOAD("se1_sch0.21p",   0x000000, 0x100000, CRC(7b5cfad0) SHA1(5a0355e37eb191bc0cf8b6b7c3d0274560b9bbd5) )
+	ROM_LOAD("se1_sch1.20p",   0x100000, 0x100000, CRC(5086e0d3) SHA1(0aa7d11f4f9a75117e69cc77f1b73a68d9007aef) )
+	ROM_LOAD("se1_sch2.19p",   0x200000, 0x100000, CRC(e59a731e) SHA1(3fed72e9bb485d4d689ab51490360c4c6f1dc5cb) )
+	ROM_LOAD("se1_sch3.18p",   0x300000, 0x100000, CRC(f817027a) SHA1(71745476f496c60d89c8563b3e46bc85eebc79ce) )
+
+	ROM_REGION( 0x800000, NAMCONB1_SPRITEGFXREGION, 0 )	// OBJ
+	ROM_LOAD16_BYTE("se1obj0l.ic1", 0x000001, 0x200000, CRC(17585218) SHA1(3332afa9bd194ac37b8d6f352507c523a0f2e2b3) )
+	ROM_LOAD16_BYTE("se1obj0u.ic2", 0x000000, 0x200000, CRC(d14b1236) SHA1(e5447732ef3acec88fb7a00e0deca3e71a40ae65) )
+	ROM_LOAD16_BYTE("se1obj1l.ic3", 0x400001, 0x200000, CRC(c4809fd5) SHA1(e0b80fccc17c83fb9d08f7f1cf2cd2f0f3a510b4) )
+	ROM_LOAD16_BYTE("se1obj1u.ic4", 0x400000, 0x200000, CRC(0beefa56) SHA1(012fb7b330dbf851ab2217da0a0e7136ddc3d23f) )
+
+	ROM_REGION( 0x80000, NAMCONB1_ROTMASKREGION, 0 ) // "RSHAPE" (roz mask like NB-1?)
+	ROM_LOAD("se1_rsh.14k",    0x000000, 0x080000, CRC(f6408a1f) SHA1(3a299719090de3915331fc1ddbe0f41834da063a) )
+
+	ROM_REGION( 0x80000, NAMCONB1_TILEMASKREGION, 0 ) // "SSHAPE" (mask for other tiles?)
+	ROM_LOAD("se1_ssh.18u",    0x000000, 0x080000, CRC(cb534142) SHA1(935a377c72b3a815ed46dfdb6ea6734d312da373) )
+
+	ROM_REGION( 0x100000, REGION_USER4, 0 ) /* sound data and MCU BIOS */
+	ROM_LOAD("se1_spr.21l",   0x000000,  0x80000, CRC(850a27ac) SHA1(7d5db840ec67659a1f2e69a62cdb03ce6ee0b47b) )
+	BIOS_LOAD( "namcoc75", "c75.bin", 0x8c000, 0x4000, CRC(42f539a5) SHA1(3103e5a0a2867620309fd4fe478a2be0effbeff8) )
+
+	ROM_REGION( 0x400000, REGION_SOUND1, 0 ) // Samples
+	ROM_LOAD("se1_voi.23s",   0x000000, 0x400000, CRC(0cfa2d8a) SHA1(e029b39432cf35071eec8da27df8beeccd458eba) )
+
+	ROM_REGION( 0x2000, REGION_USER5, 0 ) // default settings, including calibration
+	ROM_LOAD("speedrcr.nv",   0x000000, 0x2000, CRC(58b41c70) SHA1(c30ea7f4951ce208781deafef8d99bdb4902e5b8) )
+ROM_END
+
+ROM_START( finalapr )
+	ROM_REGION( 0x200000, REGION_CPU1, 0 ) // i960 program
+	ROM_LOAD32_WORD("flr2_mp_eb.19a",   0x000000, 0x080000, CRC(8bfe615f) SHA1(7b867eb261268a83177f1f873689f77d1b6c47ca) )
+	ROM_LOAD32_WORD("flr2_mp_ob.18a",   0x000002, 0x080000, CRC(91c14e4f) SHA1(934a86daaef0e3e2c2b3066f4677ccb3aaab6eaf) )
+
+	ROM_REGION( 0x200000, REGION_USER1, ROMREGION_ERASEFF ) // Data
+
+	ROM_REGION( 0x200000, NAMCONB1_ROTGFXREGION, 0 )	// "RCHAR" (roz characters)
+	ROM_LOAD("flr1_rch0.19j",   0x000000, 0x100000, CRC(f413f50d) SHA1(cdd8073dda4feaea78e3b94520cf20a9799fd04d) )
+	ROM_LOAD("flr1_rch1.18j",   0x100000, 0x100000, CRC(4654d519) SHA1(f8bb473013cdca48dd98df0de2f78c300c156e91) )
+
+	ROM_REGION( 0x400000, NAMCONB1_TILEGFXREGION, 0 ) // "SCHAR" (regular BG characters)
+	ROM_LOAD("flr1_sch0.21p",   0x000000, 0x100000, CRC(7169efca) SHA1(66c7aa1b50b236b4700b07be0dca7aebdabedb8c) )
+	ROM_LOAD("flr1_sch1.20p",   0x100000, 0x100000, CRC(aa233a02) SHA1(0011329f585658d90f820daf0ba08ce2735bddfc) )
+	ROM_LOAD("flr1_sch2.19p",   0x200000, 0x100000, CRC(9b6b7abd) SHA1(5cdec70db1b46bc5d0866ca155b520157fef3adf) )
+	ROM_LOAD("flr1_sch3.18p",   0x300000, 0x100000, CRC(50a14f54) SHA1(ab9c2f2e11f006a9dc7e5aedd5788d7d67166d36) )
+
+	ROM_REGION( 0x800000, NAMCONB1_SPRITEGFXREGION, 0 )	// OBJ
+	ROM_LOAD16_BYTE("flr1_obj0l.ic1", 0x000001, 0x200000, CRC(364a902c) SHA1(4a1ea48eee86d410e36096cc100b4c9a5a645034) )
+	ROM_LOAD16_BYTE("flr1_obj0u.ic2", 0x000000, 0x200000, CRC(a5c7b80e) SHA1(4e0e863cfdd8c051c3c4594bb21e11fb93c28f0c) )
+	ROM_LOAD16_BYTE("flr1_obj1l.ic3", 0x400001, 0x200000, CRC(51fd8de7) SHA1(b1571c45e8c33d746716fd790c704a3361d02bdc) )
+	ROM_LOAD16_BYTE("flr1_obj1u.ic4", 0x400000, 0x200000, CRC(1737aa3c) SHA1(8eaf0dc5d60a270d2c1626f54f5edbddbb0a59c8) )
+
+	ROM_REGION( 0x80000, NAMCONB1_ROTMASKREGION, 0 ) // "RSHAPE" (roz mask like NB-1?)
+	ROM_LOAD("flr1_rsh.14k",    0x000000, 0x080000, CRC(037c0983) SHA1(c48574a8ad125cedfaf2538c5ff824e121204629) )
+
+	ROM_REGION( 0x80000, NAMCONB1_TILEMASKREGION, 0 ) // "SSHAPE" (mask for other tiles?)
+	ROM_LOAD("flr1_ssh.18u",    0x000000, 0x080000, CRC(f70cb2bf) SHA1(dbddda822287783a43415172b81d0382a8ac43d8) )
+
+	ROM_REGION( 0x100000, REGION_USER4, 0 ) /* sound data and MCU BIOS */
+	ROM_LOAD("flr1_spr.21l",   0x000000,  0x20000, CRC(69bb0f5e) SHA1(6831d618de42a165e508ad37db594d3aa290c530) )
+	BIOS_LOAD( "namcoc75", "c75.bin", 0x8c000, 0x4000, CRC(42f539a5) SHA1(3103e5a0a2867620309fd4fe478a2be0effbeff8) )
+
+	ROM_REGION( 0x200000, REGION_SOUND1, 0 ) // Samples
+	ROM_LOAD("flr1_voi.23s",   0x000000, 0x200000, CRC(ff6077cd) SHA1(73c289125ddeae3e43153e4c570549ca04501262) )
+
+	ROM_REGION( 0x2000, REGION_USER5, 0 ) // default settings, including calibration
+	ROM_LOAD("finalapr.nv",   0x000000, 0x2000, CRC(d51d65fe) SHA1(8a0a523cb6ba2880951e41ca04db23584f0a108c) )
+ROM_END
+
+ROM_START( finalapr1 )
+	ROM_REGION( 0x200000, REGION_CPU1, 0 ) // i960 program
+	ROM_LOAD32_WORD("flr2_mp_e.19a",   0x000000, 0x080000, CRC(cc8961ae) SHA1(08ce4d27a723101370d1c536b26256ce0d8a1b6c) )
+	ROM_LOAD32_WORD("flr2_mp_o.18a",   0x000002, 0x080000, CRC(8118f465) SHA1(c4b79878a82fd36b5707e92aa893f69c2b942d57) )
+
+	ROM_REGION( 0x200000, REGION_USER1, ROMREGION_ERASEFF ) // Data
+
+	ROM_REGION( 0x200000, NAMCONB1_ROTGFXREGION, 0 )	// "RCHAR" (roz characters)
+	ROM_LOAD("flr1_rch0.19j",   0x000000, 0x100000, CRC(f413f50d) SHA1(cdd8073dda4feaea78e3b94520cf20a9799fd04d) )
+	ROM_LOAD("flr1_rch1.18j",   0x100000, 0x100000, CRC(4654d519) SHA1(f8bb473013cdca48dd98df0de2f78c300c156e91) )
+
+	ROM_REGION( 0x400000, NAMCONB1_TILEGFXREGION, 0 ) // "SCHAR" (regular BG characters)
+	ROM_LOAD("flr1_sch0.21p",   0x000000, 0x100000, CRC(7169efca) SHA1(66c7aa1b50b236b4700b07be0dca7aebdabedb8c) )
+	ROM_LOAD("flr1_sch1.20p",   0x100000, 0x100000, CRC(aa233a02) SHA1(0011329f585658d90f820daf0ba08ce2735bddfc) )
+	ROM_LOAD("flr1_sch2.19p",   0x200000, 0x100000, CRC(9b6b7abd) SHA1(5cdec70db1b46bc5d0866ca155b520157fef3adf) )
+	ROM_LOAD("flr1_sch3.18p",   0x300000, 0x100000, CRC(50a14f54) SHA1(ab9c2f2e11f006a9dc7e5aedd5788d7d67166d36) )
+
+	ROM_REGION( 0x800000, NAMCONB1_SPRITEGFXREGION, 0 )	// OBJ
+	ROM_LOAD16_BYTE("flr1_obj0l.ic1", 0x000001, 0x200000, CRC(364a902c) SHA1(4a1ea48eee86d410e36096cc100b4c9a5a645034) )
+	ROM_LOAD16_BYTE("flr1_obj0u.ic2", 0x000000, 0x200000, CRC(a5c7b80e) SHA1(4e0e863cfdd8c051c3c4594bb21e11fb93c28f0c) )
+	ROM_LOAD16_BYTE("flr1_obj1l.ic3", 0x400001, 0x200000, CRC(51fd8de7) SHA1(b1571c45e8c33d746716fd790c704a3361d02bdc) )
+	ROM_LOAD16_BYTE("flr1_obj1u.ic4", 0x400000, 0x200000, CRC(1737aa3c) SHA1(8eaf0dc5d60a270d2c1626f54f5edbddbb0a59c8) )
+
+	ROM_REGION( 0x80000, NAMCONB1_ROTMASKREGION, 0 ) // "RSHAPE" (roz mask like NB-1?)
+	ROM_LOAD("flr1_rsh.14k",    0x000000, 0x080000, CRC(037c0983) SHA1(c48574a8ad125cedfaf2538c5ff824e121204629) )
+
+	ROM_REGION( 0x80000, NAMCONB1_TILEMASKREGION, 0 ) // "SSHAPE" (mask for other tiles?)
+	ROM_LOAD("flr1_ssh.18u",    0x000000, 0x080000, CRC(f70cb2bf) SHA1(dbddda822287783a43415172b81d0382a8ac43d8) )
+
+	ROM_REGION( 0x100000, REGION_USER4, 0 ) /* sound data and MCU BIOS */
+	ROM_LOAD("flr1_spr.21l",   0x000000,  0x20000, CRC(69bb0f5e) SHA1(6831d618de42a165e508ad37db594d3aa290c530) )
+	BIOS_LOAD( "namcoc75", "c75.bin", 0x8c000, 0x4000, CRC(42f539a5) SHA1(3103e5a0a2867620309fd4fe478a2be0effbeff8) )
+
+	ROM_REGION( 0x200000, REGION_SOUND1, 0 ) // Samples
+	ROM_LOAD("flr1_voi.23s",   0x000000, 0x200000, CRC(ff6077cd) SHA1(73c289125ddeae3e43153e4c570549ca04501262) )
+
+	ROM_REGION( 0x2000, REGION_USER5, 0 ) // default settings, including calibration
+	ROM_LOAD("finalapr.nv",   0x000000, 0x2000, CRC(d51d65fe) SHA1(8a0a523cb6ba2880951e41ca04db23584f0a108c) )
+ROM_END
+
+ROM_START( finalaprj )
+	ROM_REGION( 0x200000, REGION_CPU1, 0 ) // i960 program
+	ROM_LOAD32_WORD("flr1_mp_ec.19a",   0x000000, 0x080000, CRC(52735494) SHA1(db9873cb39bcfdd3dbe2e5079249fecac2c46df9) )
+	ROM_LOAD32_WORD("flr1_mp_oc.18a",   0x000002, 0x080000, CRC(b11fe577) SHA1(70b51a1e66a3bb92f027aad7ba0f358c0e139b3c) )
+
+	ROM_REGION( 0x200000, REGION_USER1, ROMREGION_ERASEFF ) // Data
+
+	ROM_REGION( 0x200000, NAMCONB1_ROTGFXREGION, 0 )	// "RCHAR" (roz characters)
+	ROM_LOAD("flr1_rch0.19j",   0x000000, 0x100000, CRC(f413f50d) SHA1(cdd8073dda4feaea78e3b94520cf20a9799fd04d) )
+	ROM_LOAD("flr1_rch1.18j",   0x100000, 0x100000, CRC(4654d519) SHA1(f8bb473013cdca48dd98df0de2f78c300c156e91) )
+
+	ROM_REGION( 0x400000, NAMCONB1_TILEGFXREGION, 0 ) // "SCHAR" (regular BG characters)
+	ROM_LOAD("flr1_sch0.21p",   0x000000, 0x100000, CRC(7169efca) SHA1(66c7aa1b50b236b4700b07be0dca7aebdabedb8c) )
+	ROM_LOAD("flr1_sch1.20p",   0x100000, 0x100000, CRC(aa233a02) SHA1(0011329f585658d90f820daf0ba08ce2735bddfc) )
+	ROM_LOAD("flr1_sch2.19p",   0x200000, 0x100000, CRC(9b6b7abd) SHA1(5cdec70db1b46bc5d0866ca155b520157fef3adf) )
+	ROM_LOAD("flr1_sch3.18p",   0x300000, 0x100000, CRC(50a14f54) SHA1(ab9c2f2e11f006a9dc7e5aedd5788d7d67166d36) )
+
+	ROM_REGION( 0x800000, NAMCONB1_SPRITEGFXREGION, 0 )	// OBJ
+	ROM_LOAD16_BYTE("flr1_obj0l.ic1", 0x000001, 0x200000, CRC(364a902c) SHA1(4a1ea48eee86d410e36096cc100b4c9a5a645034) )
+	ROM_LOAD16_BYTE("flr1_obj0u.ic2", 0x000000, 0x200000, CRC(a5c7b80e) SHA1(4e0e863cfdd8c051c3c4594bb21e11fb93c28f0c) )
+	ROM_LOAD16_BYTE("flr1_obj1l.ic3", 0x400001, 0x200000, CRC(51fd8de7) SHA1(b1571c45e8c33d746716fd790c704a3361d02bdc) )
+	ROM_LOAD16_BYTE("flr1_obj1u.ic4", 0x400000, 0x200000, CRC(1737aa3c) SHA1(8eaf0dc5d60a270d2c1626f54f5edbddbb0a59c8) )
+
+	ROM_REGION( 0x80000, NAMCONB1_ROTMASKREGION, 0 ) // "RSHAPE" (roz mask like NB-1?)
+	ROM_LOAD("flr1_rsh.14k",    0x000000, 0x080000, CRC(037c0983) SHA1(c48574a8ad125cedfaf2538c5ff824e121204629) )
+
+	ROM_REGION( 0x80000, NAMCONB1_TILEMASKREGION, 0 ) // "SSHAPE" (mask for other tiles?)
+	ROM_LOAD("flr1_ssh.18u",    0x000000, 0x080000, CRC(f70cb2bf) SHA1(dbddda822287783a43415172b81d0382a8ac43d8) )
+
+	ROM_REGION( 0x100000, REGION_USER4, 0 ) /* sound data and MCU BIOS */
+	ROM_LOAD("flr1_spr.21l",   0x000000,  0x20000, CRC(69bb0f5e) SHA1(6831d618de42a165e508ad37db594d3aa290c530) )
+	BIOS_LOAD( "namcoc75", "c75.bin", 0x8c000, 0x4000, CRC(42f539a5) SHA1(3103e5a0a2867620309fd4fe478a2be0effbeff8) )
+
+	ROM_REGION( 0x200000, REGION_SOUND1, 0 ) // Samples
+	ROM_LOAD("flr1_voi.23s",   0x000000, 0x200000, CRC(ff6077cd) SHA1(73c289125ddeae3e43153e4c570549ca04501262) )
+
+	ROM_REGION( 0x2000, REGION_USER5, 0 ) // default settings, including calibration
+	ROM_LOAD("finalapr.nv",   0x000000, 0x2000, CRC(d51d65fe) SHA1(8a0a523cb6ba2880951e41ca04db23584f0a108c) )
+ROM_END
+
+ROM_START( finalaprj1 )
+	ROM_REGION( 0x200000, REGION_CPU1, 0 ) // i960 program
+	ROM_LOAD32_WORD("flr1_mp_eb.19a",   0x000000, 0x080000, CRC(1a77bcc0) SHA1(4090917afcd0346ea78e6e307879a980cf196204) )
+	ROM_LOAD32_WORD("flr1_mp_ob.18a",   0x000002, 0x080000, CRC(5f64eb2b) SHA1(0011ceeedefcf16c333c7ab28f334dd228eac4cf) )
+
+	ROM_REGION( 0x200000, REGION_USER1, ROMREGION_ERASEFF ) // Data
+
+	ROM_REGION( 0x200000, NAMCONB1_ROTGFXREGION, 0 )	// "RCHAR" (roz characters)
+	ROM_LOAD("flr1_rch0.19j",   0x000000, 0x100000, CRC(f413f50d) SHA1(cdd8073dda4feaea78e3b94520cf20a9799fd04d) )
+	ROM_LOAD("flr1_rch1.18j",   0x100000, 0x100000, CRC(4654d519) SHA1(f8bb473013cdca48dd98df0de2f78c300c156e91) )
+
+	ROM_REGION( 0x400000, NAMCONB1_TILEGFXREGION, 0 ) // "SCHAR" (regular BG characters)
+	ROM_LOAD("flr1_sch0.21p",   0x000000, 0x100000, CRC(7169efca) SHA1(66c7aa1b50b236b4700b07be0dca7aebdabedb8c) )
+	ROM_LOAD("flr1_sch1.20p",   0x100000, 0x100000, CRC(aa233a02) SHA1(0011329f585658d90f820daf0ba08ce2735bddfc) )
+	ROM_LOAD("flr1_sch2.19p",   0x200000, 0x100000, CRC(9b6b7abd) SHA1(5cdec70db1b46bc5d0866ca155b520157fef3adf) )
+	ROM_LOAD("flr1_sch3.18p",   0x300000, 0x100000, CRC(50a14f54) SHA1(ab9c2f2e11f006a9dc7e5aedd5788d7d67166d36) )
+
+	ROM_REGION( 0x800000, NAMCONB1_SPRITEGFXREGION, 0 )	// OBJ
+	ROM_LOAD16_BYTE("flr1_obj0l.ic1", 0x000001, 0x200000, CRC(364a902c) SHA1(4a1ea48eee86d410e36096cc100b4c9a5a645034) )
+	ROM_LOAD16_BYTE("flr1_obj0u.ic2", 0x000000, 0x200000, CRC(a5c7b80e) SHA1(4e0e863cfdd8c051c3c4594bb21e11fb93c28f0c) )
+	ROM_LOAD16_BYTE("flr1_obj1l.ic3", 0x400001, 0x200000, CRC(51fd8de7) SHA1(b1571c45e8c33d746716fd790c704a3361d02bdc) )
+	ROM_LOAD16_BYTE("flr1_obj1u.ic4", 0x400000, 0x200000, CRC(1737aa3c) SHA1(8eaf0dc5d60a270d2c1626f54f5edbddbb0a59c8) )
+
+	ROM_REGION( 0x80000, NAMCONB1_ROTMASKREGION, 0 ) // "RSHAPE" (roz mask like NB-1?)
+	ROM_LOAD("flr1_rsh.14k",    0x000000, 0x080000, CRC(037c0983) SHA1(c48574a8ad125cedfaf2538c5ff824e121204629) )
+
+	ROM_REGION( 0x80000, NAMCONB1_TILEMASKREGION, 0 ) // "SSHAPE" (mask for other tiles?)
+	ROM_LOAD("flr1_ssh.18u",    0x000000, 0x080000, CRC(f70cb2bf) SHA1(dbddda822287783a43415172b81d0382a8ac43d8) )
+
+	ROM_REGION( 0x100000, REGION_USER4, 0 ) /* sound data and MCU BIOS */
+	ROM_LOAD("flr1_spr.21l",   0x000000,  0x20000, CRC(69bb0f5e) SHA1(6831d618de42a165e508ad37db594d3aa290c530) )
+	BIOS_LOAD( "namcoc75", "c75.bin", 0x8c000, 0x4000, CRC(42f539a5) SHA1(3103e5a0a2867620309fd4fe478a2be0effbeff8) )
+
+	ROM_REGION( 0x200000, REGION_SOUND1, 0 ) // Samples
+	ROM_LOAD("flr1_voi.23s",   0x000000, 0x200000, CRC(ff6077cd) SHA1(73c289125ddeae3e43153e4c570549ca04501262) )
+
+	ROM_REGION( 0x2000, REGION_USER5, 0 ) // default settings, including calibration
+	ROM_LOAD("finalapr.nv",   0x000000, 0x2000, CRC(d51d65fe) SHA1(8a0a523cb6ba2880951e41ca04db23584f0a108c) )
+ROM_END
+
+static void namcofl_common_init(void)
+{
+	namcofl_workram = auto_malloc(0x100000);
+
+	memory_set_bankptr( 1, memory_region(REGION_CPU1) );
+	memory_set_bankptr( 2, namcofl_workram );
+
+}
+
+static DRIVER_INIT(speedrcr)
+{
+	namcofl_common_init();
+	namcos2_gametype = NAMCOFL_SPEED_RACER;
+	fl_brake_port = 0;
+	fl_wheel_port = 6;
+}
+
+static DRIVER_INIT(finalapr)
+{
+	namcofl_common_init();
+	namcos2_gametype = NAMCOFL_FINAL_LAP_R;
+	fl_brake_port = 6;
+	fl_wheel_port = 7;
+}
+
+GAME( 1995, speedrcr,          0, sysfl, speedrcr, speedrcr, ROT0, "Namco", "Speed Racer", GAME_IMPERFECT_GRAPHICS )
+GAME( 1994, finalapr,          0, sysfl, finalapr, finalapr, ROT0, "Namco", "Final Lap R (Rev. B)", 0 )
+GAME( 1994, finalapr1,  finalapr, sysfl, finalapr, finalapr, ROT0, "Namco", "Final Lap R", 0 )
+GAME( 1994, finalaprj,  finalapr, sysfl, finalapr, finalapr, ROT0, "Namco", "Final Lap R (Japan Rev. C)", 0 )
+GAME( 1994, finalaprj1, finalapr, sysfl, finalapr, finalapr, ROT0, "Namco", "Final Lap R (Japan Rev. B)", 0 )

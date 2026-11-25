@@ -1,0 +1,67 @@
+AdvanceMAME and AdvanceMESS License and Copyright Notice
+========================================================
+
+Starting with version 6.0, AdvanceMAME and AdvanceMESS are distributed under
+the terms of the GNU General Public License, version 2 or (at your option)
+any later version (GPL-2.0+).
+
+Individual source files are licensed under the GPL-2.0+ or under
+GPL-compatible licenses (primarily BSD-3-Clause, LGPL-2.1+, MIT, Zlib,
+and Public Domain), as explicitly specified in the header of each source
+file:
+
+    // license:<License>
+    // copyright-holders:<Author(s)>
+
+The full text of the applicable licenses can be found in the `LICENSES/`
+directory.
+
+
+Good-Faith Relicensing Statement
+================================
+
+Following the MAME 0.172 relicensing effort, the AdvanceMAME and AdvanceMESS
+codebases have been audited against the official MAME relicensing records.
+The complete file-by-file license audit, copyright attribution mapping, and
+replacement plans are documented in the project's repository:
+
+    https://github.com/amadvance/advancemame/tree/master/support/relicense
+
+The MAME relicensing effort sought authorization from individual copyright
+holders to distribute their MAME contributions under standard open-source
+licenses.
+
+All source files and drivers originally covered by the legacy non-commercial
+MAME/MESS license whose copyright holders declined or could not be reached for
+GPL-compatible relicensing have been removed or replaced with clean,
+GPL-compatible rewrites backported from MAME.
+
+This relicensing and code replacement was carried out in good faith to ensure
+full compliance with the GNU General Public License. If you are a copyright
+holder and believe that any portion of your code included in AdvanceMAME or
+AdvanceMESS was not properly relicensed under a GPL-compatible license or has
+been attributed incorrectly, please contact the project maintainer or open an
+issue on the project repository. Any non-GPL-compatible code identified will be
+promptly removed or replaced with a clean GPL-compatible backport from MAME.
+
+
+AdvanceMAME and AdvanceMESS Portions
+====================================
+
+Copyright (c) 1999-2026, Andrea Mazzoleni. All rights reserved.
+
+The AdvanceMAME and AdvanceMESS core frontend, video/audio drivers, scale
+effects, and tools located in the `advance/` directory are free software; you
+can redistribute them and/or modify them under the terms of the GNU General
+Public License as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version (see `LICENSES/GPL-2.0`).
+
+
+MAME and MESS Portions
+======================
+
+The MAME and MESS emulation cores and drivers located in the `mame/` and
+`mess/` directories are distributed under GPL-compatible licenses.
+
+The specific license and copyright holders of each source file are
+identified in its header.

@@ -1,0 +1,7 @@
+# artefatos de build Android
+android-project/app/build/
+android-project/app/.cxx/
+android-project/.gradle/
+android-project/build/
+android-project/local.properties
+*.apk.idsig
