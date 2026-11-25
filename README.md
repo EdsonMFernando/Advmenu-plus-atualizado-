@@ -59,9 +59,10 @@ assim como qualquer projeto Android.
 
 ## Rodando
 
-Quando abre, o app mostra um **front-end no estilo do ES-DE (visao basica)**: a lista dos jogos
-disponiveis, navegavel por toque ou pelo d-pad de gamepad/teclado, e ao tocar (ou apertar A/Enter)
-inicia o `advmame` na ROM escolhida.
+Quando abre, o app mostra um **front-end no estilo do ES-DE**: carrossel de jogos com o item
+selecionado maior e os vizinhos esmaecidos, capa do jogo como fundo (quando existir), barra
+superior com relogio e o nome do sistema, e o contador de jogos no rodape. Navega por toque ou
+pelo d-pad de gamepad/teclado, e ao tocar (ou apertar A/Enter) inicia o `advmame` na ROM escolhida.
 
 O instalador extrai `assets/data` para o `filesDir` e cria os arquivos de configuracao em
 `/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`). Como o nome visual (capa) do jogo, se

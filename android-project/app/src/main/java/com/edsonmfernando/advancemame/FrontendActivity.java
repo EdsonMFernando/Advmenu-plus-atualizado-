@@ -6,27 +6,32 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
 /**
- * Front-end no estilo do ES-DE (visao basica): lista os jogos disponiveis em
- * $HOME/rom, navega por toque ou d-pad (D-pad para mover, A/Enter para jogar)
- * e inicia o AdvanceMAME na ROM escolhida.
+ * Front-end no estilo do ES-DE: carrossel de jogos (item selecionado maior,
+ * vizinhos esmaecidos), capa do jogo como fundo quando existir, barra
+ * superior com relogio e contagem de jogos. Navega por toque ou d-pad
+ * (D-pad move, A/Enter joga, B/Back volta). Inicia o AdvanceMAME na ROM.
  *
  * Capas opcionais (estilo "media" do ES-DE):
  *   Android/data/com.edsonmfernando.advancemame/files/media/&lt;rom&gt;.png|jpg|jpeg|webp
@@ -34,65 +39,145 @@ import java.util.Collections;
 public class FrontendActivity extends Activity {
 
     private static final int COR_FUNDO = Color.rgb(16, 24, 32);
-    private static final int COR_TITULO = Color.rgb(255, 255, 255);
-    private static final int COR_SUBTITULO = Color.rgb(138, 180, 200);
-    private static final int COR_TEXTO = Color.rgb(238, 238, 238);
-    private static final int COR_SELEC = Color.argb(60, 33, 150, 243);
+    private static final int COR_TEXTO = Color.rgb(255, 255, 255);
+    private static final int COR_NEIGHBOR = Color.rgb(120, 144, 156);
+    private static final int COR_DETALHE = Color.rgb(138, 180, 200);
 
+    private static final long WIPE_DELAY_MS = 250;
+
+    private FrameLayout root;
+    private TextView clockView;
+    private TextView countView;
+    private ListView list;
     private GameAdapter adapter;
+    private final Handler clockHandler = new Handler();
+    private final Runnable clockTick = new Runnable() {
+        @Override
+        public void run() {
+            updateClock();
+            clockHandler.postDelayed(this, 15000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AssetInstaller.install(this);
 
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
+        root = new FrameLayout(this);
         root.setBackgroundColor(COR_FUNDO);
-
-        LinearLayout head = new LinearLayout(this);
-        head.setOrientation(LinearLayout.VERTICAL);
-        head.setGravity(Gravity.CENTER);
-        int padHead = dp(16);
-        head.setPadding(padHead, padHead, padHead, dp(8));
-
-        TextView title = new TextView(this);
-        title.setText("ADVMENU PLUS");
-        title.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
-        title.setTextSize(30);
-        title.setTextColor(COR_TITULO);
-        title.setGravity(Gravity.CENTER);
-        head.addView(title);
-
-        TextView sub = new TextView(this);
-        sub.setTextColor(COR_SUBTITULO);
-        sub.setTextSize(13);
-        sub.setGravity(Gravity.CENTER);
-        head.addView(sub);
 
         adapter = new GameAdapter();
         adapter.load(this);
 
-        sub.setText(adapter.getCount() == 0
-                ? "Nenhum jogo. Copie seus ROMs em files/rom/"
-                : adapter.getCount() + " jogos  •  d-pad move, A joga");
-
         list = new ListView(this);
-        list.setSelector(new ColorDrawable(COR_SELEC));
         list.setAdapter(adapter);
+        list.setDivider(null);
+        list.setVerticalFadingEdgeEnabled(true);
+        list.setFadingEdgeLength(dp(48));
+        list.setVerticalScrollBarEnabled(false);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 launch(adapter.romAt(position));
             }
         });
+        list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                adapter.selected = position;
+                list.invalidateViews();
+                updateBackground(adapter.romAt(position));
+            }
 
-        root.addView(head);
-        root.addView(list, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        root.addView(list, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        int pad = dp(14);
+        LinearLayout topbar = new LinearLayout(this);
+        topbar.setOrientation(LinearLayout.VERTICAL);
+        topbar.setGravity(Gravity.CENTER_HORIZONTAL);
+        topbar.setPadding(pad, pad, pad, 0);
+
+        TextView title = new TextView(this);
+        title.setText("ADVMENU PLUS");
+        title.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        title.setTextSize(22);
+        title.setLetterSpacing(-0.01f);
+        title.setTextColor(COR_DETALHE);
+        title.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        topbar.addView(title);
+
+        TextView system = new TextView(this);
+        system.setText("ARCADE  •  ADVANCEMAME");
+        system.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        system.setTextSize(13);
+        system.setTextColor(COR_TEXTO);
+        system.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        topbar.addView(system);
+
+        root.addView(topbar, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
+
+        clockView = new TextView(this);
+        clockView.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        clockView.setTextSize(18);
+        clockView.setTextColor(COR_TEXTO);
+        clockView.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        clockView.setPadding(0, pad, pad, 0);
+        root.addView(clockView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END));
+
+        countView = new TextView(this);
+        countView.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        countView.setTextSize(13);
+        countView.setTextColor(COR_DETALHE);
+        countView.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        countView.setPadding(pad, 0, 0, pad);
+        root.addView(countView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
+
+        if (adapter.getCount() == 0) {
+            TextView empty = new TextView(this);
+            empty.setText("Nenhum jogo.\n\nCopie seus ROMs (zip) em\nAndroid/data/com.edsonmfernando.advancemame/files/rom/");
+            empty.setGravity(Gravity.CENTER);
+            empty.setTextSize(16);
+            empty.setTextColor(COR_NEIGHBOR);
+            root.addView(empty, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        }
+
         setContentView(root);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        list.post(new Runnable() {
+            @Override
+            public void run() {
+                if (adapter.getCount() > 0) {
+                    list.setSelection(0);
+                    updateBackground(adapter.romAt(0));
+                }
+                updateCount(0);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        clockHandler.post(clockTick);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        clockHandler.removeCallbacks(clockTick);
     }
 
     @Override
@@ -109,24 +194,60 @@ public class FrontendActivity extends Activity {
         }
     }
 
-    private void launch(String rom) {
-        startActivity(new Intent(this, MainActivity.class).putExtra("rom", rom));
+    private void updateClock() {
+        clockView.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
+    }
+
+    private void updateCount(int position) {
+        if (adapter.getCount() > 0) {
+            countView.setText((position + 1) + "/" + adapter.getCount());
+        }
+    }
+
+    private void updateBackground(String rom) {
+        updateCount(adapter.selected);
+        Bitmap cover = adapter.loadCover(rom, Math.max(
+                getResources().getDisplayMetrics().widthPixels / 2,
+                getResources().getDisplayMetrics().heightPixels / 2));
+        if (root.findViewWithTag("bg") != null) {
+            root.removeView((View) root.findViewWithTag("bg"));
+        }
+        if (cover == null) {
+            return;
+        }
+        ImageView bg = new ImageView(this);
+        bg.setTag("bg");
+        bg.setImageBitmap(cover);
+        bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        bg.setAlpha(0.20f);
+        root.addView(bg, 0, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    private void launch(final String rom) {
+        View wipe = new View(this);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        root.addView(wipe, lp);
+        wipe.setAlpha(0f);
+        wipe.animate().alpha(1f).setDuration(WIPE_DELAY_MS).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(FrontendActivity.this, MainActivity.class).putExtra("rom", rom));
+                overridePendingTransition(0, 0);
+            }
+        });
     }
 
     private int dp(int v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 
-    private static String prettyName(String fileName) {
-        int dot = fileName.lastIndexOf('.');
-        String name = dot > 0 ? fileName.substring(0, dot) : fileName;
-        return name.replace('_', ' ').toUpperCase();
-    }
-
     private final class GameAdapter extends BaseAdapter {
 
         private final ArrayList<String> roms = new ArrayList<>();
         private final ArrayList<String> titles = new ArrayList<>();
+        private int selected;
 
         void load(FrontendActivity act) {
             File romDir = new File(act.getFilesDir(), "rom");
@@ -166,33 +287,21 @@ public class FrontendActivity extends Activity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LinearLayout row = new LinearLayout(FrontendActivity.this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setGravity(Gravity.CENTER_VERTICAL);
-            int pad = dp(10);
-            row.setPadding(pad, pad, pad, pad);
-
-            Bitmap cover = loadCover(roms.get(position), dp(44));
-            if (cover != null) {
-                ImageView img = new ImageView(FrontendActivity.this);
-                img.setImageBitmap(cover);
-                img.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(44), dp(44));
-                lp.rightMargin = dp(10);
-                row.addView(img, lp);
-            }
-
             TextView tv = new TextView(FrontendActivity.this);
+            boolean sel = position == selected;
             tv.setText(titles.get(position));
-            tv.setTextSize(17);
-            tv.setTextColor(COR_TEXTO);
+            tv.setGravity(Gravity.CENTER);
             tv.setSingleLine(true);
-            row.addView(tv, new LinearLayout.LayoutParams(
-                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            return row;
+            tv.setTypeface(Typeface.create("sans-serif-condensed", sel ? Typeface.BOLD : Typeface.NORMAL));
+            tv.setTextSize(sel ? 24 : 16);
+            tv.setTextColor(sel ? COR_TEXTO : COR_NEIGHBOR);
+            tv.setShadowLayer(dp(2), 0, dp(1), Color.BLACK);
+            int pad = dp(sel ? 6 : 2);
+            tv.setPadding(dp(24), pad, dp(24), pad);
+            return tv;
         }
 
-        private Bitmap loadCover(String rom, int sizePx) {
+        private Bitmap loadCover(String rom, int maxPx) {
             String[] exts = {".png", ".jpg", ".jpeg", ".webp"};
             for (String ext : exts) {
                 File f = new File(new File(getFilesDir(), "media"), rom + ext);
@@ -203,7 +312,8 @@ public class FrontendActivity extends Activity {
                     BitmapFactory.Options opts = new BitmapFactory.Options();
                     opts.inJustDecodeBounds = true;
                     BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
-                    opts.inSampleSize = Math.max(1, Math.max(opts.outWidth, opts.outHeight) / (sizePx * 2));
+                    int bigger = Math.max(opts.outWidth, opts.outHeight);
+                    opts.inSampleSize = bigger > maxPx ? bigger / maxPx : 1;
                     opts.inJustDecodeBounds = false;
                     return BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
                 } catch (Throwable t) {
@@ -214,5 +324,9 @@ public class FrontendActivity extends Activity {
         }
     }
 
-    private ListView list;
+    private static String prettyName(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        String name = dot > 0 ? fileName.substring(0, dot) : fileName;
+        return name.replace('_', ' ').toUpperCase();
+    }
 }
