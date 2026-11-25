@@ -552,39 +552,7 @@ public class FrontendActivity extends Activity {
 
     /** Raizes de armazenamento: memoria interna emulada + cartao de memoria fisico. */
     private ArrayList<File> storageRoots() {
-        ArrayList<File> roots = new ArrayList<>();
-        File primary = Environment.getExternalStorageDirectory();
-        if (primary != null) {
-            roots.add(primary);
-        }
-        for (File f : getExternalFilesDirs(null)) {
-            File dir = f;
-            int depth = 0;
-            while (dir != null && depth < 5) {
-                if ("Android".equals(dir.getName())) {
-                    File vol = dir.getParentFile();
-                    if (vol != null && !roots.contains(vol)) {
-                        roots.add(vol);
-                    }
-                    break;
-                }
-                dir = dir.getParentFile();
-                ++depth;
-            }
-        }
-        String secondary = System.getenv("SECONDARY_STORAGE");
-        if (secondary != null) {
-            for (String p : secondary.split(":")) {
-                if (p.length() == 0) {
-                    continue;
-                }
-                File f = new File(p);
-                if (!roots.contains(f)) {
-                    roots.add(f);
-                }
-            }
-        }
-        return roots;
+        return AssetInstaller.storageRoots(this);
     }
 
     /**

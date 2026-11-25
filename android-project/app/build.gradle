@@ -48,3 +48,11 @@ android {
 dependencies {
     implementation 'androidx.core:core:1.13.1'
 }
+
+// Vendorizacao AUTOMATICA: `gradle assembleDebug' roda o sync-vendor sozinho
+// antes de compilar (o script e idempotente: depois da 1a vez e instantaneo).
+tasks.register('syncVendor', Exec) {
+    workingDir '..'
+    commandLine 'bash', 'tools/sync-vendor.sh'
+}
+preBuild.dependsOn 'syncVendor'

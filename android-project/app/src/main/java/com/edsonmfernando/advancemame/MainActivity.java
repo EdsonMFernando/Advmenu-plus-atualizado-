@@ -16,21 +16,18 @@ import java.util.ArrayList;
 /**
  * AdvanceMAME rodando sobre SDL2.
  *
- * Na primeira execucao extrai do APK os arquivos de dados e as ROMs livres
- * (gridlee, polyplay, robby) para o diretorio do aplicativo em
- * /data/data/com.edsonmfernando.advancemame/files, que tambem e usado
- * como $HOME pelo emulador ($HOME/.advance = configuracao; $HOME/rom = ROMs).
+ * $HOME = /data/data/com.edsonmfernando.advancemame/files
+ *   $HOME/.advance/advmame.rc  = configuracao do emulador (padrao no codigo:
+ *                                classe AdvConfig; ou advmenu.rc/.ini do cartao)
+ *   $HOME/.advance/advmenu.rc  = configuracao do menu classico (mesma base)
+ *   $HOME/rom                  = ROMs internas
  *
- * As pastas de ROMs do cartao de memoria (ex.: /sdcard/ROMs), passadas pelo
- * front-end no extra "romDirs", sao adicionadas ao `dir_rom' do
- * $HOME/.advance/advmame.rc para o emulador tambem enxerga-las.
+ * As pastas de ROMs do cartao de memoria (ex.: /sdcard/ROMs) passadas pelo
+ * front-end no extra "romDirs" sao injetadas no `dir_rom' (o padrão do
+ * AdvanceMAME aceita multiplas pastas separadas por ':').
  *
  * Para rodar um jogo especifico: adb shell am start -n \
  *   com.edsonmfernando.advancemame/.MainActivity --es rom gridlee
- *
- * ROMs adicionais podem ser copiadas para:
- *   /sdcard/ROMs/  (cartao de memoria)
- *   /data/data/com.edsonmfernando.advancemame/files/rom/
  */
 public class MainActivity extends SDLActivity {
 
@@ -56,9 +53,12 @@ public class MainActivity extends SDLActivity {
     }
 
     /**
-     * Escreve `dir_rom' no advmame.rc (multi-valor, separado por ':'):
-     * "rom" (diretorio interno) + as pastas de ROMs do cartao de memoria.
-     * Sobrescreve quaisquer `dir_rom' anteriores; as demais linhas sao mantidas.
+     * Gera .advance/advmame.rc e .advance/advmenu.rc a partir de, nesta ordem:
+     * 1. advmenu.rc/.ini (ou advmame.rc/.ini) na raiz do cartao de memoria —
+     *    reconhecido diretamente, sem script;
+     * 2. o advmame.rc ja existente (salvo pelo proprio emulador);
+     * 3. o padrao embutido no codigo (AdvConfig).
+     * Em qualquer caso, `dir_rom' e reescrito com "rom" + as pastas do cartao.
      */
     private void configureDirRom() {
         ArrayList<String> extra = getIntent() != null
@@ -74,29 +74,60 @@ public class MainActivity extends SDLActivity {
                 }
             }
         }
+        ArrayList<String> base = AssetInstaller.readCardConfig(this);
+        boolean fromCard = base != null;
         try {
             File advDir = new File(getFilesDir(), ".advance");
             advDir.mkdirs();
-            File rc = new File(advDir, "advmame.rc");
-            ArrayList<String> lines = new ArrayList<>();
-            if (rc.isFile()) {
-                BufferedReader in = new BufferedReader(new FileReader(rc));
-                for (String line; (line = in.readLine()) != null; ) {
-                    if (!line.trim().startsWith("dir_rom")) {
-                        lines.add(line);
+            if (base == null) {
+                File rc = new File(advDir, "advmame.rc");
+                if (rc.isFile()) {
+                    base = new ArrayList<>();
+                    BufferedReader in = new BufferedReader(new FileReader(rc));
+                    for (String line; (line = in.readLine()) != null; ) {
+                        base.add(line);
                     }
+                    in.close();
+                } else {
+                    base = splitLines(AdvConfig.ADVMAME_RC);
                 }
-                in.close();
+            }
+            ArrayList<String> lines = new ArrayList<>();
+            for (String line : base) {
+                if (!line.trim().startsWith("dir_rom")) {
+                    lines.add(line);
+                }
             }
             lines.add("dir_rom " + paths);
-            BufferedWriter out = new BufferedWriter(new FileWriter(rc));
-            for (String line : lines) {
-                out.write(line);
-                out.newLine();
+            writeRc(new File(advDir, "advmame.rc"), lines);
+            ArrayList<String> menuBase = fromCard ? base : splitLines(AdvConfig.ADVMENU_RC);
+            ArrayList<String> menuLines = new ArrayList<>();
+            for (String line : menuBase) {
+                if (!line.trim().startsWith("dir_rom")) {
+                    menuLines.add(line);
+                }
             }
-            out.close();
+            menuLines.add("dir_rom " + paths);
+            writeRc(new File(advDir, "advmenu.rc"), menuLines);
         } catch (IOException e) {
-            Log.e("AdvanceMAME", "erro configurando dir_rom", e);
+            Log.e("AdvanceMAME", "erro configurando advmame.rc/advmenu.rc", e);
         }
+    }
+
+    private static ArrayList<String> splitLines(String s) {
+        ArrayList<String> out = new ArrayList<>();
+        for (String line : s.split("\n")) {
+            out.add(line);
+        }
+        return out;
+    }
+
+    private static void writeRc(File rc, ArrayList<String> lines) throws IOException {
+        BufferedWriter out = new BufferedWriter(new FileWriter(rc));
+        for (String line : lines) {
+            out.write(line);
+            out.newLine();
+        }
+        out.close();
     }
 }
