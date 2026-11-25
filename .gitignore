@@ -5,3 +5,6 @@ android-project/.gradle/
 android-project/build/
 android-project/local.properties
 *.apk.idsig
+
+# arvore vendor do HBMAME (port nativo; baixada por sync-hbmame.sh)
+hbmame/
