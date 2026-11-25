@@ -1856,13 +1856,22 @@ public class FrontendActivity extends Activity {
         return null;
     }
 
-    /** App de pinball (Zen/Farsight/VPX) instalado: casa por prefixo de pacote. */
+    /** Emulador instalado: casa por prefixo de pacote OU pelo nome do app
+     *  (apanha forks como SharpEmu/AnyPS5 que usam applicationId generico). */
     private String pinballAppPackage(String prefix) {
         PackageManager pm = getPackageManager();
+        String pre = prefix.toLowerCase(Locale.US);
         try {
             for (android.content.pm.PackageInfo pi : pm.getInstalledPackages(0)) {
                 String p = pi.packageName.toLowerCase(Locale.US);
-                if (p.startsWith(prefix.toLowerCase(Locale.US))
+                CharSequence lbl = null;
+                try {
+                    lbl = pm.getApplicationLabel(pi.applicationInfo);
+                } catch (Throwable ignored) {
+                }
+                boolean labelHit = lbl != null
+                        && lbl.toString().toLowerCase(Locale.US).contains(pre);
+                if ((p.startsWith(pre) || labelHit)
                         && pm.getLaunchIntentForPackage(pi.packageName) != null) {
                     return pi.packageName;
                 }
@@ -1924,14 +1933,14 @@ public class FrontendActivity extends Activity {
             }
         }
         if ("ps4".equals(sysKey)) {
-            String[] ps4 = {"bachata", "shadps4", "shandroid", "sharp", "kyty", "shad"};
+            String[] ps4 = {"bachata", "shadps4", "shandroid", "sharpemu", "sharp", "kyty", "shad"};
             String shad = findEmuByPrefixes(ps4);
             if (shad != null) {
                 pkg = shad;
             }
         }
         if ("ps5".equals(sysKey)) {
-            String[] ps5 = {"kyty", "ps5droid", "sharp", "omniemu", "shad"};
+            String[] ps5 = {"kyty", "ps5droid", "sharpemu", "sharp", "omniemu", "anyps5", "shad"};
             String x = findEmuByPrefixes(ps5);
             if (x != null) {
                 pkg = x;

@@ -180,7 +180,7 @@ todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
 | OpenBOR | OpenBOR (`org.openbor.engine`) | leve (2D), roda bem; mods `.pak` escolhidos dentro do app |
 | MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
 | TeknoParrot | via **Winlator** | experimental: nao existe versao Android; todo Windows emulado |
-| PS4 / PS5 | **nao existe emulador Android** | impossivel hoje (emuladores "PS4" na Play Store sao falsos) |
+| PS4 / PS5 | PS4: ports experimentais de shadPS4 (Bachata-S4, shandroidPS4, SharpEmu) — PS5: Kyty/PS5Droid/OmniEmu/AnyPS5 | experimental: poucos jogos rodam, exige aparelho forte; a rota abre o emulador instalado pela pasta `ps4/` ou `ps5/` |
 | Switch 2 | **nao existe emulador utilizavel** | emulacao do Switch 2 esta no comeco mesmo no PC |
 
 O Advmenu Plus ABRE esses apps — a configuracao dos jogos (BIOS/keys/ firmware, pastas
