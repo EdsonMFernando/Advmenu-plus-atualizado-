@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Preparar vendor (AdvanceMAME, SDL2, tabelas 68000)
-        run: android-project/tools/sync-vendor.sh
+        run: bash android-project/tools/sync-vendor.sh
 
       - name: Instalar JDK 17
         uses: actions/setup-java@v4
