@@ -19,14 +19,15 @@ apply_patch() {
       || echo "(patch $f ja aplicado)"
 }
 
-# 1. AdvanceMAME (nucleo + advance + alien)
+# 1. AdvanceMAME (nucleo + advance + alien) — tarball do commit fixado
 if [ ! -d advancemame ]; then
-    git clone -q https://github.com/amadvance/advancemame.git advancemame
+    rm -rf /tmp/advm
+    mkdir -p /tmp/advm
+    curl -fsSL "https://github.com/amadvance/advancemame/archive/$ADV_REV.tar.gz" -o /tmp/advm/a.tgz \
+      || wget -qO /tmp/advm/a.tgz "https://github.com/amadvance/advancemame/archive/$ADV_REV.tar.gz"
+    tar -xzf /tmp/advm/a.tgz -C /tmp/advm
+    mv "/tmp/advm/advancemame-$ADV_REV" advancemame
 fi
-# busca o commit fixado exato (evita falha de arvores parciais em clones recentes)
-git -C advancemame fetch -q --depth 1 origin "$ADV_REV" \
-  && git -C advancemame checkout -q --detach "${ADV_REV}" \
-  || git -C advancemame checkout -q "$ADV_REV"
 
 # 2. miniz (gerado pelo cmake dele em builds normais; aqui usamos estatico via CMakeLists)
 if [ ! -f advancemame/alien/deps/miniz-3.1.2/miniz.h ]; then
