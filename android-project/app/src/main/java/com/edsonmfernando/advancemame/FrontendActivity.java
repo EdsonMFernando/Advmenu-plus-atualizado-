@@ -1722,7 +1722,8 @@ public class FrontendActivity extends Activity {
     /** Sistemas de Windows: varrem mais fundo (jogos ficam aninhados de verdade). */
     private static final HashSet<String> PC_SCAN_SYSTEMS = new HashSet<>(java.util.Arrays.asList(
             "pc", "windows", "winlator", "mugen", "teknoparrot", "taitotypex", "typex",
-            "nesicaxlive", "nesica", "lindbergh", "coinops", "dos", "pcdos"));
+            "nesicaxlive", "nesica", "lindbergh", "coinops", "dos", "pcdos",
+            "pinballfx", "pinballfx2", "pinballfx3", "pinballarcade", "futurepinball"));
 
     /** Exes de instalacao/limpeza que nao sao jogos. */
     private static final String[] EXE_SKIP = {
@@ -1849,6 +1850,14 @@ public class FrontendActivity extends Activity {
 
     /** Abre o jogo no emulador do sistema (app preferido) ou, se nao houver, no registrado para o tipo de arquivo. */
     private void openGameFile(File f, String sysKey) {
+        String nl = f.getName().toLowerCase(Locale.US);
+        if (nl.endsWith(".exe") && sysKey != null
+                && (sysKey.startsWith("pinballfx") || "pinballarcade".equals(sysKey)
+                        || "futurepinball".equals(sysKey))) {
+            if (launchWinlatorCombo(f)) {
+                return;
+            }
+        }
         String pkg = sysKey == null ? null : SYSTEM_PACKAGES.get(sysKey);
         if ("pinball".equals(sysKey)) {
             String vpx = pinballPackage();
