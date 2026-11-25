@@ -218,13 +218,19 @@ sistema ja tem nucleo pronto — sem baixar nem compilar nada separado.
 ### Controles (tela + gamepad fisico)
 
 - **Controle digital na tela:** o botao **CONTROLE** (canto inferior-esquerdo do menu)
-  mostra/oculta um d-pad + A/B na tela, que navegam o menu como se fosse gamepad. O
-  estado (visivel/oculto) fica salvo — abre na ultima escolha.
+  mostra/oculta o gamepad na tela, no estilo do mockup: d-pad VERMELHO com centro
+  redondo `A` na esquerda e botoes REDONDOS AZUIS `X Y A B` na direita (navegam o menu;
+  `X`/`Y` sobem/descem paginas da lista). O estado (visivel/oculto) fica salvo e abre
+  na ultima escolha.
 - **Gamepad fisico USB/Bluetooth/Type-C/adaptador WiFi** (PS DualShock/DualSense, Xbox,
   genéricos): Android entrega o controle pro app sem instalar nada — no menu, o
-  direcional navega, botao A/Enter confirma, B volta; nos jogos do ARCADE embutido, o
-  SDL2 do AdvanceMAME reconhece o gamepad automaticamente; nos emuladores externos
-  (RetroArch, PPSSPP etc.) o mapeamento e feito dentro de cada app.
+  direcional navega, botao A/Enter confirma, B volta.
+- **Mapeamento fisico:** toque LONGO no botao **CONTROLE** abre o mapeador — escolha
+  CIMA/BAIXO/ESQUERDA/DIREITA/A/B e aperte a tecla desejada no seu gamepad fisico; o
+  menu passa a usar suas teclas (fica salvo). Nos jogos do ARCADE embutido, o SDL2 do
+  AdvanceMAME reconhece o gamepad automaticamente; nos emuladores externos (RetroArch,
+  PPSSPP etc.) o mapeamento in-game e feito dentro de cada app (e o padrao Android
+  ja reconhece controles PS/Xbox direto).
 - **Nada para instalar:** o front-end em si e standalone — reconhece jogos, pastas de
   sistema e controles sozinho; so os sistemas que precisam de emulador externo usam o
   app externo escolhido.

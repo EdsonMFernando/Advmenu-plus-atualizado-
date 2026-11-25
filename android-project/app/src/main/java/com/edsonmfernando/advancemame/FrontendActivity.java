@@ -384,6 +384,13 @@ public class FrontendActivity extends Activity {
                 togglePad();
             }
         });
+        padBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                showKeyMapDialog();
+                return true;
+            }
+        });
         padToggle = padBtn;
 
         updateEmptyState();
@@ -392,6 +399,7 @@ public class FrontendActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences("advmenu", Context.MODE_PRIVATE);
         boolean padOn = prefs.getBoolean("pad", false);
+        loadKeyMap();
         padView = buildPadView();
         FrameLayout.LayoutParams plp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -489,46 +497,105 @@ public class FrontendActivity extends Activity {
         emuButton = btn;
     }
 
-    /** D-pad + A/B na tela, dispara as mesmas teclas de um gamepad fisico no menu. */
+    /** D-pad vermelho com centro redondo (esquerda) + botoes redondos azuis (direita). */
     private View buildPadView() {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(dp(10), dp(6), dp(6), dp(6));
-        row.setBackgroundColor(Color.argb(110, 20, 30, 42));
+        FrameLayout overlay = new FrameLayout(this);
 
         LinearLayout cross = new LinearLayout(this);
         cross.setOrientation(LinearLayout.VERTICAL);
         cross.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout mid = new LinearLayout(this);
         mid.setOrientation(LinearLayout.HORIZONTAL);
-        cross.addView(padBtn("^", KeyEvent.KEYCODE_DPAD_UP));
-        mid.addView(padBtn("<", KeyEvent.KEYCODE_DPAD_LEFT));
-        mid.addView(padBtn(">", KeyEvent.KEYCODE_DPAD_RIGHT));
+        mid.setGravity(Gravity.CENTER_VERTICAL);
+        cross.addView(padArrow("\u25B2", KeyEvent.KEYCODE_DPAD_UP));
+        mid.addView(padArrow("\u25C0", KeyEvent.KEYCODE_DPAD_LEFT));
+        mid.addView(padCenter());
+        mid.addView(padArrow("\u25B6", KeyEvent.KEYCODE_DPAD_RIGHT));
         cross.addView(mid);
-        cross.addView(padBtn("v", KeyEvent.KEYCODE_DPAD_DOWN));
-        row.addView(cross);
+        cross.addView(padArrow("\u25BC", KeyEvent.KEYCODE_DPAD_DOWN));
+        FrameLayout.LayoutParams clp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.START);
+        clp.leftMargin = dp(10);
+        clp.bottomMargin = dp(6);
+        overlay.addView(cross, clp);
 
-        TextView a = padBtn("A", KeyEvent.KEYCODE_DPAD_CENTER);
-        TextView b = padBtn("B", KeyEvent.KEYCODE_BACK);
-        LinearLayout ab = new LinearLayout(this);
-        ab.setOrientation(LinearLayout.VERTICAL);
-        ab.setGravity(Gravity.CENTER);
-        ab.addView(a);
-        ab.addView(b);
-        row.addView(ab);
-        return row;
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.VERTICAL);
+        buttons.setGravity(Gravity.CENTER);
+        LinearLayout r1 = new LinearLayout(this);
+        r1.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout r2 = new LinearLayout(this);
+        r2.setOrientation(LinearLayout.HORIZONTAL);
+        r1.addView(padRound("X", KeyEvent.KEYCODE_PAGE_UP));
+        r1.addView(padRound("Y", KeyEvent.KEYCODE_PAGE_DOWN));
+        r2.addView(padRound("A", KeyEvent.KEYCODE_DPAD_CENTER));
+        r2.addView(padRound("B", KeyEvent.KEYCODE_BACK));
+        buttons.addView(r1);
+        buttons.addView(r2);
+        FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        blp.rightMargin = dp(10);
+        blp.bottomMargin = dp(6);
+        overlay.addView(buttons, blp);
+        return overlay;
     }
 
-    private TextView padBtn(String label, final int keyCode) {
+    private TextView padArrow(String arrow, final int keyCode) {
         final TextView b = new TextView(this);
-        b.setText(label);
-        b.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
-        b.setTextSize(18);
-        b.setTextColor(COR_TEXTO);
+        b.setText(arrow);
+        b.setTextSize(30);
+        b.setTextColor(Color.rgb(220, 40, 40));
+        b.setGravity(Gravity.CENTER);
+        int s = dp(44);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(s, s);
+        b.setLayoutParams(lp);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendKey(keyCode);
+            }
+        });
+        return b;
+    }
+
+    private TextView padCenter() {
+        final TextView b = new TextView(this);
         b.setGravity(Gravity.CENTER);
         int s = dp(46);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(s, s);
         b.setLayoutParams(lp);
+        android.graphics.drawable.GradientDrawable bg =
+                new android.graphics.drawable.GradientDrawable();
+        bg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        bg.setColor(Color.rgb(204, 32, 32));
+        b.setBackground(bg);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
+            }
+        });
+        return b;
+    }
+
+    private TextView padRound(final String label, final int keyCode) {
+        final TextView b = new TextView(this);
+        b.setText(label);
+        b.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        b.setTextSize(16);
+        b.setTextColor(Color.WHITE);
+        b.setGravity(Gravity.CENTER);
+        int s = dp(52);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(s, s);
+        lp.setMargins(dp(4), dp(4), dp(4), dp(4));
+        b.setLayoutParams(lp);
+        android.graphics.drawable.GradientDrawable bg =
+                new android.graphics.drawable.GradientDrawable();
+        bg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        bg.setColor(Color.argb(215, 42, 106, 204));
+        b.setBackground(bg);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -555,18 +622,65 @@ public class FrontendActivity extends Activity {
                 .edit().putBoolean("pad", visible).apply();
     }
 
+    /** Mapeamento do gamepad fisico (menu): aperte CONTROLE por tempo longo para mapear. */
+    private static final String[] PAD_ACTIONS = {
+            "CIMA", "BAIXO", "ESQUERDA", "DIREITA", "A (CONFIRMAR)", "B (VOLTAR)",
+    };
+    private int mapTarget = -1;
+    private final int[] keyMap = {
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B,
+    };
+
+    private void showKeyMapDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("MAPEAR GAMEPAD F\u00cdSICO")
+                .setItems(PAD_ACTIONS, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface d, int which) {
+                        mapTarget = which;
+                        android.widget.Toast.makeText(FrontendActivity.this,
+                                "Aperte no gamepad a tecla para " + PAD_ACTIONS[which],
+                                android.widget.Toast.LENGTH_LONG).show();
+                    }
+                })
+                .show();
+    }
+
+    private void loadKeyMap() {
+        SharedPreferences p = getSharedPreferences("advmenu", Context.MODE_PRIVATE);
+        for (int i = 0; i < keyMap.length; i++) {
+            keyMap[i] = p.getInt("map" + i, keyMap[i]);
+        }
+    }
+
+    private int actionForKey(int keyCode) {
+        for (int i = 0; i < keyMap.length; i++) {
+            if (keyMap[i] == keyCode) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (list == null) {
-            return super.onKeyDown(keyCode, event);
-        }
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_A || keyCode == KeyEvent.KEYCODE_ENTER) {
-            sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
+        if (mapTarget >= 0) {
+            keyMap[mapTarget] = keyCode;
+            getSharedPreferences("advmenu", Context.MODE_PRIVATE).edit()
+                    .putInt("map" + mapTarget, keyCode).apply();
+            mapTarget = -1;
             return true;
         }
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_B) {
-            onBackPressed();
-            return true;
+        if (list != null) {
+            int act = actionForKey(keyCode);
+            if (act == 0) { sendKey(KeyEvent.KEYCODE_DPAD_UP); return true; }
+            if (act == 1) { sendKey(KeyEvent.KEYCODE_DPAD_DOWN); return true; }
+            if (act == 2) { sendKey(KeyEvent.KEYCODE_DPAD_LEFT); return true; }
+            if (act == 3) { sendKey(KeyEvent.KEYCODE_DPAD_RIGHT); return true; }
+            if (act == 4) { sendKey(KeyEvent.KEYCODE_DPAD_CENTER); return true; }
+            if (act == 5) { onBackPressed(); return true; }
         }
         return super.onKeyDown(keyCode, event);
     }
