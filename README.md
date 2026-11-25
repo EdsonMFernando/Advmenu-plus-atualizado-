@@ -303,6 +303,27 @@ sistema ja tem nucleo pronto — sem baixar nem compilar nada separado.
   sistema e controles sozinho; so os sistemas que precisam de emulador externo usam o
   app externo escolhido.
 
+### Compatibilidade de aparelhos (controle embutido ou nao)
+
+O Advmenu Android funciona em **qualquer aparelho Android**, com 4 ABIs buildadas
+(arm64-v8a, armeabi-v7a, x86_64, x86) — cobre Mali/MediaTek, Snapdragon, Exynos,
+Tensor, Unisoc e tambem x86.
+
+- **Consoles portateis Android** (Anbernic RG*, Powkiddy, Retroid Pocket, Miyoo com
+  Android, modelos Shopee genéricos), **com gamepad embutido ou sem**: o front-end detecta
+  o gamepad via Android (`InputDevice/gamepad/joystick/dpad`); com controle fisico
+  presente o controle virtual SOME e fica so a engrenagem ⚙ de CONFIGURACAO; sem,
+  o controle virtual volta.
+- **Smartphones/tablets** Mali/MediaTek/Snapdragon/qualquer SoC: igual.
+- **Controle fisico nos emuladores:** no menu do Advmenu o mapeamento da engrenagem
+  vale; nos emuladores externos o Android entrega o gamepad direto ao app em foco —
+  RetroArch, PPSSPP, Dolphin, Eden, AetherSX2, Winlator e OpenBOR reconhecem padroes
+  PS/Xbox/genéricos automaticamente, sem instalar nada (a configuracao fina dentro
+  desses apps e de cada um; apps fechados nao aceitam configuracao externa.
+- **ROG Ally, Legion Go, Steam Deck:** NAO sao Android (sao Windows/SteamOS), um APK
+  nao roda nativo neles; nesses e preciso uma camada Android (ex.: emulador de Android
+  no Windows / Waydroid no SteamOS) sem garantia — o alvo real e Android puro.
+
 ### HBMAME 0.289 (duas vias)
 
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
