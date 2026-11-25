@@ -287,6 +287,8 @@ public class FrontendActivity extends Activity {
     private SystemEntry currentSystem;
     private TextView favToggle;
     private TextView sysToggle;
+    private TextView gearBtn;
+    private android.hardware.input.InputManager.InputDeviceListener deviceListener;
 
     private FrameLayout root;
     private TextView clockView;
@@ -517,6 +519,48 @@ public class FrontendActivity extends Activity {
         tlp.bottomMargin = dp(40);
         root.addView(padToggle, tlp);
 
+        TextView gear = new TextView(this);
+        gear.setText("\u2699");
+        gear.setTextSize(16);
+        gear.setTextColor(COR_DETALHE);
+        gear.setAlpha(0.6f);
+        gear.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        gear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSettingsMenu();
+            }
+        });
+        FrameLayout.LayoutParams glp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.START);
+        glp.leftMargin = dp(8);
+        glp.topMargin = dp(6);
+        root.addView(gear, glp);
+        gearBtn = gear;
+
+        android.hardware.input.InputManager im =
+                (android.hardware.input.InputManager) getSystemService(Context.INPUT_SERVICE);
+        if (im != null) {
+            deviceListener = new android.hardware.input.InputManager.InputDeviceListener() {
+                @Override
+                public void onInputDeviceAdded(int deviceId) {
+                    updateControllerUi();
+                }
+
+                @Override
+                public void onInputDeviceRemoved(int deviceId) {
+                    updateControllerUi();
+                }
+
+                @Override
+                public void onInputDeviceChanged(int deviceId) {
+                    updateControllerUi();
+                }
+            };
+            im.registerInputDeviceListener(deviceListener, null);
+        }
+
         if (!storageGranted) {
             requestStoragePermission();
         }
@@ -540,6 +584,7 @@ public class FrontendActivity extends Activity {
         super.onResume();
         clockHandler.post(clockTick);
         snapshotHost.resume();
+        updateControllerUi();
         boolean granted = hasStoragePermission();
         if (granted != storageGranted) {
             storageGranted = granted;
@@ -892,6 +937,80 @@ public class FrontendActivity extends Activity {
                             }
                         })
                 .show();
+    }
+
+    /** Controle fisico conectado (gamepad USB/Bluetooth/Type-C/WiFi ou handheld Android)? */
+    private boolean hasPhysicalController() {
+        int[] ids = android.view.InputDevice.getDeviceIds();
+        for (int id : ids) {
+            android.view.InputDevice d = android.view.InputDevice.getDevice(id);
+            if (d == null || d.isVirtual()) {
+                continue;
+            }
+            int src = d.getSources();
+            if ((src & android.view.InputDevice.SOURCE_GAMEPAD) != 0
+                    || (src & android.view.InputDevice.SOURCE_JOYSTICK) != 0
+                    || (src & android.view.InputDevice.SOURCE_DPAD) != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Com controle fisico conectado o controle virtual some (fica so a engrenagem
+     * de configuracao no canto); sem controle, volta como estava nas preferencias.
+     */
+    private void updateControllerUi() {
+        if (padView == null || padToggle == null || gearBtn == null) {
+            return;
+        }
+        boolean phys = hasPhysicalController();
+        if (phys) {
+            padView.setVisibility(View.GONE);
+            padToggle.setVisibility(View.GONE);
+            gearBtn.setAlpha(1f);
+        } else {
+            padToggle.setVisibility(View.VISIBLE);
+            boolean padOn = getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                    .getBoolean("pad", false);
+            padView.setVisibility(padOn ? View.VISIBLE : View.GONE);
+            padToggle.setAlpha(padOn ? 1f : 0.45f);
+            gearBtn.setAlpha(0.6f);
+        }
+    }
+
+    /** Menu de configuracao (engrenagem) no estilo do EmulationStation. */
+    private void showSettingsMenu() {
+        final ArrayList<String> labels = new ArrayList<>();
+        labels.add("TEMA (EMULATIONSTATION)...");
+        labels.add("CONTROLE VIRTUAL: "
+                + (padView != null && padView.getVisibility() == View.VISIBLE
+                        ? "LIGADO" : "DESLIGADO"));
+        labels.add("MAPEAR GAMEPAD FISICO...");
+        labels.add("SISTEMAS / EMULADORES");
+        labels.add("FAVORITOS: " + (showFavs ? "LIGADO" : "DESLIGADO"));
+        labels.add(hasPhysicalController()
+                ? "GAMEPAD FISICO: DETECTADO" : "GAMEPAD FISICO: NAO DETECTADO");
+        labels.add("RECARREGAR JOGOS");
+        themedDialog("CONFIGURACAO", labels, new android.content.DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(android.content.DialogInterface dialog, int which) {
+                if (which == 0) {
+                    showThemePicker();
+                } else if (which == 1) {
+                    togglePad();
+                } else if (which == 2) {
+                    showKeyMapDialog();
+                } else if (which == 3) {
+                    toggleSystemsView();
+                } else if (which == 4) {
+                    toggleFavs();
+                } else if (which == 6) {
+                    reloadGames();
+                }
+            }
+        });
     }
 
     @Override

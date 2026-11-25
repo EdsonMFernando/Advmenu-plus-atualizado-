@@ -282,6 +282,14 @@ sistema ja tem nucleo pronto — sem baixar nem compilar nada separado.
   redondo `A` na esquerda e botoes REDONDOS AZUIS `X Y A B` na direita (navegam o menu;
   `X`/`Y` sobem/descem paginas da lista). O estado (visivel/oculto) fica salvo e abre
   na ultima escolha.
+- **Controle fisico conectado = controle virtual SOME sozinho:** quando o app detecta um
+  gamepad/joystick fisico (USB, Bluetooth, Type-C, adaptador WiFi — incluindo os consoles
+  portateis Android tipo Anbernic/Powkiddy/Retroid, que tem o gamepad embutido), o controle
+  virtual e o botao CONTROLE desaparecem e fica so uma **engrenagem ⚙ discreta no canto**,
+  que abre o menu **CONFIGURACAO** estilo EmulationStation: TEMA, CONTROLE VIRTUAL
+  Liga/Desliga, MAPEAR GAMEPAD FISICO, SISTEMAS/EMULADORES, FAVORITOS e RECARREGAR JOGOS.
+  Quando o controle fisico e desconectado, o controle virtual volta automaticamente.
+  (**Engrenagem:** toque no ⚙ — nao precisa instalar nada, nao precisa ja ter controle.)
 - **Gamepad fisico USB/Bluetooth/Type-C/adaptador WiFi** (PS DualShock/DualSense, Xbox,
   genéricos): Android entrega o controle pro app sem instalar nada — no menu, o
   direcional navega, botao A/Enter confirma, B volta.
