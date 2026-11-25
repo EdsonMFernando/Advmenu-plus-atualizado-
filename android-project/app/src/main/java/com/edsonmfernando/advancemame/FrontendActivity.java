@@ -1094,6 +1094,9 @@ public class FrontendActivity extends Activity {
                 labels.add("APP: " + alias[1]);
             }
         }
+        labels.add("WEB: Pinball WPC (wpc-emu — navegador, T2 FreeWPC livre)");
+        pkgs.add("web:https://neophob.github.io/wpc-emu/");
+        apks.add(null);
         HashSet<String> seenPkgs = new HashSet<>(pkgs);
         for (File dir : emuDirs) {
             File[] files = dir.listFiles();
@@ -1138,6 +1141,16 @@ public class FrontendActivity extends Activity {
                 if (pkg == null && apks.get(which) == null && which < sysHits.size()
                         && sysHits.get(which) != null) {
                     showSystemGames(sysHits.get(which));
+                    return;
+                }
+                if (pkg != null && pkg.startsWith("web:")) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(pkg.substring(4))));
+                    } catch (Throwable ignored) {
+                        android.widget.Toast.makeText(FrontendActivity.this,
+                                "Nenhum navegador disponivel no aparelho",
+                                android.widget.Toast.LENGTH_LONG).show();
+                    }
                     return;
                 }
                 launchEmulator(pkg, apks.get(which));
