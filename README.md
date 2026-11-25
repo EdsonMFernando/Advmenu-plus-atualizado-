@@ -1,4 +1,4 @@
-# Advmenu-plus-atualizado- (AdvanceMAME para Android)
+# Advmenu-Android (AdvanceMAME para Android)
 
 Porta do [AdvanceMAME](http://www.advancemame.it/) (fork `amadvance`) para Android, compilada
 direto do codigo-fonte open source para gerar o APK com o menu (`advmenu`) e o emulador
