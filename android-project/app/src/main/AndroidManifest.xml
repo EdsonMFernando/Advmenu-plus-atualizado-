@@ -11,8 +11,8 @@
         android:hardwareAccelerated="true">
 
         <activity
-            android:name=".MainActivity"
-            android:label="AdvanceMAME"
+            android:name=".FrontendActivity"
+            android:label="Advmenu Plus"
             android:exported="true"
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|smallestScreenSize|uiMode">
@@ -21,6 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="AdvanceMAME"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|smallestScreenSize|uiMode" />
     </application>
 
 </manifest>

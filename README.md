@@ -59,16 +59,21 @@ assim como qualquer projeto Android.
 
 ## Rodando
 
-Instale o APK — o binario nativo extrai `assets/data` para o `filesDir` e cria os arquivos de
-configuracao em `/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`).
+Quando abre, o app mostra um **front-end no estilo do ES-DE (visao basica)**: a lista dos jogos
+disponiveis, navegavel por toque ou pelo d-pad de gamepad/teclado, e ao tocar (ou apertar A/Enter)
+inicia o `advmame` na ROM escolhida.
+
+O instalador extrai `assets/data` para o `filesDir` e cria os arquivos de configuracao em
+`/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`). Como o nome visual (capa) do jogo, se
+quiser, coloque uma imagem em `Android/data/com.edsonmfernando.advancemame/files/media/<rom>.png`
+(tambem aceita `.jpg/.jpeg/.webp`).
 
 As ROMs de exemplo (zips binarios) nao vao no repositorio. Para jogar, coloque as ROMs em
-`Android/data/com.edsonmfernando.advancemame/files/rom` (configure o caminho no `advmame.rc`
-em `dir_rom`) ou, antes de compilar, coloque os zips em `android-project/app/src/main/assets/rom/`
-para irem embutidas no APK (o app extrai para o `filesDir` na primeira execucao; a ROM padrao,
-se nenhuma for passada, e `gridlee`).
+`Android/data/com.edsonmfernando.advancemame/files/rom` OU, antes de compilar, coloque os zips
+em `android-project/app/src/main/assets/rom/` para irem embutidas no APK (o app extrai para o
+`filesDir` na primeira execucao; a ROM padrao, se nenhuma for passada, e `gridlee`).
 
-Voce tambem pode escolher a ROM por Intent:
+Voce tambem pode escolher a ROM por Intent (o launcher normal abre a lista do front-end):
 
 ```bash
 adb shell am start -n com.edsonmfernando.advancemame/.MainActivity --es rom nomedarom

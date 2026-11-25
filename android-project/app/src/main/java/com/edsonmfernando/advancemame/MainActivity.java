@@ -27,51 +27,10 @@ import java.io.OutputStream;
  */
 public class MainActivity extends SDLActivity {
 
-    private static final String TAG = "AdvanceMAME";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        try {
-            extractAssets();
-        } catch (IOException e) {
-            Log.e(TAG, "erro extraindo assets", e);
-        }
+        AssetInstaller.install(this);
         super.onCreate(savedInstanceState);
-    }
-
-    private void extractAssets() throws IOException {
-        File marker = new File(getFilesDir(), ".installed");
-        if (marker.exists()) {
-            return;
-        }
-        new File(getFilesDir(), "rom").mkdirs();
-        unpackDir("data", getFilesDir());
-        unpackDir("rom", new File(getFilesDir(), "rom"));
-        marker.createNewFile();
-    }
-
-    private void unpackDir(String assetDir, File dst) throws IOException {
-        dst.mkdirs();
-        String[] names = getAssets().list(assetDir);
-        if (names == null) {
-            return;
-        }
-        for (String name : names) {
-            File out = new File(dst, name);
-            String asset = assetDir + "/" + name;
-            if (getAssets().list(asset).length > 0) {
-                unpackDir(asset, out);
-            } else {
-                try (InputStream in = getAssets().open(asset);
-                     OutputStream outStream = new FileOutputStream(out)) {
-                    byte[] buffer = new byte[65536];
-                    int n;
-                    while ((n = in.read(buffer)) > 0) {
-                        outStream.write(buffer, 0, n);
-                    }
-                }
-            }
-        }
     }
 
     @Override
