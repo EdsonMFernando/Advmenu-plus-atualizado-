@@ -73,8 +73,15 @@ public class FrontendActivity extends Activity {
     private static final String[] LAYOUT_DIR_NAMES = {"layout", "layouts"};
     private static final String[] EMU_DIR_NAMES = {"emuladores", "emulators"};
     private static final String[][] EMU_ALIASES = {
-            {"com.winlator", "Winlator (jogos de PC)"},
-            {"com.gamesir.gamehub", "GameHub (jogos de PC)"},
+            {"com.winlator", "Winlator — jogos de PC (Windows)"},
+            {"com.gamesir.gamehub", "GameHub — jogos de PC"},
+            {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
+            {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
+            {"org.vita3k.emulator", "Vita3K — PS Vita"},
+            {"org.openbor.engine", "OpenBOR — beat'em ups"},
+            {"xyz.aethersx2.android", "AetherSX2 — PlayStation 2"},
+            {"org.ppsspp.ppsspp", "PPSSPP — PSP"},
+            {"org.dolphinemu.dolphinemu", "Dolphin — GameCube/Wii"},
     };
     private static final long WIPE_DELAY_MS = 250;
 

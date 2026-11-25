@@ -97,21 +97,32 @@ layout/      background.jpg
 emuladores/  Winlator.apk, GameHub.apk ...  (apps de PC avulsos)
 ```
 
-## Jogos de PC (Winlator / GameHub)
+## Sistemas e emuladores externos (botao EMULADORES)
 
-O botao **EMULADORES** (canto inferior-direito do menu) lista e abre:
+O botao **EMULADORES** (canto inferior-direito do menu) lista e abre, com um toque,
+todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
+`emuladores/` do cartao (nao instalado = o menu mostra o caminho para instalar):
 
-- **Winlator** (`com.winlator`) e **GameHub** (`com.gamesir.gamehub`) se estiverem
-  instalados no aparelho
-- Qualquer `.apk` colocado em `emuladores/` no cartao de memoria — se o app ja estiver
-  instalado, abre com um toque; se nao, o menu avisa o caminho para voce instalar
+| Sistema | App Android | Como e o desempenho |
+|---|---|---|
+| Arcade (MAME 0.106) | **embutido no proprio APK** | roda no proprio Advmenu Plus, leve e fluido |
+| PC (Windows) | Winlator, GameHub | bom em Snapdragon; fraco em MediaTek basicos |
+| Switch 1 | Eden (`dev.eden.eden_emulator`) | muito bom em aparelhos com Vulkan forte |
+| PS2 | AetherSX2 | excelente em flagships |
+| PSP | PPSSPP | excelente em quase todo aparelho |
+| GameCube/Wii | Dolphin | bom em flagships |
+| PS3 | RPCS3 (`net.rpcs3.rpcs3`) | pesado: so flagships e jogos especificos |
+| PS Vita | Vita3K (nao oficial) | parcial, em desenvolvimento |
+| OpenBOR | OpenBOR (`org.openbor.engine`) | leve (2D), roda bem; mods `.pak` escolhidos dentro do app |
+| MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
+| TeknoParrot | via **Winlator** | experimental: nao existe versao Android; todo Windows emulado |
+| PS4 / PS5 | **nao existe emulador Android** | impossivel hoje (emuladores "PS4" na Play Store sao falsos) |
+| Switch 2 | **nao existe emulador utilizavel** | emulacao do Switch 2 esta no comeco mesmo no PC |
 
-Sao apps separados (Wine + Box64/FEX para jogos de Windows): o Advmenu Plus apenas os
-ABRE — o jogo de PC propriamente dito e configurado dentro de cada um deles.
-
-**TeknoParrot**: nao existe versao Android oficial (e um programa Windows x86). Em
-Snapdragon forte da para tentar rodar o TeknoParrot DENTRO do Winlator (Windows
-emulado), mas nao e garantido — nao faz parte do APK.
+O Advmenu Plus ABRE esses apps — a configuracao dos jogos (BIOS/keys/ firmware, pastas
+de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front-end
+garante FPS de outro app: os jogos do PROPRIO APK (arcade MAME) e que rodam sem
+travamento e sem perda de frames, pois sao processados pelo nucleo embutido.
 
 ### Snapshots (estilo ES-DE)
 
