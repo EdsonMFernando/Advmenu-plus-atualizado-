@@ -113,6 +113,7 @@ public class FrontendActivity extends Activity {
             {"org.flycast.emulator", "Flycast — Sega Dreamcast/NAOMI"},
             {"org.devmia.yabasanshiro", "Yaba Sanshiro — Sega Saturn"},
             {"com.explusalpha.MdEmu", "MD.emu — Mega Drive/Master System/Game Gear"},
+            {"xendroid.compose", "XenDroid — Xbox 360"},
     };
 
     /** Pastas de sistema no armazenamento (nome da pasta, no cartao) -> nome bonito. */
@@ -1902,7 +1903,13 @@ public class FrontendActivity extends Activity {
                 pkg = "com.winlator";
             }
         }
-        if ("pinball".equals(sysKey)) {
+        if ("xbox360".equals(sysKey)) {
+            String xen = pinballAppPackage("xendroid");
+            if (xen != null) {
+                pkg = xen;
+            }
+        }
+                if ("pinball".equals(sysKey)) {
             String vpx = pinballPackage();
             if (vpx != null) {
                 pkg = vpx;

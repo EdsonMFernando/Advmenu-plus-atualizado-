@@ -42,6 +42,7 @@
         <package android:name="org.flycast.emulator" />
         <package android:name="org.devmia.yabasanshiro" />
         <package android:name="com.explusalpha.MdEmu" />
+        <package android:name="xendroid.compose" />
     </queries>
 
     <application
