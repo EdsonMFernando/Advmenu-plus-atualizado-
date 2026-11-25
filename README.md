@@ -80,7 +80,7 @@ Alem das pastas internas do app, o front-end varre CADA armazenamento do aparelh
 
 | Pasta | Conteudo |
 |---|---|
-| `ROMs/` (ou `roms`, `rom`) | ROMs em `.zip`/`.7z` (subpastas ate 2 niveis tambem sao(varridas) |
+| `ROMs/` (ou `roms`, `rom`) | ROMs em `.zip`/`.7z` (subpastas ate 2 niveis tambem sao varridas) |
 | `snapshot/` (ou `snap`, `snaps`) | snapshot avulso por jogo: `<rom>.mp4`, `<rom>.avi`, `<rom>.mkv`, `<rom>.webm`, `<rom>.jpg`, `<rom>.png` ... |
 | `layout/` (ou `layouts`) | `background.jpg`/`background.png` (ou qualquer imagem solta) usada como fundo do menu |
 | `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** canto inferior-direito |
@@ -126,7 +126,7 @@ decodificador, o front-end cai automaticamente na imagem
 
 Prioridade: video primeiro, imagem como fallback.
 
-As ROMs de exemplo (zips binarios) nao listadas(varrem) no repositorio. Para jogar, coloque as ROMs em
+As ROMs de exemplo (zips binarios) nao vao no repositorio. Para jogar, coloque as ROMs em
 `/sdcard/ROMs`, em `Android/data/com.edsonmfernando.advancemame/files/rom` OU, antes de compilar,
 coloque os zips em `android-project/app/src/main/assets/rom/` para irem embutidas no APK (o app
 extrai para o `filesDir` na primeira execucao; a ROM padrao, se nenhuma for passada, e `gridlee`).
