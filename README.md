@@ -341,8 +341,15 @@ Tensor, Unisoc e tambem x86.
 - Clicando na mesa, o Advmenu abre no **Visual Pinball X para Android** (port oficial —
   APKs em github.com/vpinball/vpinball/releases e o app do Play Store
   `com.retroeki.pinball`): o app detecta automaticamente qualquer VPX instalado
-  (`org.vpinball.VPinballX`, `com.retroeki.pinball` ou pacote com "vpinball" no nome).
-  Controle fisico (flipper + trabas) va direto via Android.
+  (`org.vpinball.VPinballX`, `org.vpinball.app.gl`, `com.retroeki.pinball` ou pacote com
+  "vpinball" no nome). Controle fisico (flipper + trabas) va direto via Android.
+- Outros apps de pinball Android instalados tambem sao detectados automaticamente e
+  aparecem no botao EMULADORES: **Pinball FX Android** (`com.zenstudios.ZenPinballWorld`),
+  **Williams Pinball** e demais apps Zen (pacote `com.zenstudios.*`), **Pinball Arcade**
+  (`com.farsight.*`), **Zaccaria Pinball** (`hu.magicpixel.Zaccaria`) e o classico
+  **3D Pinball Space Cadet** (`com.fexed.spacecadetpinball`, github.com/fexed/
+  Pinball-on-Android). Nao precisa instalar nada extra do Advmenu: se o app esta no
+  aparelho, o Advmenu acha e abre.
 - Mesas do **Pinball Arcade/Farsight** no PC (sistema `pc-windows`) continuam na rota
   Winlator, na pasta `pc/` da varredura funda.
 
