@@ -27,14 +27,11 @@ android-project/        projeto Gradle que gera o APK (SDL2 2.30.11 vendored; ve
 
 Necessario: JDK 17, Android SDK (API 34), NDK 26.3, CMake >= 3.22 e Ninja, e `git`.
 
-**Passo 1 — preparar as arvores vendor (roda uma vez):**
-o codigo-fonte do AdvanceMAME, o SDL2 e as tabelas geradas do 68000 nao estao no repositorio.
-O script baixa tudo pinned (commit/versao exata), aplica o patch Android e gera o que falta:
-
-```bash
-cd android-project
-./tools/sync-vendor.sh
-```
+**Passo 1 — preparo das arvores vendor (AUTOMATICO):**
+o Gradle roda sozinho o `tools/sync-vendor.sh` antes de compilar (tarefa `syncVendor`
+registrada em `app/build.gradle` — `preBuild.dependsOn`). O script e idempotente:
+depois da primeira vez e instantaneo. Nada e rodado a mao; se quiser, pode rodar
+`cd android-project && bash tools/sync-vendor.sh` isoladamente.
 
 **Passo 2 — compilar:**
 
@@ -165,6 +162,22 @@ Voce tambem pode escolher a ROM por Intent (o launcher normal abre a lista do fr
 ```bash
 adb shell am start -n com.edsonmfernando.advancemame/.MainActivity --es rom nomedarom
 ```
+
+## Configuracao (advmame.rc / advmenu.rc / .ini) — tudo dentro do codigo
+
+A configuracao padrao do emulador e do menu esta ESCRITA NO CODIGO-FONTE, na classe
+`android-project/app/src/main/java/com/edsonmfernando/advancemame/AdvConfig.java`
+(constantes `ADVMAME_RC` e `ADVMENU_RC`). Na primeira execucao o app grava esses
+conteudos em `files/.advance/advmame.rc` e `files/.advance/advmenu.rc` — os mesmos
+arquivos que o AdvanceMAME/AdvMenu classicos leem.
+
+Para personalizar SEM recompilar: coloque um `advmenu.rc` (ou `advmenu.ini`,
+`advmame.rc`, `advmame.ini`) na RAIZ do cartao de memoria — o app reconhece
+diretamente e usa ELE como configuracao (substitui o padrao; as pastas de ROMs
+do cartao continuam sendo injetadas no `dir_rom` automaticamente). Nenhum script
+solto: o que os scripts fazem, o Gradle (no build) e o app (na execucao) fazem sozinhos.
+
+Edite `AdvConfig.java` para mudar os padroes de fabrica e recompile.
 
 ## Editando o codigo e recompilando
 
