@@ -20,6 +20,8 @@
         <package android:name="org.vpinball.VPinballX" />
         <package android:name="org.vpinball.app.gl" />
         <package android:name="com.retroeki.pinball" />
+        <package android:name="com.fexed.spacecadetpinball" />
+        <package android:name="hu.magicpixel.Zaccaria" />
         <package android:name="com.zenstudios.PinballFx" />
         <package android:name="com.zenstudios.zenpinball2" />
         <package android:name="com.zenstudios.PinballFX3" />

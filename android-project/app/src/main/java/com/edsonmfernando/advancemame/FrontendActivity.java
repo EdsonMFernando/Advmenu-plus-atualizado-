@@ -95,6 +95,8 @@ public class FrontendActivity extends Activity {
             {"com.zenstudios.PinballFx", "Pinball FX (Zen) — pinball"},
             {"com.zenstudios.ZenPinballWorld", "Pinball FX Android (Zen) — pinball"},
             {"com.farsight.PinballArcade", "Pinball Arcade (Farsight)"},
+            {"com.fexed.spacecadetpinball", "Space Cadet Pinball 3D — pinball"},
+            {"hu.magicpixel.Zaccaria", "Zaccaria Pinball (Magic Pixel) — pinball"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
             {"org.vita3k.emulator", "Vita3K — PS Vita"},
