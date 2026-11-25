@@ -53,7 +53,9 @@ cada push: va na aba **Actions** do repositorio → clique no run mais recente �
 Se nao tiver o Gradle do sistema, rode `gradle wrapper` uma vez dentro de `android-project/`
 para gerar o `gradlew` local (o jar do wrapper tambem nao vai versionado).
 
-O build nativo roda automaticamente para as duas ABIs: `arm64-v8a` e `armeabi-v7a`.
+O build nativo roda automaticamente para quatro ABIs: `arm64-v8a`, `armeabi-v7a`,
+`x86_64` e `x86` (cobertura total de CPU: Snapdragon/MediaTek/Exynos/Unisoc no ARM,
+Mali/Adreno/PowerVR na GPU, e ainda tablets/Chromebooks Intel e AMD).
 As duas cobrem os smartphones modernos (Snapdragon/Kryo) e os antigos MediaTek (Cortex-A7/A15) —
 GPU e transparente (o video e feito pelo SDL2 com fallback de software, funciona em Mali e Adreno).
 
@@ -82,13 +84,24 @@ Alem das pastas internas do app, o front-end varre CADA armazenamento do aparelh
 | `layout/` (ou `layouts`) | `background.jpg`/`background.png` (ou qualquer imagem solta) usada como fundo do menu |
 | `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** |
 | pastas de sistema (lista abaixo) | jogos soltos ou em zip — aparecem no botao **EMULADORES** e abrem no emulador instalado |
-Pastas de sistema aceitas em qualquer armazenamento (o NOME da pasta define o sistema):
-`atari2600`, `atari5200`, `atari7800`, `atari8bit`, `atarilynx`, `atarijaguar`,
-`colecovision`, `intellivision`, `vectrex`, `mastersystem`/`sms`, `megadrive`/`genesis`,
-`sega32x`, `segacd`, `gamegear`, `nes`/`famicom`, `snes`, `n64`, `gameboy`/`gb`, `gbc`,
-`gba`, `nds`/`3ds`, `psx`/`ps1`, `ps2`, `psp`, `psvita`/`vita`, `dreamcast`, `saturn`,
-`neogeo`, `neogeopocket`, `wonderswan`, `switch`, `openbor`, `hbmame`, `fba`/`fbneo`,
-`arcade`, `pc`/`windows`.
+Pastas de sistema aceitas em qualquer armazenamento (o NOME da pasta define o sistema
+— nomes no mesmo espirito da base ScreenScraper www.screenscraper.fr, mais de 100 sistemas):
+
+- **Consoles e portateis:** `atari2600`/`a2600`, `atari5200`, `atari7800`, `atari8bit`,
+  `atarilynx`, `atarijaguar`, `colecovision`, `intellivision`, `vectrex`, `astrocade`,
+  `mastersystem`/`sms`, `megadrive`/`genesis`, `sega32x`, `segacd`, `gamegear`, `sg1000`,
+  `saturn`, `dreamcast`, `nes`/`famicom`, `fds`, `snes`, `n64`, `gameboy`/`gb`, `gbc`,
+  `gba`, `nds`, `3ds`, `virtualboy`, `gamecube`/`gc`, `wii`, `wiiu`, `switch`, `switch2`,
+  `pcengine`/`turbografx`/`turbografx16`, `supergrafx`, `pcfx`, `neogeo`, `neogeocd`,
+  `neogeopocket`, `neogeopocketcolor`/`ngpc`, `wonderswan`, `wonderswancolor`, `3do`,
+  `megaduck`, `supervision`, `gamate`, `pv1000`, `psx`/`ps1`, `ps2`, `psp`, `psvita`/`vita`,
+  `ps3`, `ps4`, `ps5`, `xbox`, `xbox360`, `xbla` (Xbox Live Arcade)
+- **Arcade:** `arcade`, `mame`, `hbmame`, `fba`/`fbneo`/`finalburn`, `cps1`, `cps2`, `cps3`,
+  `naomi`, `naomi2`, `atomiswave`, `stv`, `lindbergh`, `daphne` (LaserDisc),
+  `taitotypex`/`typex` (Taito Type X), `teknoparrot`, `mugen`, `openbor`, `pinball`
+- **Computadores:** `amiga`, `amigacd32`, `c64`, `c128`, `vic20`, `amstradcpc`/`cpc`,
+  `msx`, `msx2`, `spectrum`/`zxspectrum`, `zx81`, `dos`/`pcdos`, `macintosh`, `apple2`,
+  `atarist`, `x68000`, `pc88`, `pc98`, `scummvm`, `pc`/`windows`/`winlator`
 
 Toque no sistema -> lista de jogos -> toque no jogo -> o Android abre no emulador
 instalado para aquele tipo de arquivo (mesmo esquema do ES-DE: o jogo e passado por
@@ -138,6 +151,83 @@ O Advmenu Plus ABRE esses apps — a configuracao dos jogos (BIOS/keys/ firmware
 de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front-end
 garante FPS de outro app: os jogos do PROPRIO APK (arcade MAME) e que rodam sem
 travamento e sem perda de frames, pois sao processados pelo nucleo embutido.
+
+### Emuladores "de Windows" no Android (TeknoParrot, Taito Type X, MUGEN, Lindbergh, DOS)
+
+TeknoParrot, Taito Type X e Lindbergh sao CARREGADORES de Windows (codigo fechado,
+amarrados as APIs do Windows) — nao existe source para portar, entao a rota correta
+no Advmenu Android e o **Winlator** (Windows emulado dentro do Android): as pastas
+`teknoparrot`, `taitotypex`/`typex`, `lindbergh`, `mugen`, `dos`/`pcdos` e `pc`/`windows`
+do cartao abrem os jogos DIRETO no Winlator automaticamente (o menu escolhe o app
+preferido por sistema; se o Winlator nao estiver instalado, abre o escolhedor normal).
+
+- **MUGEN nativo:** existe o motor open-source **Ikemen GO** (sucessor do MUGEN, tem
+  build para Android na comunidade) — pode deitar na pasta `emuladores/` como APK e
+  usar a pasta `mugen` do cartao para os chars/stages.
+- **OpenBOR:** JA existe versao Android oficial (`org.openbor.engine`) — a pasta
+  `openbor` abre os mods `.pak` direto no app.
+- **PS4/PS5/Switch 2:** nao existe emulador Android (nem no PC completo) — impossivel
+  hoje; documentado de forma honesta porque emuladores "PS4" na Play Store sao falsos.
+
+### Nucleos do RetroArch (oficiais, nao precisa instalar nada separado)
+
+O RetroArch traz os nucleos no proprio app (menu Online Updater > Core Downloader).
+Sistemas suportados pelo botao de sistemas do Advmenu e o nucleo libretro de cada um:
+
+| Pasta do sistema | Nucleo RetroArch (libretro) |
+|---|---|
+| atari2600 | Stella |
+| atari7800 | ProSystem |
+| atarilynx | Handy |
+| atarijaguar | Virtual Jaguar |
+| colecovision | blueMSX |
+| intellivision | FreeIntv |
+| vectrex | vecx |
+| mastersystem/sms, gamegear, megadrive/genesis, segacd, saturn, sg1000 | Genesis Plus GX / Picodrive / Yabause |
+| nes/famicom/fds | Mesen / Nestopia UE |
+| snes | Snes9x / bsnes |
+| n64 | Mupen64Plus-Next |
+| gameboy/gbc/gba | mGBA / VBA-M |
+| nds | DeSmuME / melonDS |
+| psx/ps1 | Beetle PSX / SwanStation |
+| psp | PPSSPP (nucleo libretro oficial) |
+| psvita | Vita3K (fora do RetroArch; app proprio) |
+| dreamcast | Flycast |
+| pcengine/turbografx, supergrafx | Beetle PCE / Beetle PCE Fast |
+| pcfx | Beetle PC-FX |
+| neogeo/neogeocd | FinalBurn Neo / Neo CD (libretro) |
+| neogeopocket | Beetle NeoPop |
+| wonderswan | Beetle Cygne |
+| 3do | Opera |
+| virtualboy | Beetle VB |
+| gamecube/wii | Dolphin (fora do RetroArch) |
+| amiga | PUAE |
+| c64/vic20 |VICE|
+| amstradcpc | Cap32 |
+| msx/msx2 | blueMSX / fMSX |
+| spectrum/zx81 | Fuse |
+| dos/pcdos | DOSBox Pure |
+| mame/arcade | MAME 2003-Plus / FBNeo |
+| hbmame/fba/fbneo | FinalBurn Neo / MAME 2003-Plus |
+| scummvm | ScummVM (nucleo libretro) |
+
+Isso cobre o recorte pratico do ScreenScraper no Android: o jogo da pasta de sistema
+abre no app configurado pelo Advmenu (app preferido) e, dentro do RetroArch, cada
+sistema ja tem nucleo pronto — sem baixar nem compilar nada separado.
+
+### Controles (tela + gamepad fisico)
+
+- **Controle digital na tela:** o botao **CONTROLE** (canto inferior-esquerdo do menu)
+  mostra/oculta um d-pad + A/B na tela, que navegam o menu como se fosse gamepad. O
+  estado (visivel/oculto) fica salvo — abre na ultima escolha.
+- **Gamepad fisico USB/Bluetooth/Type-C/adaptador WiFi** (PS DualShock/DualSense, Xbox,
+  genéricos): Android entrega o controle pro app sem instalar nada — no menu, o
+  direcional navega, botao A/Enter confirma, B volta; nos jogos do ARCADE embutido, o
+  SDL2 do AdvanceMAME reconhece o gamepad automaticamente; nos emuladores externos
+  (RetroArch, PPSSPP etc.) o mapeamento e feito dentro de cada app.
+- **Nada para instalar:** o front-end em si e standalone — reconhece jogos, pastas de
+  sistema e controles sozinho; so os sistemas que precisam de emulador externo usam o
+  app externo escolhido.
 
 ### HBMAME 0.289 (duas vias)
 

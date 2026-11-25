@@ -8,3 +8,4 @@ android-project/local.properties
 
 # arvore vendor do HBMAME (port nativo; baixada por sync-hbmame.sh)
 hbmame/
+*.hprof

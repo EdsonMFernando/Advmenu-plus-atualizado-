@@ -16,8 +16,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -129,15 +132,112 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("neogeo", "Neo Geo");
         SYSTEM_FOLDERS.put("neogeopocket", "Neo Geo Pocket");
         SYSTEM_FOLDERS.put("wonderswan", "WonderSwan");
+        SYSTEM_FOLDERS.put("wonderswancolor", "WonderSwan Color");
         SYSTEM_FOLDERS.put("switch", "Nintendo Switch");
+        SYSTEM_FOLDERS.put("switch2", "Nintendo Switch 2");
+        SYSTEM_FOLDERS.put("gamecube", "Nintendo GameCube");
+        SYSTEM_FOLDERS.put("gc", "Nintendo GameCube");
+        SYSTEM_FOLDERS.put("wii", "Nintendo Wii");
+        SYSTEM_FOLDERS.put("wiiu", "Nintendo Wii U");
+        SYSTEM_FOLDERS.put("virtualboy", "Virtual Boy");
+        SYSTEM_FOLDERS.put("fds", "Famicom Disk System");
+        SYSTEM_FOLDERS.put("ps3", "PlayStation 3");
+        SYSTEM_FOLDERS.put("ps4", "PlayStation 4");
+        SYSTEM_FOLDERS.put("ps5", "PlayStation 5");
+        SYSTEM_FOLDERS.put("xbox", "Xbox");
+        SYSTEM_FOLDERS.put("xbox360", "Xbox 360");
+        SYSTEM_FOLDERS.put("xbla", "Xbox Live Arcade");
+        SYSTEM_FOLDERS.put("dreamcast", "Dreamcast");
+        SYSTEM_FOLDERS.put("saturn", "Sega Saturn");
+        SYSTEM_FOLDERS.put("sg1000", "SG-1000");
+        SYSTEM_FOLDERS.put("pcengine", "PC Engine (TurboGrafx-16)");
+        SYSTEM_FOLDERS.put("turbografx", "TurboGrafx-16");
+        SYSTEM_FOLDERS.put("turbografx16", "TurboGrafx-16");
+        SYSTEM_FOLDERS.put("supergrafx", "PC Engine SuperGrafx");
+        SYSTEM_FOLDERS.put("pcfx", "PC-FX");
+        SYSTEM_FOLDERS.put("neogeocd", "Neo Geo CD");
+        SYSTEM_FOLDERS.put("neogeopocketcolor", "Neo Geo Pocket Color");
+        SYSTEM_FOLDERS.put("ngpc", "Neo Geo Pocket Color");
+        SYSTEM_FOLDERS.put("3do", "3DO");
+        SYSTEM_FOLDERS.put("megaduck", "Mega Duck");
+        SYSTEM_FOLDERS.put("supervision", "Watara Supervision");
+        SYSTEM_FOLDERS.put("gamate", "Gamate");
+        SYSTEM_FOLDERS.put("pv1000", "Casio PV-1000");
+        SYSTEM_FOLDERS.put("astrocade", "Bally Astrocade");
         SYSTEM_FOLDERS.put("openbor", "OpenBOR");
+        SYSTEM_FOLDERS.put("mugen", "MUGEN");
+        SYSTEM_FOLDERS.put("teknoparrot", "TeknoParrot (arcade 3D)");
+        SYSTEM_FOLDERS.put("taitotypex", "Arcade Taito Type X");
+        SYSTEM_FOLDERS.put("typex", "Arcade Taito Type X");
         SYSTEM_FOLDERS.put("hbmame", "Arcade HBMAME (homebrew/hacks)");
         SYSTEM_FOLDERS.put("fba", "Arcade FinalBurn Neo");
         SYSTEM_FOLDERS.put("fbneo", "Arcade FinalBurn Neo");
         SYSTEM_FOLDERS.put("finalburn", "Arcade FinalBurn Neo");
+        SYSTEM_FOLDERS.put("mame", "Arcade MAME");
+        SYSTEM_FOLDERS.put("cps1", "Arcade Capcom CPS-1");
+        SYSTEM_FOLDERS.put("cps2", "Arcade Capcom CPS-2");
+        SYSTEM_FOLDERS.put("cps3", "Arcade Capcom CPS-3");
+        SYSTEM_FOLDERS.put("naomi", "Arcade Sega Naomi");
+        SYSTEM_FOLDERS.put("naomi2", "Arcade Sega Naomi 2");
+        SYSTEM_FOLDERS.put("atomiswave", "Arcade Atomiswave");
+        SYSTEM_FOLDERS.put("stv", "Arcade Sega ST-V");
+        SYSTEM_FOLDERS.put("lindbergh", "Arcade Sega Lindbergh");
+        SYSTEM_FOLDERS.put("daphne", "Arcade LaserDisc (Daphne)");
+        SYSTEM_FOLDERS.put("pinball", "Pinball (Future/Visual Pinball)");
         SYSTEM_FOLDERS.put("arcade", "Arcade");
+        SYSTEM_FOLDERS.put("amiga", "Commodore Amiga");
+        SYSTEM_FOLDERS.put("amigacd32", "Amiga CD32");
+        SYSTEM_FOLDERS.put("c64", "Commodore 64");
+        SYSTEM_FOLDERS.put("c128", "Commodore 128");
+        SYSTEM_FOLDERS.put("vic20", "Commodore VIC-20");
+        SYSTEM_FOLDERS.put("amstradcpc", "Amstrad CPC");
+        SYSTEM_FOLDERS.put("cpc", "Amstrad CPC");
+        SYSTEM_FOLDERS.put("msx", "MSX");
+        SYSTEM_FOLDERS.put("msx2", "MSX 2");
+        SYSTEM_FOLDERS.put("spectrum", "ZX Spectrum");
+        SYSTEM_FOLDERS.put("zxspectrum", "ZX Spectrum");
+        SYSTEM_FOLDERS.put("zx81", "Sinclair ZX-81");
+        SYSTEM_FOLDERS.put("dos", "PC (DOS)");
+        SYSTEM_FOLDERS.put("pcdos", "PC (DOS)");
+        SYSTEM_FOLDERS.put("macintosh", "Macintosh");
+        SYSTEM_FOLDERS.put("apple2", "Apple II");
+        SYSTEM_FOLDERS.put("atarist", "Atari ST");
+        SYSTEM_FOLDERS.put("x68000", "Sharp X68000");
+        SYSTEM_FOLDERS.put("pc88", "NEC PC-8801");
+        SYSTEM_FOLDERS.put("pc98", "NEC PC-9801");
+        SYSTEM_FOLDERS.put("scummvm", "ScummVM");
         SYSTEM_FOLDERS.put("pc", "PC (Windows)");
         SYSTEM_FOLDERS.put("windows", "PC (Windows)");
+        SYSTEM_FOLDERS.put("winlator", "PC Windows (Winlator)");
+    }
+
+    /**
+     * Rota do sistema -> app Android preferido (slash: MUGEN/TeknoParrot/Taito Type X e
+     * qualquer jogo de Windows vao pelo Winlator; consoles usam o emulador nativo; se o
+     * app preferido nao estiver instalado o jogo abre pelo escolhedor normal do Android).
+     */
+    private static final HashMap<String, String> SYSTEM_PACKAGES = new HashMap<>();
+    static {
+        SYSTEM_PACKAGES.put("psp", "org.ppsspp.ppsspp");
+        SYSTEM_PACKAGES.put("ps2", "xyz.aethersx2.android");
+        SYSTEM_PACKAGES.put("ps3", "net.rpcs3.rpcs3");
+        SYSTEM_PACKAGES.put("psvita", "org.vita3k.emulator");
+        SYSTEM_PACKAGES.put("vita", "org.vita3k.emulator");
+        SYSTEM_PACKAGES.put("switch", "dev.eden.eden_emulator");
+        SYSTEM_PACKAGES.put("gamecube", "org.dolphinemu.dolphinemu");
+        SYSTEM_PACKAGES.put("gc", "org.dolphinemu.dolphinemu");
+        SYSTEM_PACKAGES.put("wii", "org.dolphinemu.dolphinemu");
+        SYSTEM_PACKAGES.put("openbor", "org.openbor.engine");
+        SYSTEM_PACKAGES.put("pc", "com.winlator");
+        SYSTEM_PACKAGES.put("windows", "com.winlator");
+        SYSTEM_PACKAGES.put("winlator", "com.winlator");
+        SYSTEM_PACKAGES.put("mugen", "com.winlator");
+        SYSTEM_PACKAGES.put("teknoparrot", "com.winlator");
+        SYSTEM_PACKAGES.put("taitotypex", "com.winlator");
+        SYSTEM_PACKAGES.put("typex", "com.winlator");
+        SYSTEM_PACKAGES.put("lindbergh", "com.winlator");
+        SYSTEM_PACKAGES.put("dos", "com.winlator");
+        SYSTEM_PACKAGES.put("pcdos", "com.winlator");
     }
 
     private static final String[] GAME_FILE_EXTS = {
@@ -147,6 +247,9 @@ public class FrontendActivity extends Activity {
             ".cia", ".v64", ".z64", ".n64", ".md", ".sms", ".gg", ".32x", ".pbp",
             ".vec", ".col", ".int", ".ws", ".wsc", ".ngp", ".ngc", ".dsk", ".cas",
             ".atr", ".exe",
+            ".pce", ".sg", ".vpk", ".xex", ".wad", ".wbfs",
+            ".gcm", ".rvz", ".adf", ".d64", ".t64", ".tap", ".tzx", ".m3u", ".prg",
+            ".rar", ".cab", ".gcz", ".ciso", ".dol", ".elf", ".mdf",
     };
     private static final long WIPE_DELAY_MS = 250;
 
@@ -158,6 +261,8 @@ public class FrontendActivity extends Activity {
     private ImageView layoutBg;
     private TextView emptyView;
     private TextView emuButton;
+    private TextView padToggle;
+    private View padView;
     private boolean storageGranted;
 
     private FrameLayout root;
@@ -266,9 +371,40 @@ public class FrontendActivity extends Activity {
         root.addView(countView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
 
+        TextView padBtn = new TextView(this);
+        padBtn.setText("CONTROLE");
+        padBtn.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        padBtn.setTextSize(14);
+        padBtn.setTextColor(COR_DETALHE);
+        padBtn.setPadding(dp(6), 0, 0, dp(14));
+        padBtn.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        padBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglePad();
+            }
+        });
+        padToggle = padBtn;
+
         updateEmptyState();
 
         setContentView(root);
+
+        SharedPreferences prefs = getSharedPreferences("advmenu", Context.MODE_PRIVATE);
+        boolean padOn = prefs.getBoolean("pad", false);
+        padView = buildPadView();
+        FrameLayout.LayoutParams plp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.START);
+        plp.bottomMargin = dp(84);
+        root.addView(padView, plp);
+        padView.setVisibility(padOn ? View.VISIBLE : View.GONE);
+        padToggle.setAlpha(padOn ? 1f : 0.45f);
+        FrameLayout.LayoutParams tlp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.START);
+        tlp.bottomMargin = dp(40);
+        root.addView(padToggle, tlp);
 
         if (!storageGranted) {
             requestStoragePermission();
@@ -314,7 +450,6 @@ public class FrontendActivity extends Activity {
         computeMediaDirs();
         applyLayoutBackground();
         applyEmulatorsButton();
-        applyEmulatorsButton();
         adapter.load(this);
         if (adapter.selected >= adapter.getCount()) {
             adapter.selected = 0;
@@ -352,6 +487,88 @@ public class FrontendActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.END));
         emuButton = btn;
+    }
+
+    /** D-pad + A/B na tela, dispara as mesmas teclas de um gamepad fisico no menu. */
+    private View buildPadView() {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(dp(10), dp(6), dp(6), dp(6));
+        row.setBackgroundColor(Color.argb(110, 20, 30, 42));
+
+        LinearLayout cross = new LinearLayout(this);
+        cross.setOrientation(LinearLayout.VERTICAL);
+        cross.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout mid = new LinearLayout(this);
+        mid.setOrientation(LinearLayout.HORIZONTAL);
+        cross.addView(padBtn("^", KeyEvent.KEYCODE_DPAD_UP));
+        mid.addView(padBtn("<", KeyEvent.KEYCODE_DPAD_LEFT));
+        mid.addView(padBtn(">", KeyEvent.KEYCODE_DPAD_RIGHT));
+        cross.addView(mid);
+        cross.addView(padBtn("v", KeyEvent.KEYCODE_DPAD_DOWN));
+        row.addView(cross);
+
+        TextView a = padBtn("A", KeyEvent.KEYCODE_DPAD_CENTER);
+        TextView b = padBtn("B", KeyEvent.KEYCODE_BACK);
+        LinearLayout ab = new LinearLayout(this);
+        ab.setOrientation(LinearLayout.VERTICAL);
+        ab.setGravity(Gravity.CENTER);
+        ab.addView(a);
+        ab.addView(b);
+        row.addView(ab);
+        return row;
+    }
+
+    private TextView padBtn(String label, final int keyCode) {
+        final TextView b = new TextView(this);
+        b.setText(label);
+        b.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        b.setTextSize(18);
+        b.setTextColor(COR_TEXTO);
+        b.setGravity(Gravity.CENTER);
+        int s = dp(46);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(s, s);
+        b.setLayoutParams(lp);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendKey(keyCode);
+            }
+        });
+        return b;
+    }
+
+    private void sendKey(int code) {
+        long now = SystemClock.uptimeMillis();
+        list.dispatchKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, code, 0, 0));
+        list.dispatchKeyEvent(new KeyEvent(now, now + 40, KeyEvent.ACTION_UP, code, 0, 0));
+    }
+
+    private void togglePad() {
+        if (padView == null || padToggle == null) {
+            return;
+        }
+        boolean visible = padView.getVisibility() != View.VISIBLE;
+        padView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        padToggle.setAlpha(visible ? 1f : 0.45f);
+        getSharedPreferences("advmenu", Context.MODE_PRIVATE)
+                .edit().putBoolean("pad", visible).apply();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (list == null) {
+            return super.onKeyDown(keyCode, event);
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_A || keyCode == KeyEvent.KEYCODE_ENTER) {
+            sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     private void showEmulatorsList() {
@@ -597,7 +814,7 @@ public class FrontendActivity extends Activity {
                 }
                 SystemEntry entry = byLabel.get(label);
                 if (entry == null) {
-                    entry = new SystemEntry(label);
+                    entry = new SystemEntry(n, label);
                     byLabel.put(label, entry);
                 }
                 scanGameDir(child, entry.games, 1);
@@ -650,16 +867,23 @@ public class FrontendActivity extends Activity {
         if (n.endsWith(".iso")) {
             return "application/x-iso9660-image";
         }
+        if (n.endsWith(".rar")) {
+            return "application/x-rar-compressed";
+        }
         return "application/octet-stream";
     }
 
-    /** Abre o jogo no emulador Android registrado para o tipo de arquivo (mesmo esquema do ES-DE). */
-    private void openGameFile(File f) {
+    /** Abre o jogo no emulador do sistema (app preferido) ou, se nao houver, no registrado para o tipo de arquivo. */
+    private void openGameFile(File f, String sysKey) {
+        String pkg = sysKey == null ? null : SYSTEM_PACKAGES.get(sysKey);
         try {
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(uri, mimeFor(f));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (pkg != null && getPackageManager().getLaunchIntentForPackage(pkg) != null) {
+                intent.setPackage(pkg);
+            }
             startActivity(intent);
         } catch (Throwable t) {
             android.widget.Toast.makeText(this,
@@ -682,17 +906,19 @@ public class FrontendActivity extends Activity {
                         new android.content.DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(android.content.DialogInterface dialog, int which) {
-                                openGameFile(system.games.get(which));
+                                openGameFile(system.games.get(which), system.key);
                             }
                         })
                 .show();
     }
 
     private static final class SystemEntry {
+        final String key;
         final String label;
         final ArrayList<File> games = new ArrayList<>();
 
-        SystemEntry(String label) {
+        SystemEntry(String key, String label) {
+            this.key = key;
             this.label = label;
         }
     }
