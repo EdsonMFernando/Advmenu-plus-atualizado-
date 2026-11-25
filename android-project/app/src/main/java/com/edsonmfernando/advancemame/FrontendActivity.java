@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -88,6 +89,10 @@ public class FrontendActivity extends Activity {
             {"com.winlator", "Winlator — jogos de PC (Windows)"},
             {"com.gamesir.gamehub", "GameHub — jogos de PC"},
             {"com.retroarch", "RetroArch — todos os sistemas"},
+            {"org.vpinball.VPinballX", "Visual Pinball X — pinball"},
+            {"com.retroeki.pinball", "Visual Pinball X Standalone — pinball"},
+            {"com.zenstudios.PinballFx", "Pinball FX (Zen) — pinball"},
+            {"com.farsight.PinballArcade", "Pinball Arcade (Farsight)"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
             {"org.vita3k.emulator", "Vita3K — PS Vita"},
@@ -189,7 +194,12 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("stv", "Arcade Sega ST-V");
         SYSTEM_FOLDERS.put("lindbergh", "Arcade Sega Lindbergh");
         SYSTEM_FOLDERS.put("daphne", "Arcade LaserDisc (Daphne)");
-        SYSTEM_FOLDERS.put("pinball", "Pinball (Future/Visual Pinball)");
+        SYSTEM_FOLDERS.put("pinball", "Pinball (Visual/Future Pinball)");
+        SYSTEM_FOLDERS.put("pinballfx", "Pinball FX");
+        SYSTEM_FOLDERS.put("pinballfx2", "Pinball FX 2");
+        SYSTEM_FOLDERS.put("pinballfx3", "Pinball FX 3");
+        SYSTEM_FOLDERS.put("pinballarcade", "Pinball Arcade");
+        SYSTEM_FOLDERS.put("futurepinball", "Future Pinball (Windows)");
         SYSTEM_FOLDERS.put("arcade", "Arcade");
         SYSTEM_FOLDERS.put("nesicaxlive", "Nesica X Live (arcade SEGA)");
         SYSTEM_FOLDERS.put("nesica", "Nesica X Live (arcade SEGA)");
@@ -238,6 +248,12 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("gc", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("wii", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("openbor", "org.openbor.engine");
+        SYSTEM_PACKAGES.put("pinball", "org.vpinball.VPinballX");
+        SYSTEM_PACKAGES.put("pinballfx", "com.zenstudios.PinballFx");
+        SYSTEM_PACKAGES.put("pinballfx2", "com.zenstudios.zenpinball2");
+        SYSTEM_PACKAGES.put("pinballfx3", "com.zenstudios.PinballFX3");
+        SYSTEM_PACKAGES.put("pinballarcade", "com.farsight.PinballArcade");
+        SYSTEM_PACKAGES.put("futurepinball", "com.winlator");
         SYSTEM_PACKAGES.put("pc", "com.winlator");
         SYSTEM_PACKAGES.put("windows", "com.winlator");
         SYSTEM_PACKAGES.put("winlator", "com.winlator");
@@ -263,6 +279,7 @@ public class FrontendActivity extends Activity {
             ".pce", ".sg", ".vpk", ".xex", ".wad", ".wbfs",
             ".gcm", ".rvz", ".adf", ".d64", ".t64", ".tap", ".tzx", ".m3u", ".prg",
             ".rar", ".cab", ".gcz", ".ciso", ".dol", ".elf", ".mdf",
+            ".vpx", ".vpt", ".fpt", ".b2s",
     };
     private static final long WIPE_DELAY_MS = 250;
 
@@ -812,6 +829,16 @@ public class FrontendActivity extends Activity {
             }
         }
         return -1;
+    }
+
+    /** Rodinha/scroll de mouse e outros aparelhos genericos (USB/Bluetooth/wireless). */
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        if (list != null && (ev.getSource() & android.view.InputDevice.SOURCE_CLASS_POINTER) != 0
+                && ev.getAction() == MotionEvent.ACTION_SCROLL) {
+            return list.dispatchGenericMotionEvent(ev);
+        }
+        return super.dispatchGenericMotionEvent(ev);
     }
 
     @Override
@@ -1781,9 +1808,64 @@ public class FrontendActivity extends Activity {
         }
     }
 
+    /** App de pinball (Zen/Farsight/VPX) instalado: casa por prefixo de pacote. */
+    private String pinballAppPackage(String prefix) {
+        PackageManager pm = getPackageManager();
+        try {
+            for (android.content.pm.PackageInfo pi : pm.getInstalledPackages(0)) {
+                String p = pi.packageName.toLowerCase(Locale.US);
+                if (p.startsWith(prefix.toLowerCase(Locale.US))
+                        && pm.getLaunchIntentForPackage(pi.packageName) != null) {
+                    return pi.packageName;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    /** App do Visual Pinball (VPX) instalado: port Android oficial ou forks conhecidos. */
+    private String pinballPackage() {
+        PackageManager pm = getPackageManager();
+        String[] known = {"org.vpinball.VPinballX", "com.retroeki.pinball"};
+        for (String k : known) {
+            if (pm.getLaunchIntentForPackage(k) != null) {
+                return k;
+            }
+        }
+        try {
+            for (android.content.pm.PackageInfo pi : pm.getInstalledPackages(0)) {
+                String p = pi.packageName.toLowerCase(Locale.US);
+                if (p.contains("vpinball") || p.startsWith("com.retroeki.pinball")) {
+                    if (pm.getLaunchIntentForPackage(pi.packageName) != null) {
+                        return pi.packageName;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
     /** Abre o jogo no emulador do sistema (app preferido) ou, se nao houver, no registrado para o tipo de arquivo. */
     private void openGameFile(File f, String sysKey) {
         String pkg = sysKey == null ? null : SYSTEM_PACKAGES.get(sysKey);
+        if ("pinball".equals(sysKey)) {
+            String vpx = pinballPackage();
+            if (vpx != null) {
+                pkg = vpx;
+            }
+        } else if (sysKey != null && sysKey.startsWith("pinballfx")) {
+            String zen = pinballAppPackage("com.zenstudios");
+            if (zen != null) {
+                pkg = zen;
+            }
+        } else if ("pinballarcade".equals(sysKey)) {
+            String farsight = pinballAppPackage("com.farsight");
+            if (farsight != null) {
+                pkg = farsight;
+            }
+        }
         if ("com.winlator".equals(pkg) && launchWinlatorCombo(f)) {
             return;
         }

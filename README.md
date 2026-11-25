@@ -332,6 +332,20 @@ Tensor, Unisoc e tambem x86.
   nao roda nativo neles; nesses e preciso uma camada Android (ex.: emulador de Android
   no Windows / Waydroid no SteamOS) sem garantia — o alvo real e Android puro.
 
+### PINBALL (Visual Pinball / Pinball Arcade) — telas unicas
+
+- Crie a pasta `pinball/` no cartao com as mesas (`.vpx`, `.vpt`, `.fpt` — aceitas como
+  jogos); ela aparece no menu **SISTEMAS** como **PINBALL** e, entrando, todas as mesas
+  ficam numa lista unica com o tema (igual ao modelo dos videos), com snapshot por mesa
+  em `snapshot/` (`<mesa>.jpg/.mp4...`).
+- Clicando na mesa, o Advmenu abre no **Visual Pinball X para Android** (port oficial —
+  APKs em github.com/vpinball/vpinball/releases e o app do Play Store
+  `com.retroeki.pinball`): o app detecta automaticamente qualquer VPX instalado
+  (`org.vpinball.VPinballX`, `com.retroeki.pinball` ou pacote com "vpinball" no nome).
+  Controle fisico (flipper + trabas) va direto via Android.
+- Mesas do **Pinball Arcade/Farsight** no PC (sistema `pc-windows`) continuam na rota
+  Winlator, na pasta `pc/` da varredura funda.
+
 ### HBMAME 0.289 (duas vias)
 
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
