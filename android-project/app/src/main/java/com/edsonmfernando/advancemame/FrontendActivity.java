@@ -1924,10 +1924,17 @@ public class FrontendActivity extends Activity {
             }
         }
         if ("ps4".equals(sysKey)) {
-            String[] ps4 = {"bachata", "shadps4", "shandroid", "shad"};
+            String[] ps4 = {"bachata", "shadps4", "shandroid", "sharp", "kyty", "shad"};
             String shad = findEmuByPrefixes(ps4);
             if (shad != null) {
                 pkg = shad;
+            }
+        }
+        if ("ps5".equals(sysKey)) {
+            String[] ps5 = {"kyty", "ps5droid", "sharp", "omniemu", "shad"};
+            String x = findEmuByPrefixes(ps5);
+            if (x != null) {
+                pkg = x;
             }
         }
                 if ("pinball".equals(sysKey)) {
