@@ -10,3 +10,4 @@ android-project/local.properties
 hbmame/
 android-project/hbm-port/build-smoke/
 *.hprof
+android-project/hbm-port/build/

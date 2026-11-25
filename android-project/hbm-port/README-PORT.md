@@ -29,25 +29,20 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
 ## Estado
 
 - [x] Fase 1 (vendor script fixado)
-- [ ] Fase 2 (CMake do nucleo) — INICIADA: smoke test com clang do NDK r26d
-  compila, para arm64-v8a E armeabi-v7a (script `tools/smoke-hbm-lib.sh`;
-  saida em `hbm-port/build-smoke/<abi>/erros.log`):
+- [ ] Fase 2 (CMake do nucleo) — ALCANCADA (sem script solto): o
+  `hbm-port/CMakeLists.txt` compila e linka, com o clang do NDK r26d,
+  Release, para arm64-v8a E armeabi-v7a (0 falhas, `libhbmcore.a`):
   - `src/lib/util`: **54/54** arquivos
-  - `src/lib/formats`: **231/231** arquivos (incluindo o `all.cpp`,
-    com o `has_formats.h` gerado pelo `sync-hbmame.sh` no lugar do GENie)
+  - `src/lib/formats`: **231/231** arquivos — o `has_formats.h` e
+    GERADO PELO PROPRIO CMake (no lugar do GENie), dentro da arvore de
+    build, sem tocar na fonte vendored
   - `src/lib/netlist` (nucleo, sem `examples/`/`tests/`/`prg/`): **101/101**
-    arquivos — 0 falhas nas duas ABIs; linkam em `libhbmcore-<abi>.a`
-    (~34 MB arm64 / ~30 MB armv7, llvm-ar)
-  Os `examples/`/`tests/`/`prg/` do netlist sao demos standalone fora da
-  biblioteca (compilam, mas ficam fora do .a); 5 demos de `examples/`
-  (`congo_bongo`, `cmos_inverter*`, `turkey_shoot`, `lostfound`) tem erros
-  proprios no fonte upstream e nao sao usados pelo nucleo do MAME.
-  Include baseline: `-I3rdparty` + dirs pontuais (flac/include, zstd/lib,
-  expat/lib, utf8proc, nanosvg/src, lzma/C, aes*, softfloat3/include, glm,
-  rapidjson/include, lua, zlib).
-  O unico ajuste de codigo ate agora e o `patches-hbm/01-android-zlib-const.patch`
-  (validado com `git apply --check`), aplicado automaticamente pelo
-  `tools/sync-hbmame.sh` — re-sync limpo reproduz a arvore identica.
+    arquivos; `examples/`/`tests/`/`prg/` sao demos standalone fora da
+    biblioteca (5 demos tem erros proprios no fonte upstream, nao
+    usados pelo nucleo do MAME)
+  Include baseline dentro do CMakeLists; unico ajuste de codigo e o
+  `patches-hbm/01-android-zlib-const.patch`, aplicado automaticamente
+  pelo `tools/sync-hbmame.sh` (vendor no PC; o APK contem apenas o resultado).
 
 - [ ] Fase 3 (OSD SDL)
 - [ ] Fase 4 (glue)
