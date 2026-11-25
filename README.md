@@ -139,6 +139,16 @@ de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front
 garante FPS de outro app: os jogos do PROPRIO APK (arcade MAME) e que rodam sem
 travamento e sem perda de frames, pois sao processados pelo nucleo embutido.
 
+### HBMAME 0.289 (duas vias)
+
+1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
+   *MAME (Current)*, que acompanha o MAME moderno. O fluxo ja funciona: pasta `hbmame/`
+   no cartao → botao EMULADORES → toque no jogo → abre no RetroArch.
+2. **Port nativo (projeto em andamento — longo):** o plano para portar o nucleo
+   MAME 0.289/HBMAME para DENTRO do APK esta em `android-project/hbm-port/README-PORT.md`;
+   a fonte fixada (0.289.6, `fa040eced0d`) e baixada por `tools/sync-hbmame.sh`
+   (idempotente, fora do git — 973 MB / 15.945 arquivos).
+
 ### Snapshots (estilo ES-DE)
 
 Por jogo `<rom>`, coloque as midias em `Android/data/com.edsonmfernando.advancemame/files/media/`
