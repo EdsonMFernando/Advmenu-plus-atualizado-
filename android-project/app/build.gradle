@@ -43,6 +43,8 @@ android {
     }
 }
 
-// sem dependencias externas: SDL2 e compilado junto via CMake (cpp/SDL2)
+// SDL2 e compilado junto via CMake (cpp/SDL2); androidx.core so para
+// o FileProvider (compartilhar ROMs do cartao com os emuladores externos)
 dependencies {
+    implementation 'androidx.core:core:1.13.1'
 }

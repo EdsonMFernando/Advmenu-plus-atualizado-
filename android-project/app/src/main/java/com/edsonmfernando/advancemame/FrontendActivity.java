@@ -31,6 +31,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.core.content.FileProvider;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 
 /**
@@ -75,6 +78,7 @@ public class FrontendActivity extends Activity {
     private static final String[][] EMU_ALIASES = {
             {"com.winlator", "Winlator — jogos de PC (Windows)"},
             {"com.gamesir.gamehub", "GameHub — jogos de PC"},
+            {"com.retroarch", "RetroArch — todos os sistemas"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
             {"org.vita3k.emulator", "Vita3K — PS Vita"},
@@ -83,11 +87,73 @@ public class FrontendActivity extends Activity {
             {"org.ppsspp.ppsspp", "PPSSPP — PSP"},
             {"org.dolphinemu.dolphinemu", "Dolphin — GameCube/Wii"},
     };
+
+    /** Pastas de sistema no armazenamento (nome da pasta, no cartao) -> nome bonito. */
+    private static final LinkedHashMap<String, String> SYSTEM_FOLDERS = new LinkedHashMap<>();
+    static {
+        SYSTEM_FOLDERS.put("atari2600", "Atari 2600");
+        SYSTEM_FOLDERS.put("a2600", "Atari 2600");
+        SYSTEM_FOLDERS.put("atari5200", "Atari 5200");
+        SYSTEM_FOLDERS.put("atari7800", "Atari 7800");
+        SYSTEM_FOLDERS.put("atari8bit", "Atari 8-bit");
+        SYSTEM_FOLDERS.put("atarilynx", "Atari Lynx");
+        SYSTEM_FOLDERS.put("atarijaguar", "Atari Jaguar");
+        SYSTEM_FOLDERS.put("colecovision", "ColecoVision");
+        SYSTEM_FOLDERS.put("intellivision", "Intellivision");
+        SYSTEM_FOLDERS.put("vectrex", "Vectrex");
+        SYSTEM_FOLDERS.put("mastersystem", "Master System");
+        SYSTEM_FOLDERS.put("sms", "Master System");
+        SYSTEM_FOLDERS.put("megadrive", "Mega Drive");
+        SYSTEM_FOLDERS.put("genesis", "Mega Drive (Genesis)");
+        SYSTEM_FOLDERS.put("sega32x", "Mega Drive 32X");
+        SYSTEM_FOLDERS.put("segacd", "Sega CD");
+        SYSTEM_FOLDERS.put("gamegear", "Game Gear");
+        SYSTEM_FOLDERS.put("nes", "Nintendo NES");
+        SYSTEM_FOLDERS.put("famicom", "Nintendo Famicom");
+        SYSTEM_FOLDERS.put("snes", "Super Nintendo");
+        SYSTEM_FOLDERS.put("n64", "Nintendo 64");
+        SYSTEM_FOLDERS.put("gameboy", "Game Boy");
+        SYSTEM_FOLDERS.put("gb", "Game Boy");
+        SYSTEM_FOLDERS.put("gbc", "Game Boy Color");
+        SYSTEM_FOLDERS.put("gba", "Game Boy Advance");
+        SYSTEM_FOLDERS.put("nds", "Nintendo DS");
+        SYSTEM_FOLDERS.put("3ds", "Nintendo 3DS");
+        SYSTEM_FOLDERS.put("psx", "PlayStation 1");
+        SYSTEM_FOLDERS.put("ps1", "PlayStation 1");
+        SYSTEM_FOLDERS.put("ps2", "PlayStation 2");
+        SYSTEM_FOLDERS.put("psp", "PSP");
+        SYSTEM_FOLDERS.put("psvita", "PS Vita");
+        SYSTEM_FOLDERS.put("vita", "PS Vita");
+        SYSTEM_FOLDERS.put("dreamcast", "Dreamcast");
+        SYSTEM_FOLDERS.put("saturn", "Sega Saturn");
+        SYSTEM_FOLDERS.put("neogeo", "Neo Geo");
+        SYSTEM_FOLDERS.put("neogeopocket", "Neo Geo Pocket");
+        SYSTEM_FOLDERS.put("wonderswan", "WonderSwan");
+        SYSTEM_FOLDERS.put("switch", "Nintendo Switch");
+        SYSTEM_FOLDERS.put("openbor", "OpenBOR");
+        SYSTEM_FOLDERS.put("hbmame", "Arcade HBMAME (homebrew/hacks)");
+        SYSTEM_FOLDERS.put("fba", "Arcade FinalBurn Neo");
+        SYSTEM_FOLDERS.put("fbneo", "Arcade FinalBurn Neo");
+        SYSTEM_FOLDERS.put("finalburn", "Arcade FinalBurn Neo");
+        SYSTEM_FOLDERS.put("arcade", "Arcade");
+        SYSTEM_FOLDERS.put("pc", "PC (Windows)");
+        SYSTEM_FOLDERS.put("windows", "PC (Windows)");
+    }
+
+    private static final String[] GAME_FILE_EXTS = {
+            ".zip", ".7z", ".rom", ".bin", ".iso", ".img", ".cue", ".chd", ".cso",
+            ".nsp", ".xci", ".nca", ".pak", ".a26", ".a78", ".lnx", ".jag", ".j64",
+            ".nes", ".fds", ".sfc", ".smc", ".gb", ".gbc", ".gba", ".nds", ".3ds",
+            ".cia", ".v64", ".z64", ".n64", ".md", ".sms", ".gg", ".32x", ".pbp",
+            ".vec", ".col", ".int", ".ws", ".wsc", ".ngp", ".ngc", ".dsk", ".cas",
+            ".atr", ".exe",
+    };
     private static final long WIPE_DELAY_MS = 250;
 
     private ArrayList<File> romDirs = new ArrayList<>();
     private ArrayList<File> snapDirs = new ArrayList<>();
     private ArrayList<File> emuDirs = new ArrayList<>();
+    private ArrayList<SystemEntry> systems = new ArrayList<>();
     private File layoutDir;
     private ImageView layoutBg;
     private TextView emptyView;
@@ -292,12 +358,28 @@ public class FrontendActivity extends Activity {
         ArrayList<String> labels = new ArrayList<>();
         final ArrayList<String> pkgs = new ArrayList<>();
         final ArrayList<File> apks = new ArrayList<>();
+        final ArrayList<SystemEntry> sysHits = new ArrayList<>();
+        int gameTotal = 0;
+        for (SystemEntry e : systems) {
+            if (!e.games.isEmpty()) {
+                sysHits.add(e);
+                gameTotal += e.games.size();
+                labels.add(e.label + "  (" + e.games.size() + ")");
+                pkgs.add(null);
+                apks.add(null);
+            }
+        }
+        if (!sysHits.isEmpty()) {
+            labels.add("— APPS INSTALADOS —");
+            pkgs.add("");
+            apks.add(null);
+        }
         PackageManager pm = getPackageManager();
         for (String[] alias : EMU_ALIASES) {
             if (pm.getLaunchIntentForPackage(alias[0]) != null && !pkgs.contains(alias[0])) {
                 pkgs.add(alias[0]);
                 apks.add(null);
-                labels.add(alias[1]);
+                labels.add("APP: " + alias[1]);
             }
         }
         HashSet<String> seenPkgs = new HashSet<>(pkgs);
@@ -329,14 +411,27 @@ public class FrontendActivity extends Activity {
             labels.add("Pasta emuladores vazia (copie Winlator/GameHub .apk no cartao)");
             pkgs.add(null);
             apks.add(null);
+            sysHits.add(null);
         }
+        String title = gameTotal > 0
+                ? "SISTEMAS + EMULADORES  (" + gameTotal + " jogos)"
+                : "EMULADORES / PC";
         new android.app.AlertDialog.Builder(this)
-                .setTitle("EMULADORES / PC")
+                .setTitle(title)
                 .setItems(labels.toArray(new String[0]),
                         new android.content.DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(android.content.DialogInterface dialog, int which) {
-                                launchEmulator(pkgs.get(which), apks.get(which));
+                                String pkg = pkgs.get(which);
+                                if ("".equals(pkg)) {
+                                    return;
+                                }
+                                if (pkg == null && apks.get(which) == null && which < sysHits.size()
+                                        && sysHits.get(which) != null) {
+                                    showSystemGames(sysHits.get(which));
+                                    return;
+                                }
+                                launchEmulator(pkg, apks.get(which));
                             }
                         })
                 .show();
@@ -504,6 +599,7 @@ public class FrontendActivity extends Activity {
         layoutDir = null;
         emuDirs = new ArrayList<>();
         ArrayList<File> roots = storageRoots();
+        systems = collectSystems(roots);
         addNamedDirs(romDirs, roots, ROM_DIR_NAMES);
         addNamedDirs(snapDirs, roots, SNAP_DIR_NAMES);
         addNamedDirs(emuDirs, roots, EMU_DIR_NAMES);
@@ -511,6 +607,125 @@ public class FrontendActivity extends Activity {
         addNamedDirs(layouts, roots, LAYOUT_DIR_NAMES);
         if (!layouts.isEmpty()) {
             layoutDir = layouts.get(0);
+        }
+    }
+
+    /** Pastas de sistema (atari2600, nes, snes, ps1, psp, switch, hbmame, fba...) em cada armazenamento. */
+    private ArrayList<SystemEntry> collectSystems(ArrayList<File> roots) {
+        LinkedHashMap<String, SystemEntry> byLabel = new LinkedHashMap<>();
+        for (File rootDir : roots) {
+            File[] children = rootDir.listFiles();
+            if (children == null) {
+                continue;
+            }
+            for (File child : children) {
+                if (!child.isDirectory()) {
+                    continue;
+                }
+                String n = child.getName().toLowerCase(Locale.US);
+                String label = SYSTEM_FOLDERS.get(n);
+                if (label == null) {
+                    continue;
+                }
+                SystemEntry entry = byLabel.get(label);
+                if (entry == null) {
+                    entry = new SystemEntry(label);
+                    byLabel.put(label, entry);
+                }
+                scanGameDir(child, entry.games, 1);
+            }
+        }
+        ArrayList<SystemEntry> out = new ArrayList<>(byLabel.values());
+        for (SystemEntry e : out) {
+            Collections.sort(e.games, new java.util.Comparator<File>() {
+                @Override
+                public int compare(File a, File b) {
+                    return a.getName().compareToIgnoreCase(b.getName());
+                }
+            });
+        }
+        return out;
+    }
+
+    private void scanGameDir(File dir, ArrayList<File> out, int depth) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File f : files) {
+            String n = f.getName().toLowerCase(Locale.US);
+            if (f.isFile() && isGameFile(n)) {
+                out.add(f);
+            } else if (f.isDirectory() && depth > 0) {
+                scanGameDir(f, out, depth - 1);
+            }
+        }
+    }
+
+    private static boolean isGameFile(String nameLower) {
+        for (String ext : GAME_FILE_EXTS) {
+            if (nameLower.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String mimeFor(File f) {
+        String n = f.getName().toLowerCase(Locale.US);
+        if (n.endsWith(".zip")) {
+            return "application/zip";
+        }
+        if (n.endsWith(".7z")) {
+            return "application/x-7z-compressed";
+        }
+        if (n.endsWith(".iso")) {
+            return "application/x-iso9660-image";
+        }
+        return "application/octet-stream";
+    }
+
+    /** Abre o jogo no emulador Android registrado para o tipo de arquivo (mesmo esquema do ES-DE). */
+    private void openGameFile(File f) {
+        try {
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, mimeFor(f));
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        } catch (Throwable t) {
+            android.widget.Toast.makeText(this,
+                    "Nenhum emulador abriu " + f.getName()
+                            + ". Instale o app do sistema (EMULADORES) ou RetroArch.",
+                    android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void showSystemGames(final SystemEntry system) {
+        ArrayList<String> names = new ArrayList<>();
+        for (File g : system.games) {
+            String n = g.getName();
+            int dot = n.lastIndexOf('.');
+            names.add(dot > 0 ? n.substring(0, dot) : n);
+        }
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(system.label + " (" + names.size() + " jogos)")
+                .setItems(names.toArray(new String[0]),
+                        new android.content.DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(android.content.DialogInterface dialog, int which) {
+                                openGameFile(system.games.get(which));
+                            }
+                        })
+                .show();
+    }
+
+    private static final class SystemEntry {
+        final String label;
+        final ArrayList<File> games = new ArrayList<>();
+
+        SystemEntry(String label) {
+            this.label = label;
         }
     }
 

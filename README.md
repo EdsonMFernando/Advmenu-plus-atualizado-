@@ -83,7 +83,25 @@ Alem das pastas internas do app, o front-end varre CADA armazenamento do aparelh
 | `ROMs/` (ou `roms`, `rom`) | ROMs em `.zip`/`.7z` (subpastas ate 2 niveis tambem sao varridas) |
 | `snapshot/` (ou `snap`, `snaps`) | snapshot avulso por jogo: `<rom>.mp4`, `<rom>.avi`, `<rom>.mkv`, `<rom>.webm`, `<rom>.jpg`, `<rom>.png` ... |
 | `layout/` (ou `layouts`) | `background.jpg`/`background.png` (ou qualquer imagem solta) usada como fundo do menu |
-| `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** canto inferior-direito |
+| `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** |
+| pastas de sistema (lista abaixo) | jogos soltos ou em zip — aparecem no botao **EMULADORES** e abrem no emulador instalado |
+Pastas de sistema aceitas em qualquer armazenamento (o NOME da pasta define o sistema):
+`atari2600`, `atari5200`, `atari7800`, `atari8bit`, `atarilynx`, `atarijaguar`,
+`colecovision`, `intellivision`, `vectrex`, `mastersystem`/`sms`, `megadrive`/`genesis`,
+`sega32x`, `segacd`, `gamegear`, `nes`/`famicom`, `snes`, `n64`, `gameboy`/`gb`, `gbc`,
+`gba`, `nds`/`3ds`, `psx`/`ps1`, `ps2`, `psp`, `psvita`/`vita`, `dreamcast`, `saturn`,
+`neogeo`, `neogeopocket`, `wonderswan`, `switch`, `openbor`, `hbmame`, `fba`/`fbneo`,
+`arcade`, `pc`/`windows`.
+
+Toque no sistema -> lista de jogos -> toque no jogo -> o Android abre no emulador
+instalado para aquele tipo de arquivo (mesmo esquema do ES-DE: o jogo e passado por
+intent, e voce escolhe o app na primeira vez). Se nada abrir, instale o emulador do
+sistema (RetroArch cobre quase tudo).
+
+**Arcade especial:** as ROMs de `hbmame` e `fba`/`fbneo` NAO sao do MAME 0.106 — sao
+conjuntos diferentes (homebrew/hacks e FinalBurn). Essas rodarao no app externo escolhido
+(FinalBurn Neo/RetroArch), nao no nucleo embutido do Advmenu Plus.
+
 Na primeira abertura o app pede a permissao "Acesso a todos os arquivos" — conceda para
 o menu enxergar o cartao de memoria. As ROMs encontradas no cartao sao somadas as internas
 e o emulador tambem enxerga elas (o app adiciona as pastas ao `dir_rom` do `advmame.rc`).
