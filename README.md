@@ -47,6 +47,12 @@ cd android-project
 gradle assembleDebug        # Gradle 8.7+ do sistema; gera app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Baixar o APK pronto (GitHub Actions)
+
+O workflow **Build APK** (`.github/workflows/build-apk.yml`) compila o APK automaticamente a
+cada push: va na aba **Actions** do repositorio → clique no run mais recente → baixe o artefato
+**Advmenu-Plus-apk**. Tambem pode ser disparado manualmente pelo botao **Run workflow**.
+
 Se nao tiver o Gradle do sistema, rode `gradle wrapper` uma vez dentro de `android-project/`
 para gerar o `gradlew` local (o jar do wrapper tambem nao vai versionado).
 
