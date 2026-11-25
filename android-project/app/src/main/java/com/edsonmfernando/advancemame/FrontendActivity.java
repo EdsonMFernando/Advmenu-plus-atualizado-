@@ -1,16 +1,22 @@
 package com.edsonmfernando.advancemame;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.TextureView;
@@ -31,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 
 /**
@@ -42,6 +49,15 @@ import java.util.Locale;
  * Midias (estilo "media"/snaps do ES-DE), por jogo <rom>:
  *   Android/data/com.edsonmfernando.advancemame/files/media/&lt;rom&gt;.mp4|.webm|.mkv|.avi
  *   Android/data/com.edsonmfernando.advancemame/files/media/&lt;rom&gt;.jpg|.jpeg|.png|.webp|.gif
+ *
+ * Tambem aceita pastas na memoria interna ou no CARTAO DE MEMORIA (estilo
+ * AdvMenu Plus). Em cada raiz de armazenamento (/storage/emulated/0, /storage/XXXX-XXXX):
+ *   ROMs/  (ou roms/rom)      ROMs em .zip/.7z (com subpastas ate 2 niveis)
+ *   snapshot/ (ou snap/snaps) snapshot avulso: &lt;rom&gt;.mp4|.avi|.mkv|.webm|.jpg|.png ...
+ *   layout/  (ou layouts)     background.(jpg|png|...) usado como fundo do menu
+ *                         e qualquer imagem solta na pasta
+ * As pastas fora do app precisam da permissao "Acesso a todos os arquivos"
+ * (pedida automaticamente na primeira abertura).
  */
 public class FrontendActivity extends Activity {
 
@@ -52,7 +68,24 @@ public class FrontendActivity extends Activity {
 
     private static final String[] VIDEO_EXTS = {".mp4", ".webm", ".mkv", ".avi"};
     private static final String[] IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"};
+    private static final String[] ROM_DIR_NAMES = {"roms", "rom"};
+    private static final String[] SNAP_DIR_NAMES = {"snapshot", "snap", "snaps"};
+    private static final String[] LAYOUT_DIR_NAMES = {"layout", "layouts"};
+    private static final String[] EMU_DIR_NAMES = {"emuladores", "emulators"};
+    private static final String[][] EMU_ALIASES = {
+            {"com.winlator", "Winlator (jogos de PC)"},
+            {"com.gamesir.gamehub", "GameHub (jogos de PC)"},
+    };
     private static final long WIPE_DELAY_MS = 250;
+
+    private ArrayList<File> romDirs = new ArrayList<>();
+    private ArrayList<File> snapDirs = new ArrayList<>();
+    private ArrayList<File> emuDirs = new ArrayList<>();
+    private File layoutDir;
+    private ImageView layoutBg;
+    private TextView emptyView;
+    private TextView emuButton;
+    private boolean storageGranted;
 
     private FrameLayout root;
     private TextView clockView;
@@ -81,8 +114,13 @@ public class FrontendActivity extends Activity {
         root.addView(snapshotHost, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
+        computeMediaDirs();
+        storageGranted = hasStoragePermission();
+
         adapter = new GameAdapter();
         adapter.load(this);
+
+        applyLayoutBackground();
 
         list = new ListView(this);
         list.setAdapter(adapter);
@@ -155,17 +193,13 @@ public class FrontendActivity extends Activity {
         root.addView(countView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
 
-        if (adapter.getCount() == 0) {
-            TextView empty = new TextView(this);
-            empty.setText("Nenhum jogo.\n\nCopie seus ROMs (zip) em\nAndroid/data/com.edsonmfernando.advancemame/files/rom/");
-            empty.setGravity(Gravity.CENTER);
-            empty.setTextSize(16);
-            empty.setTextColor(COR_NEIGHBOR);
-            root.addView(empty, new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-        }
+        updateEmptyState();
 
         setContentView(root);
+
+        if (!storageGranted) {
+            requestStoragePermission();
+        }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -186,6 +220,312 @@ public class FrontendActivity extends Activity {
         super.onResume();
         clockHandler.post(clockTick);
         snapshotHost.resume();
+        boolean granted = hasStoragePermission();
+        if (granted != storageGranted) {
+            storageGranted = granted;
+            reloadGames();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        boolean granted = hasStoragePermission();
+        if (granted != storageGranted) {
+            storageGranted = granted;
+            reloadGames();
+        }
+    }
+
+    /** Recarrega ROMs/snapshots/layout/emuladores depois da permissao de armazenamento. */
+    private void reloadGames() {
+        computeMediaDirs();
+        applyLayoutBackground();
+        applyEmulatorsButton();
+        applyEmulatorsButton();
+        adapter.load(this);
+        if (adapter.selected >= adapter.getCount()) {
+            adapter.selected = 0;
+        }
+        list.invalidateViews();
+        updateEmptyState();
+        if (adapter.getCount() > 0) {
+            list.setSelection(adapter.selected);
+            snapshotHost.show(adapter.romAt(adapter.selected));
+        } else {
+            snapshotHost.show(null);
+        }
+    }
+
+    /** Botao canto inferior-direito: EMULADORES (apps de PC instalados + APKs da pasta emuladores). */
+    private void applyEmulatorsButton() {
+        if (emuButton != null) {
+            root.removeView(emuButton);
+            emuButton = null;
+        }
+        TextView btn = new TextView(this);
+        btn.setText("EMULADORES");
+        btn.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        btn.setTextSize(14);
+        btn.setTextColor(COR_DETALHE);
+        btn.setPadding(0, 0, dp(14), dp(14));
+        btn.setShadowLayer(dp(2), 0, 0, Color.BLACK);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEmulatorsList();
+            }
+        });
+        root.addView(btn, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END));
+        emuButton = btn;
+    }
+
+    private void showEmulatorsList() {
+        ArrayList<String> labels = new ArrayList<>();
+        final ArrayList<String> pkgs = new ArrayList<>();
+        final ArrayList<File> apks = new ArrayList<>();
+        PackageManager pm = getPackageManager();
+        for (String[] alias : EMU_ALIASES) {
+            if (pm.getLaunchIntentForPackage(alias[0]) != null && !pkgs.contains(alias[0])) {
+                pkgs.add(alias[0]);
+                apks.add(null);
+                labels.add(alias[1]);
+            }
+        }
+        HashSet<String> seenPkgs = new HashSet<>(pkgs);
+        for (File dir : emuDirs) {
+            File[] files = dir.listFiles();
+            if (files == null) {
+                continue;
+            }
+            for (File f : files) {
+                if (!f.isFile() || !f.getName().toLowerCase(Locale.US).endsWith(".apk")) {
+                    continue;
+                }
+                android.content.pm.PackageInfo pi =
+                        pm.getPackageArchiveInfo(f.getAbsolutePath(), 0);
+                String pkg = pi != null && pi.packageName != null
+                        ? pi.packageName : "apk:" + f.getName();
+                if (seenPkgs.contains(pkg)) {
+                    continue;
+                }
+                seenPkgs.add(pkg);
+                boolean installed = pm.getLaunchIntentForPackage(pkg) != null;
+                pkgs.add(pkg);
+                apks.add(installed ? null : f);
+                labels.add((installed ? "\u25b6 " : "[instalar] ")
+                        + f.getName().replaceFirst("(?i)\\.apk$", ""));
+            }
+        }
+        if (labels.isEmpty()) {
+            labels.add("Pasta emuladores vazia (copie Winlator/GameHub .apk no cartao)");
+            pkgs.add(null);
+            apks.add(null);
+        }
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("EMULADORES / PC")
+                .setItems(labels.toArray(new String[0]),
+                        new android.content.DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(android.content.DialogInterface dialog, int which) {
+                                launchEmulator(pkgs.get(which), apks.get(which));
+                            }
+                        })
+                .show();
+    }
+
+    private void launchEmulator(String pkg, File apk) {
+        if (pkg != null && !pkg.startsWith("apk:")) {
+            Intent launch = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (launch != null) {
+                startActivity(launch);
+                return;
+            }
+        }
+        if (apk != null) {
+            android.widget.Toast.makeText(this,
+                    "Instale o APK manualmente: " + apk.getAbsolutePath(),
+                    android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            return Environment.isExternalStorageManager();
+        }
+        if (Build.VERSION.SDK_INT >= 23) {
+            return checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+        return true;
+    }
+
+    private void requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            try {
+                startActivity(new Intent(
+                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                        Uri.parse("package:" + getPackageName())));
+            } catch (Throwable e) {
+                try {
+                    startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+                } catch (Throwable ignored) {
+                }
+            }
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            requestPermissions(new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+    }
+
+    private void updateEmptyState() {
+        if (emptyView != null) {
+            root.removeView(emptyView);
+            emptyView = null;
+        }
+        if (adapter.getCount() == 0) {
+            emptyView = new TextView(this);
+            emptyView.setText("Nenhum jogo.\n\nColoque as ROMs (zip/7z) no cartao de memoria em\n/sdcard/ROMs\nou em Android/data/com.edsonmfernando.advancemame/files/rom/");
+            emptyView.setGravity(Gravity.CENTER);
+            emptyView.setTextSize(16);
+            emptyView.setTextColor(COR_NEIGHBOR);
+            root.addView(emptyView, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        }
+    }
+
+    /** Fundo do menu da pasta layout: background.(jpg|png|...) ou imagem solta. */
+    private void applyLayoutBackground() {
+        if (layoutBg != null) {
+            root.removeView(layoutBg);
+            layoutBg = null;
+        }
+        if (layoutDir == null) {
+            return;
+        }
+        File found = null;
+        for (String ext : IMAGE_EXTS) {
+            File f = new File(layoutDir, "background" + ext);
+            if (f.isFile()) {
+                found = f;
+                break;
+            }
+        }
+        if (found == null) {
+            File[] files = layoutDir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    String n = f.getName().toLowerCase(Locale.US);
+                    for (String ext : IMAGE_EXTS) {
+                        if (f.isFile() && n.endsWith(ext)) {
+                            found = f;
+                            break;
+                        }
+                    }
+                    if (found != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (found == null) {
+            return;
+        }
+        Bitmap bmp = decodeCover(found, Math.max(
+                getResources().getDisplayMetrics().widthPixels,
+                getResources().getDisplayMetrics().heightPixels));
+        if (bmp == null) {
+            return;
+        }
+        ImageView bg = new ImageView(this);
+        bg.setImageBitmap(bmp);
+        bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        bg.setAlpha(0.55f);
+        layoutBg = bg;
+        root.addView(bg, 1, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    /** Raizes de armazenamento: memoria interna emulada + cartao de memoria fisico. */
+    private ArrayList<File> storageRoots() {
+        ArrayList<File> roots = new ArrayList<>();
+        File primary = Environment.getExternalStorageDirectory();
+        if (primary != null) {
+            roots.add(primary);
+        }
+        for (File f : getExternalFilesDirs(null)) {
+            File dir = f;
+            int depth = 0;
+            while (dir != null && depth < 5) {
+                if ("Android".equals(dir.getName())) {
+                    File vol = dir.getParentFile();
+                    if (vol != null && !roots.contains(vol)) {
+                        roots.add(vol);
+                    }
+                    break;
+                }
+                dir = dir.getParentFile();
+                ++depth;
+            }
+        }
+        String secondary = System.getenv("SECONDARY_STORAGE");
+        if (secondary != null) {
+            for (String p : secondary.split(":")) {
+                if (p.length() == 0) {
+                    continue;
+                }
+                File f = new File(p);
+                if (!roots.contains(f)) {
+                    roots.add(f);
+                }
+            }
+        }
+        return roots;
+    }
+
+    /**
+     * Diretorios de jogo/midia: internos primeiro (rom/, media/) e depois as
+     * pastas ROMs/, snapshot/ e layout/ de cada armazenamento.
+     */
+    private void computeMediaDirs() {
+        romDirs = new ArrayList<>();
+        romDirs.add(new File(getFilesDir(), "rom"));
+        snapDirs = new ArrayList<>();
+        snapDirs.add(new File(getFilesDir(), "media"));
+        layoutDir = null;
+        emuDirs = new ArrayList<>();
+        ArrayList<File> roots = storageRoots();
+        addNamedDirs(romDirs, roots, ROM_DIR_NAMES);
+        addNamedDirs(snapDirs, roots, SNAP_DIR_NAMES);
+        addNamedDirs(emuDirs, roots, EMU_DIR_NAMES);
+        ArrayList<File> layouts = new ArrayList<>();
+        addNamedDirs(layouts, roots, LAYOUT_DIR_NAMES);
+        if (!layouts.isEmpty()) {
+            layoutDir = layouts.get(0);
+        }
+    }
+
+    private void addNamedDirs(ArrayList<File> out, ArrayList<File> roots, String[] names) {
+        for (File rootDir : roots) {
+            File[] children = rootDir.listFiles();
+            if (children == null) {
+                continue;
+            }
+            for (File child : children) {
+                if (!child.isDirectory() || out.contains(child)) {
+                    continue;
+                }
+                String n = child.getName().toLowerCase(Locale.US);
+                for (String want : names) {
+                    if (n.equals(want)) {
+                        out.add(child);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -229,7 +569,14 @@ public class FrontendActivity extends Activity {
             @Override
             public void run() {
                 snapshotHost.pause();
-                startActivity(new Intent(FrontendActivity.this, MainActivity.class).putExtra("rom", rom));
+                Intent intent = new Intent(FrontendActivity.this, MainActivity.class)
+                        .putExtra("rom", rom);
+                ArrayList<String> paths = new ArrayList<>();
+                for (File d : romDirs) {
+                    paths.add(d.getAbsolutePath());
+                }
+                intent.putStringArrayListExtra("romDirs", paths);
+                startActivity(intent);
                 overridePendingTransition(0, 0);
             }
         });
@@ -240,11 +587,12 @@ public class FrontendActivity extends Activity {
     }
 
     private File mediaFile(String rom, String[] exts) {
-        File dir = new File(getFilesDir(), "media");
-        for (String ext : exts) {
-            File f = new File(dir, rom + ext);
-            if (f.isFile()) {
-                return f;
+        for (File dir : snapDirs) {
+            for (String ext : exts) {
+                File f = new File(dir, rom + ext);
+                if (f.isFile()) {
+                    return f;
+                }
             }
         }
         return null;
@@ -427,19 +775,33 @@ public class FrontendActivity extends Activity {
         private final HashMap<String, Bitmap> thumbs = new HashMap<>();
 
         void load(FrontendActivity act) {
-            File romDir = new File(act.getFilesDir(), "rom");
-            File[] files = romDir.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    String n = f.getName().toLowerCase();
-                    if (f.isFile() && (n.endsWith(".zip") || n.endsWith(".7z"))) {
-                        roms.add(n.substring(0, n.lastIndexOf('.')));
-                    }
-                }
+            roms.clear();
+            titles.clear();
+            HashSet<String> seen = new HashSet<>();
+            for (File dir : act.romDirs) {
+                scanRomDir(dir, seen, 2);
             }
             Collections.sort(roms);
             for (String rom : roms) {
                 titles.add(prettyName(rom));
+            }
+        }
+
+        private void scanRomDir(File dir, HashSet<String> seen, int depth) {
+            File[] files = dir.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File f : files) {
+                String n = f.getName().toLowerCase(Locale.US);
+                if (f.isFile() && (n.endsWith(".zip") || n.endsWith(".7z"))) {
+                    String rom = n.substring(0, n.lastIndexOf('.'));
+                    if (seen.add(rom)) {
+                        roms.add(rom);
+                    }
+                } else if (f.isDirectory() && depth > 0) {
+                    scanRomDir(f, seen, depth - 1);
+                }
             }
         }
 

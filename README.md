@@ -73,9 +73,50 @@ pelo d-pad de gamepad/teclado, e ao tocar (ou apertar A/Enter) inicia o `advmame
 O instalador extrai `assets/data` para o `filesDir` e cria os arquivos de configuracao em
 `/data/data/<pkg>/files` (`advmame.rc`, `advmenu.rc`).
 
+### Pastas no cartao de memoria / armazenamento (estilo AdvMenu Plus)
+
+Alem das pastas internas do app, o front-end varre CADA armazenamento do aparelho
+(memoria interna `/sdcard/` e cartao de memoria fisico `/storage/XXXX-XXXX/`) procurando:
+
+| Pasta | Conteudo |
+|---|---|
+| `ROMs/` (ou `roms`, `rom`) | ROMs em `.zip`/`.7z` (subpastas ate 2 niveis tambem sao(varridas) |
+| `snapshot/` (ou `snap`, `snaps`) | snapshot avulso por jogo: `<rom>.mp4`, `<rom>.avi`, `<rom>.mkv`, `<rom>.webm`, `<rom>.jpg`, `<rom>.png` ... |
+| `layout/` (ou `layouts`) | `background.jpg`/`background.png` (ou qualquer imagem solta) usada como fundo do menu |
+| `emuladores/` (ou `emulators`) | APKs de emuladores/apps de PC avulsos (Winlator, GameHub etc.) — aparecem no botao **EMULADORES** canto inferior-direito |
+Na primeira abertura o app pede a permissao "Acesso a todos os arquivos" — conceda para
+o menu enxergar o cartao de memoria. As ROMs encontradas no cartao sao somadas as internas
+e o emulador tambem enxerga elas (o app adiciona as pastas ao `dir_rom` do `advmame.rc`).
+
+Exemplo de organizacao no cartao:
+
+```
+ROMs/        concorone.zip  (pode ter subpastas por sistema)
+snapshot/    concorone.mp4  (ou concorone.jpg / .avi ...)
+layout/      background.jpg
+emuladores/  Winlator.apk, GameHub.apk ...  (apps de PC avulsos)
+```
+
+## Jogos de PC (Winlator / GameHub)
+
+O botao **EMULADORES** (canto inferior-direito do menu) lista e abre:
+
+- **Winlator** (`com.winlator`) e **GameHub** (`com.gamesir.gamehub`) se estiverem
+  instalados no aparelho
+- Qualquer `.apk` colocado em `emuladores/` no cartao de memoria — se o app ja estiver
+  instalado, abre com um toque; se nao, o menu avisa o caminho para voce instalar
+
+Sao apps separados (Wine + Box64/FEX para jogos de Windows): o Advmenu Plus apenas os
+ABRE — o jogo de PC propriamente dito e configurado dentro de cada um deles.
+
+**TeknoParrot**: nao existe versao Android oficial (e um programa Windows x86). Em
+Snapdragon forte da para tentar rodar o TeknoParrot DENTRO do Winlator (Windows
+emulado), mas nao e garantido — nao faz parte do APK.
+
 ### Snapshots (estilo ES-DE)
 
-Por jogo `<rom>`, coloque as midias em `Android/data/com.edsonmfernando.advancemame/files/media/`:
+Por jogo `<rom>`, coloque as midias em `Android/data/com.edsonmfernando.advancemame/files/media/`
+OU na pasta `snapshot/` do cartao (item acima):
 
 - **Video de fundo** (looping, sem som): `<rom>.mp4`, `<rom>.webm` ou `<rom>.mkv`
 - **AVI tambem e tentado** — o Android nativo nao garante AVI; se o aparelho nao tiver o
@@ -85,10 +126,10 @@ decodificador, o front-end cai automaticamente na imagem
 
 Prioridade: video primeiro, imagem como fallback.
 
-As ROMs de exemplo (zips binarios) nao vao no repositorio. Para jogar, coloque as ROMs em
-`Android/data/com.edsonmfernando.advancemame/files/rom` OU, antes de compilar, coloque os zips
-em `android-project/app/src/main/assets/rom/` para irem embutidas no APK (o app extrai para o
-`filesDir` na primeira execucao; a ROM padrao, se nenhuma for passada, e `gridlee`).
+As ROMs de exemplo (zips binarios) nao listadas(varrem) no repositorio. Para jogar, coloque as ROMs em
+`/sdcard/ROMs`, em `Android/data/com.edsonmfernando.advancemame/files/rom` OU, antes de compilar,
+coloque os zips em `android-project/app/src/main/assets/rom/` para irem embutidas no APK (o app
+extrai para o `filesDir` na primeira execucao; a ROM padrao, se nenhuma for passada, e `gridlee`).
 
 Voce tambem pode escolher a ROM por Intent (o launcher normal abre a lista do front-end):
 
