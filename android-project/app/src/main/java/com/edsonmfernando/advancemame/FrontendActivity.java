@@ -104,6 +104,15 @@ public class FrontendActivity extends Activity {
             {"xyz.aethersx2.android", "AetherSX2 — PlayStation 2"},
             {"org.ppsspp.ppsspp", "PPSSPP — PSP"},
             {"org.dolphinemu.dolphinemu", "Dolphin — GameCube/Wii"},
+            {"org.duckstation.duckstation", "DuckStation — PlayStation 1"},
+            {"me.magnum.melonds", "melonDS — Nintendo DS"},
+            {"com.dsemu.drastic", "DraStic — Nintendo DS"},
+            {"org.citra.citra_emu", "Citra — Nintendo 3DS"},
+            {"com.fastemulator.gba", "My Boy! — Game Boy Advance"},
+            {"com.flycast.emulator", "Flycast — Sega Dreamcast/NAOMI"},
+            {"org.flycast.emulator", "Flycast — Sega Dreamcast/NAOMI"},
+            {"org.devmia.yabasanshiro", "Yaba Sanshiro — Sega Saturn"},
+            {"com.explusalpha.MdEmu", "MD.emu — Mega Drive/Master System/Game Gear"},
     };
 
     /** Pastas de sistema no armazenamento (nome da pasta, no cartao) -> nome bonito. */

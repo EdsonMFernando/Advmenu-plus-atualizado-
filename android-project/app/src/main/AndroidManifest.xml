@@ -33,6 +33,15 @@
         <package android:name="org.vita3k.emulator" />
         <package android:name="org.openbor.engine" />
         <package android:name="xyz.aethersx2.android" />
+        <package android:name="org.duckstation.duckstation" />
+        <package android:name="me.magnum.melonds" />
+        <package android:name="com.dsemu.drastic" />
+        <package android:name="org.citra.citra_emu" />
+        <package android:name="com.fastemulator.gba" />
+        <package android:name="com.flycast.emulator" />
+        <package android:name="org.flycast.emulator" />
+        <package android:name="org.devmia.yabasanshiro" />
+        <package android:name="com.explusalpha.MdEmu" />
     </queries>
 
     <application
