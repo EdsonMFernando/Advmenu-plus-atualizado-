@@ -21,9 +21,12 @@ apply_patch() {
 
 # 1. AdvanceMAME (nucleo + advance + alien)
 if [ ! -d advancemame ]; then
-    git clone https://github.com/amadvance/advancemame.git advancemame
+    git clone -q https://github.com/amadvance/advancemame.git advancemame
 fi
-git -C advancemame checkout -q "$ADV_REV"
+# busca o commit fixado exato (evita falha de arvores parciais em clones recentes)
+git -C advancemame fetch -q --depth 1 origin "$ADV_REV" \
+  && git -C advancemame checkout -q --detach "${ADV_REV}" \
+  || git -C advancemame checkout -q "$ADV_REV"
 
 # 2. miniz (gerado pelo cmake dele em builds normais; aqui usamos estatico via CMakeLists)
 if [ ! -f advancemame/alien/deps/miniz-3.1.2/miniz.h ]; then
