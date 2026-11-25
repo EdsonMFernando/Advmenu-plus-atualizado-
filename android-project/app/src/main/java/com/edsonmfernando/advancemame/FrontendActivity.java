@@ -773,12 +773,14 @@ public class FrontendActivity extends Activity {
     /** Mapeamento do gamepad fisico (menu): aperte CONTROLE por tempo longo para mapear. */
     private static final String[] PAD_ACTIONS = {
             "CIMA", "BAIXO", "ESQUERDA", "DIREITA", "A (CONFIRMAR)", "B (VOLTAR)",
+            "PAGINA ACIMA", "PAGINA ABAIXO",
     };
     private int mapTarget = -1;
     private final int[] keyMap = {
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B,
+            KeyEvent.KEYCODE_PAGE_UP, KeyEvent.KEYCODE_PAGE_DOWN,
     };
 
     private void showKeyMapDialog() {
@@ -829,6 +831,8 @@ public class FrontendActivity extends Activity {
             if (act == 3) { sendKey(KeyEvent.KEYCODE_DPAD_RIGHT); return true; }
             if (act == 4) { sendKey(KeyEvent.KEYCODE_DPAD_CENTER); return true; }
             if (act == 5) { onBackPressed(); return true; }
+            if (act == 6) { sendKey(KeyEvent.KEYCODE_PAGE_UP); return true; }
+            if (act == 7) { sendKey(KeyEvent.KEYCODE_PAGE_DOWN); return true; }
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -939,7 +943,11 @@ public class FrontendActivity extends Activity {
                 .show();
     }
 
-    /** Controle fisico conectado (gamepad USB/Bluetooth/Type-C/WiFi ou handheld Android)? */
+    /**
+     * Controle fisico conectado: gamepad USB/Bluetooth/Type-C/WiFi, handhelds Android
+     * com gamepad embutido e encoders de arcade (placa JAMMA / Zero Delay), que aparecem
+     * como joystick ou como teclado USB fisico.
+     */
     private boolean hasPhysicalController() {
         int[] ids = android.view.InputDevice.getDeviceIds();
         for (int id : ids) {
@@ -950,7 +958,8 @@ public class FrontendActivity extends Activity {
             int src = d.getSources();
             if ((src & android.view.InputDevice.SOURCE_GAMEPAD) != 0
                     || (src & android.view.InputDevice.SOURCE_JOYSTICK) != 0
-                    || (src & android.view.InputDevice.SOURCE_DPAD) != 0) {
+                    || (src & android.view.InputDevice.SOURCE_DPAD) != 0
+                    || (src & android.view.InputDevice.SOURCE_KEYBOARD) != 0) {
                 return true;
             }
         }

@@ -293,12 +293,20 @@ sistema ja tem nucleo pronto — sem baixar nem compilar nada separado.
 - **Gamepad fisico USB/Bluetooth/Type-C/adaptador WiFi** (PS DualShock/DualSense, Xbox,
   genéricos): Android entrega o controle pro app sem instalar nada — no menu, o
   direcional navega, botao A/Enter confirma, B volta.
-- **Mapeamento fisico:** toque LONGO no botao **CONTROLE** abre o mapeador — escolha
-  CIMA/BAIXO/ESQUERDA/DIREITA/A/B e aperte a tecla desejada no seu gamepad fisico; o
-  menu passa a usar suas teclas (fica salvo). Nos jogos do ARCADE embutido, o SDL2 do
-  AdvanceMAME reconhece o gamepad automaticamente; nos emuladores externos (RetroArch,
-  PPSSPP etc.) o mapeamento in-game e feito dentro de cada app (e o padrao Android
-  ja reconhece controles PS/Xbox direto).
+- **Teclado e mouse USB, Bluetooth ou wireless (dongle):** reconhecidos nativamente —
+  setas/Enter/Esc navegam o menu, o clique do mouse seleciona e a rodinha rola a lista;
+  o teclado tambem pode ser mapeado no mapeador (86 teclas de arcade/encoder USB entram
+  como teclado fisico).
+- **Mapeamento fisico (qualquer modelo):** no menu **CONFIGURACAO** (engrenagem ⚙) ou com
+  toque LONGO no botao **CONTROLE** abre o mapeador — escolha CIMA/BAIXO/ESQUERDA/DIREITA/
+  A (CONFIRMAR)/B (VOLTAR)/PAGINA ACIMA/PAGINA ABAIXO e aperte a tecla desejada no seu
+  controle fisico; o menu passa a usar suas teclas (fica salvo). Vale para gamepad PS/Xbox/
+  genérico, handheld Android com gamepad embutido, encoder de arcade USB (placa JAMMA /
+  Zero Delay, que aparece como joystick ou teclado USB), teclado e — nos teclados — qualquer
+  combinacao de teclas. Nos jogos do ARCADE embutido, o SDL2 do AdvanceMAME reconhece o
+  gamepad automaticamente; nos emuladores externos (RetroArch, PPSSPP etc.) o mapeamento
+  in-game e feito dentro de cada app (e o padrao Android ja reconhece controles
+  PS/Xbox direto).
 - **Nada para instalar:** o front-end em si e standalone — reconhece jogos, pastas de
   sistema e controles sozinho; so os sistemas que precisam de emulador externo usam o
   app externo escolhido.
