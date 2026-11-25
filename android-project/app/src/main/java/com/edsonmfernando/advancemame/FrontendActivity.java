@@ -114,6 +114,8 @@ public class FrontendActivity extends Activity {
             {"org.devmia.yabasanshiro", "Yaba Sanshiro — Sega Saturn"},
             {"com.explusalpha.MdEmu", "MD.emu — Mega Drive/Master System/Game Gear"},
             {"xendroid.compose", "XenDroid — Xbox 360"},
+            {"org.xeniaae", "Xenia-AE — Xbox 360"},
+            {"x360mobile", "X360 Mobile — Xbox 360"},
     };
 
     /** Pastas de sistema no armazenamento (nome da pasta, no cartao) -> nome bonito. */
@@ -1843,6 +1845,17 @@ public class FrontendActivity extends Activity {
         }
     }
 
+    /** Acha emulador instalado casando prefixos de pacote conhecidos. */
+    private String findEmuByPrefixes(String[] prefixes) {
+        for (String pre : prefixes) {
+            String found = pinballAppPackage(pre);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
     /** App de pinball (Zen/Farsight/VPX) instalado: casa por prefixo de pacote. */
     private String pinballAppPackage(String prefix) {
         PackageManager pm = getPackageManager();
@@ -1904,9 +1917,17 @@ public class FrontendActivity extends Activity {
             }
         }
         if ("xbox360".equals(sysKey)) {
-            String xen = pinballAppPackage("xendroid");
+            String[] xb = {"xendroid", "x360mobile", "org.xeniaae"};
+            String xen = findEmuByPrefixes(xb);
             if (xen != null) {
                 pkg = xen;
+            }
+        }
+        if ("ps4".equals(sysKey)) {
+            String[] ps4 = {"bachata", "shadps4", "shad"};
+            String shad = findEmuByPrefixes(ps4);
+            if (shad != null) {
+                pkg = shad;
             }
         }
                 if ("pinball".equals(sysKey)) {
