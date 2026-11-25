@@ -24,6 +24,7 @@
         <package android:name="com.zenstudios.zenpinball2" />
         <package android:name="com.zenstudios.PinballFX3" />
         <package android:name="com.zenstudios.zenpinball" />
+        <package android:name="com.zenstudios.ZenPinballWorld" />
         <package android:name="com.farsight.PinballArcade" />
         <package android:name="dev.eden.eden_emulator" />
         <package android:name="net.rpcs3.rpcs3" />

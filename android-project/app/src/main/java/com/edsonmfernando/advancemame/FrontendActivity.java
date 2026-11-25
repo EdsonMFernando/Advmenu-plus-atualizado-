@@ -93,6 +93,7 @@ public class FrontendActivity extends Activity {
             {"org.vpinball.app.gl", "Visual Pinball X Android — pinball"},
             {"com.retroeki.pinball", "Pocket Pinball (VPX Standalone) — pinball"},
             {"com.zenstudios.PinballFx", "Pinball FX (Zen) — pinball"},
+            {"com.zenstudios.ZenPinballWorld", "Pinball FX Android (Zen) — pinball"},
             {"com.farsight.PinballArcade", "Pinball Arcade (Farsight)"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
