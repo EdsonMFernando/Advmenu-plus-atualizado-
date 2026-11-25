@@ -361,6 +361,7 @@ Tensor, Unisoc e tambem x86.
 | [VPForums](https://www.vpforums.org) | mesas VPX/Future Pinball, tutoriais e utilitarios |
 | [Virtual Pinball Spreadsheet](https://virtualpinballspreadsheet.github.io) | catalogo/busca: onde baixar cada mesa, rom e backglass |
 | [github.com/vpinball/vpinball](https://github.com/vpinball/vpinball/releases) | APK Android oficial do VPX (10.8.0 arm64 + legacy) |
+| [ravarcade.pl](https://www.ravarcade.pl) | site OFICIAL do Future Pinball (freeware, Windows — no Android roda pela rota Winlator) |
 
 Como instalar a mesa baixada: solte o `NomeDaMesa.vpx` na pasta `pinball/` do cartao; se a
 mesa tiver, junte na MESMA pasta `NomeDaMesa.directb2s` (backglass) e a rom dentro de
