@@ -363,6 +363,22 @@ Tensor, Unisoc e tambem x86.
 | [github.com/vpinball/vpinball](https://github.com/vpinball/vpinball/releases) | APK Android oficial do VPX (10.8.0 arm64 + legacy) |
 | [ravarcade.pl](https://www.ravarcade.pl) | site OFICIAL do Future Pinball (freeware, Windows — no Android roda pela rota Winlator) |
 
+#### Projetos open source (cгódigo-fonte e downloads oficiais)
+
+| Projeto | O que é | Fonte/download |
+|---|---|---|
+| Visual Pinball X | motor principal (mesas .vpx), port Android incluso | [github.com/vpinball/vpinball](https://github.com/vpinball/vpinball/releases) |
+| PinMAME | emulador do hardware das máquinas (ja EMBUTIDO no VPX) | [github.com/vpinball/pinmame](https://github.com/vpinball/pinmame) |
+| wpc-emu (web) | WPC no navegador, com T2 FreeWPC livre | [neophob.github.io/wpc-emu](https://neophob.github.io/wpc-emu/) |
+| FreeWPC | sistema operacional livre de maquinas WPC (ROMs livres) | [github.com/bcd/freewpc](https://github.com/bcd/freewpc) |
+| Pocket Pinball | app Android oficial que roda .vpx (VPX engine) | [Play Store](https://play.google.com/store/apps/details?id=com.retroeki.pinball) / [pocketpinball.com](https://pocketpinball.com) |
+| 3D Pinball Space Cadet | port Android do classico do Windows | [github.com/fexed/Pinball-on-Android](https://github.com/fexed/Pinball-on-Android/releases) |
+| Future Pinball | criador/rodador de mesas .fpt (Windows; roda via Winlator) | [ravarcade.pl](https://www.ravarcade.pl) |
+
+Mesas .vpx (conteudo dos autores): baixe de [VPUniverse](https://vpuniverse.com),
+[VPForums](https://www.vpforums.org) e use o catalogo do
+[Virtual Pinball Spreadsheet](https://virtualpinballspreadsheet.github.io).
+
 Como instalar a mesa baixada: solte o `NomeDaMesa.vpx` na pasta `pinball/` do cartao; se a
 mesa tiver, junte na MESMA pasta `NomeDaMesa.directb2s` (backglass) e a rom dentro de
 `pinball/roms/` (formato VPX android) ou `vpmroms/<nome>/` — o VPX Android resolve. O
