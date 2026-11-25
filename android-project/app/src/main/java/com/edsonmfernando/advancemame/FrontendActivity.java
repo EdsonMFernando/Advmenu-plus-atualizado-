@@ -185,6 +185,10 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("daphne", "Arcade LaserDisc (Daphne)");
         SYSTEM_FOLDERS.put("pinball", "Pinball (Future/Visual Pinball)");
         SYSTEM_FOLDERS.put("arcade", "Arcade");
+        SYSTEM_FOLDERS.put("nesicaxlive", "Nesica X Live (arcade SEGA)");
+        SYSTEM_FOLDERS.put("nesica", "Nesica X Live (arcade SEGA)");
+        SYSTEM_FOLDERS.put("coinops", "CoinOps (multijogos de PC)");
+        SYSTEM_FOLDERS.put("retroarch", "RetroArch (multi)");
         SYSTEM_FOLDERS.put("amiga", "Commodore Amiga");
         SYSTEM_FOLDERS.put("amigacd32", "Amiga CD32");
         SYSTEM_FOLDERS.put("c64", "Commodore 64");
@@ -236,6 +240,9 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("taitotypex", "com.winlator");
         SYSTEM_PACKAGES.put("typex", "com.winlator");
         SYSTEM_PACKAGES.put("lindbergh", "com.winlator");
+        SYSTEM_PACKAGES.put("nesicaxlive", "com.winlator");
+        SYSTEM_PACKAGES.put("nesica", "com.winlator");
+        SYSTEM_PACKAGES.put("coinops", "com.winlator");
         SYSTEM_PACKAGES.put("dos", "com.winlator");
         SYSTEM_PACKAGES.put("pcdos", "com.winlator");
     }
@@ -890,6 +897,39 @@ public class FrontendActivity extends Activity {
      * Diretorios de jogo/midia: internos primeiro (rom/, media/) e depois as
      * pastas ROMs/, snapshot/ e layout/ de cada armazenamento.
      */
+    /** Pastas basicas criadas automaticamente no cartao (nada manual). */
+    private static final String[] CARD_DIR_NAMES = {
+            "ROMs", "snapshot", "layout", "emuladores",
+    };
+
+    /** Cria (uma unica vez, se faltando) as pastas de sistema + basicas em cada armazenamento. */
+    private static final ArrayList<String> CANONICAL_SYSTEM_DIRS = new ArrayList<>();
+    static {
+        HashSet<String> seen = new HashSet<>();
+        for (java.util.Map.Entry<String, String> e : SYSTEM_FOLDERS.entrySet()) {
+            if (seen.add(e.getValue())) {
+                CANONICAL_SYSTEM_DIRS.add(e.getKey());
+            }
+        }
+    }
+
+    private void ensureCardDirs(ArrayList<File> roots) {
+        if (!storageGranted) {
+            return;
+        }
+        for (File r : roots) {
+            if (!r.canWrite()) {
+                continue;
+            }
+            for (String n : CARD_DIR_NAMES) {
+                new File(r, n).mkdirs();
+            }
+            for (String n : CANONICAL_SYSTEM_DIRS) {
+                new File(r, n).mkdirs();
+            }
+        }
+    }
+
     private void computeMediaDirs() {
         romDirs = new ArrayList<>();
         romDirs.add(new File(getFilesDir(), "rom"));
@@ -898,6 +938,7 @@ public class FrontendActivity extends Activity {
         layoutDir = null;
         emuDirs = new ArrayList<>();
         ArrayList<File> roots = storageRoots();
+        ensureCardDirs(roots);
         systems = collectSystems(roots);
         addNamedDirs(romDirs, roots, ROM_DIR_NAMES);
         addNamedDirs(snapDirs, roots, SNAP_DIR_NAMES);
@@ -931,7 +972,7 @@ public class FrontendActivity extends Activity {
                     entry = new SystemEntry(n, label);
                     byLabel.put(label, entry);
                 }
-                scanGameDir(child, entry.games, 1);
+                scanGameDir(child, entry.games, PC_SCAN_SYSTEMS.contains(n) ? 3 : 1);
             }
         }
         ArrayList<SystemEntry> out = new ArrayList<>(byLabel.values());
@@ -946,6 +987,17 @@ public class FrontendActivity extends Activity {
         return out;
     }
 
+    /** Sistemas de Windows: varrem mais fundo (jogos ficam aninhados de verdade). */
+    private static final HashSet<String> PC_SCAN_SYSTEMS = new HashSet<>(java.util.Arrays.asList(
+            "pc", "windows", "winlator", "mugen", "teknoparrot", "taitotypex", "typex",
+            "nesicaxlive", "nesica", "lindbergh", "coinops", "dos", "pcdos"));
+
+    /** Exes de instalacao/limpeza que nao sao jogos. */
+    private static final String[] EXE_SKIP = {
+            "uninstall", "setup", "dxsetup", "vc_redist", "redist", "directx",
+            "installscript", "crashreport", "crashhandler", "updater", "launcher_installer",
+    };
+
     private void scanGameDir(File dir, ArrayList<File> out, int depth) {
         File[] files = dir.listFiles();
         if (files == null) {
@@ -953,12 +1005,25 @@ public class FrontendActivity extends Activity {
         }
         for (File f : files) {
             String n = f.getName().toLowerCase(Locale.US);
-            if (f.isFile() && isGameFile(n)) {
+            if (f.isFile()) {
+                if (!isGameFile(n) || n.endsWith(".exe") && isInstallerExe(n)) {
+                    continue;
+                }
                 out.add(f);
-            } else if (f.isDirectory() && depth > 0) {
+            } else if (f.isDirectory() && depth > 0
+                    && !n.startsWith(".") && !n.equals("__macosx")) {
                 scanGameDir(f, out, depth - 1);
             }
         }
+    }
+
+    private static boolean isInstallerExe(String nameLower) {
+        for (String s : EXE_SKIP) {
+            if (nameLower.contains(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isGameFile(String nameLower) {
@@ -987,9 +1052,36 @@ public class FrontendActivity extends Activity {
         return "application/octet-stream";
     }
 
+    /** Jogos de Windows (TeknoParrot/MUGEN/PC/Type X/DOS): tenta o protocolo de shortcut
+     *  do Winlator CMod (shortcut_path) e cai para o menu de shortcuts do Winlator oficial. */
+    private boolean launchWinlatorCombo(File f) {
+        PackageManager pm = getPackageManager();
+        if (pm.getLaunchIntentForPackage("com.winlator") == null) {
+            return false;
+        }
+        try {
+            Intent i = new Intent();
+            i.setClassName("com.winlator", "com.winlator.ContentActivity");
+            i.putExtra("shortcut_path", f.getAbsolutePath());
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(i);
+            return true;
+        } catch (Throwable ignored) {
+            android.widget.Toast.makeText(this,
+                    "Winlator aberto — crie/abra o shortcut do " + f.getName()
+                            + " (setup unico, so na primeira vez)",
+                    android.widget.Toast.LENGTH_LONG).show();
+            startActivity(pm.getLaunchIntentForPackage("com.winlator"));
+            return true;
+        }
+    }
+
     /** Abre o jogo no emulador do sistema (app preferido) ou, se nao houver, no registrado para o tipo de arquivo. */
     private void openGameFile(File f, String sysKey) {
         String pkg = sysKey == null ? null : SYSTEM_PACKAGES.get(sysKey);
+        if ("com.winlator".equals(pkg) && launchWinlatorCombo(f)) {
+            return;
+        }
         try {
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f);
             Intent intent = new Intent(Intent.ACTION_VIEW);

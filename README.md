@@ -98,7 +98,8 @@ Pastas de sistema aceitas em qualquer armazenamento (o NOME da pasta define o si
   `ps3`, `ps4`, `ps5`, `xbox`, `xbox360`, `xbla` (Xbox Live Arcade)
 - **Arcade:** `arcade`, `mame`, `hbmame`, `fba`/`fbneo`/`finalburn`, `cps1`, `cps2`, `cps3`,
   `naomi`, `naomi2`, `atomiswave`, `stv`, `lindbergh`, `daphne` (LaserDisc),
-  `taitotypex`/`typex` (Taito Type X), `teknoparrot`, `mugen`, `openbor`, `pinball`
+  `taitotypex`/`typex` (Taito Type X), `nesicaxlive`/`nesica` (Nesica X Live),
+  `teknoparrot`, `mugen`, `openbor`, `pinball`, `coinops`, `retroarch`
 - **Computadores:** `amiga`, `amigacd32`, `c64`, `c128`, `vic20`, `amstradcpc`/`cpc`,
   `msx`, `msx2`, `spectrum`/`zxspectrum`, `zx81`, `dos`/`pcdos`, `macintosh`, `apple2`,
   `atarist`, `x68000`, `pc88`, `pc98`, `scummvm`, `pc`/`windows`/`winlator`
@@ -152,6 +153,19 @@ de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front
 garante FPS de outro app: os jogos do PROPRIO APK (arcade MAME) e que rodam sem
 travamento e sem perda de frames, pois sao processados pelo nucleo embutido.
 
+### Como nos videos dos multijogos de PC (RetroArch/TeknoParrot/Naomi/Type X/NesicaXLive)
+
+Os pacotes de multijogos de PC com AdvMenu Plus (tutoriais do YouTube com RetroArch,
+TeknoParrot, Naomi, MAME, Taito Type X e NesicaXLive) tem equivalente 1:1 no Advmenu
+Android:
+
+- `arcade`/`mame` → nucleo MAME embutido no proprio APK (Mais Rapido, sem aquecer)
+- `retroarch` → jogos soltos no cartao abrem direto no RetroArch
+- `naomi`/`naomi2` → RetroArch (Flycast) ou Winlator/Demul
+- `teknoparrot`, `nesicaxlive`/`nesica`, `taitotypex`/`typex`, `lindbergh`, `coinops`
+  → **Winlator** automaticamente (sao bibliotecas de Windows)
+- `mugen`, `pc`/`windows`, `dos` → Winlator
+
 ### Emuladores "de Windows" no Android (TeknoParrot, Taito Type X, MUGEN, Lindbergh, DOS)
 
 TeknoParrot, Taito Type X e Lindbergh sao CARREGADORES de Windows (codigo fechado,
@@ -160,6 +174,17 @@ no Advmenu Android e o **Winlator** (Windows emulado dentro do Android): as past
 `teknoparrot`, `taitotypex`/`typex`, `lindbergh`, `mugen`, `dos`/`pcdos` e `pc`/`windows`
 do cartao abrem os jogos DIRETO no Winlator automaticamente (o menu escolhe o app
 preferido por sistema; se o Winlator nao estiver instalado, abre o escolhedor normal).
+
+**Setup automatico de pastas (nada manual):** na primeira abertura o Advmenu cria
+em cada armazenamento as pastas `ROMs`, `snapshot`, `layout`, `emuladores` E **todas
+as pastas de sistema** (as ~100 + pastas listadas acima, incluindo `teknoparrot`,
+`mugen`, `pc` etc.) — so e preciso jogar os jogos dentro delas.
+
+**Combo TeknoParrot/PC → Winlator:** ao tocar num jogo `.exe` dessas pastas, o menu
+abre o Winlator (tenta o protocolo de shortcut dos forks CMod com `shortcut_path`;
+no Winlator oficial abre a tela de shortcuts, onde o shortcut criado uma unica vez
+por jogo dispara direto). Instalar o TeknoParrot e os jogos DENTRO do container do
+Winlator e o setup unico que nenhum front-end pode pular — o resto e automático.
 
 - **MUGEN nativo:** existe o motor open-source **Ikemen GO** (sucessor do MUGEN, tem
   build para Android na comunidade) — pode deitar na pasta `emuladores/` como APK e
