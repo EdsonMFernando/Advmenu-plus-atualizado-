@@ -30,9 +30,11 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
 
 - [x] Fase 1 (vendor script fixado)
 - [ ] Fase 2 (CMake do nuclei) — INICIADA: smoke test com clang do NDK r26d
-  (`aarch64-linux-android24-clang++ -std=c++20 -O1 -DCRLF=3`) compila **54/54**
-  arquivos de `src/lib/util` para arm64; includes de 3rdparty mapeados. O unico
-  ajuste de codigo ate agora e o `patches-hbm/01-android-zlib-const.patch`
+  (`aarch64-linux-android24-clang++ -std=c++20 -O1 -DCRLF=3`) compila:
+  - `src/lib/util`: **54/54** arquivos para arm64
+  - `src/lib/formats`: **231/231** arquivos para arm64 (incluindo o `all.cpp`,
+    com o `has_formats.h` gerado pelo `sync-hbmame.sh` no lugar do GENie)
+  O unico ajuste de codigo ate agora e o `patches-hbm/01-android-zlib-const.patch`
   (validado com `git apply --check`), aplicado automaticamente pelo
   `tools/sync-hbmame.sh` — re-sync limpo reproduz a arvore identica.
 - [ ] Fase 3 (OSD SDL)
