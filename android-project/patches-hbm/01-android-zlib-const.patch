@@ -1,0 +1,12 @@
+--- a/src/lib/util/archiver.cpp
++++ b/src/lib/util/archiver.cpp
+@@ -305,7 +305,8 @@
+ 	{
+ 		actual = 0U;
+ 
+-		auto ptr(reinterpret_cast<Bytef const *>(buffer));
++		// ANDROID PORT: zlib do NDK declara next_in como Bytef*
++		auto ptr(const_cast<Bytef *>(reinterpret_cast<Bytef const *>(buffer)));
+ 		while (length)
+ 		{
+ 			m_z_stream.next_in = ptr;

@@ -1,0 +1,2 @@
+/* recursos de arte custom removidos: o executavel nao tem icone nem splash */
+#include "resource.h"

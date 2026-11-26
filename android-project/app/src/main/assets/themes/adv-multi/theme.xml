@@ -1,0 +1,24 @@
+<theme>
+    <formatVersion>3</formatVersion>
+    <variables>
+        <backgroundColor>0b0d12</backgroundColor>
+        <primaryColor>ffffff</primaryColor>
+        <secondaryColor>8fa3b8</secondaryColor>
+        <selectedColor>3aa6ff</selectedColor>
+    </variables>
+    <view name="system">
+        <image name="background" extra="true">
+            <path>./art/background.png</path>
+        </image>
+    </view>
+    <view name="basic, detailed, video, gamecarousel, grid">
+        <image name="background" extra="true">
+            <path>./art/background.png</path>
+        </image>
+    </view>
+    <colorproperty name="background">${backgroundColor}</colorproperty>
+    <colorproperty name="primary">${primaryColor}</colorproperty>
+    <colorproperty name="secondary">${secondaryColor}</colorproperty>
+    <colorproperty name="selector">${selectedColor}</colorproperty>
+    <colorproperty name="textcolor">${primaryColor}</colorproperty>
+</theme>

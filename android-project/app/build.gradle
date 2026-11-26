@@ -1,0 +1,58 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.edsonmfernando.advancemame'
+    compileSdk 34
+    ndkVersion '26.3.11579264'
+
+    defaultConfig {
+        applicationId 'com.edsonmfernando.advancemame'
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+            version '3.22.1+'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// SDL2 e compilado junto via CMake (cpp/SDL2); androidx.core so para
+// o FileProvider (compartilhar ROMs do cartao com os emuladores externos)
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}
+
+// Vendorizacao AUTOMATICA: `gradle assembleDebug' roda o sync-vendor sozinho
+// antes de compilar (o script e idempotente: depois da 1a vez e instantaneo).
+tasks.register('syncVendor', Exec) {
+    workingDir '..'
+    commandLine 'bash', 'tools/sync-vendor.sh'
+}
+preBuild.dependsOn 'syncVendor'

@@ -1,0 +1,15 @@
+--- a/mame/sndhrdw/vicdual.c
++++ b/mame/sndhrdw/vicdual.c
+@@ -327,7 +327,12 @@
+ 
+ 	DISCRETE_MULTIPLY(NODE_87, 1, NODE_86, NODE_51)
+ 
++#ifdef __ANDROID__
++	/* port android: clang nao dobra sqrt() em inicializador estatico, valores pre-calculados */
++	DISCRETE_FILTER2(NODE_88, 1, NODE_87, 1.0 / (2 * M_PI * RES_K(15) * 1.4862705002791383e-07), 2 * 0.31622776601683794, DISC_FILTER_LOWPASS)
++#else
+ 	DISCRETE_FILTER2(NODE_88, 1, NODE_87, 1.0 / (2 * M_PI * RES_K(15) * sqrt(CAP_N(470) * CAP_N(47))), 2 * sqrt(CAP_N(47) / CAP_N(470)), DISC_FILTER_LOWPASS)
++#endif
+ 
+ 	DISCRETE_MIXER2(NODE_95, 1, NODE_85, NODE_88, &headon_crash_mixer)
+ 	DISCRETE_TRANSFORM2(HEADON_CRASH_OUT, 1, NODE_95, 12, "01/")
