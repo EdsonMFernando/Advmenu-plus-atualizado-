@@ -184,7 +184,8 @@ def make(key):
     img.save(p, "JPEG", quality=82, optimize=True, progressive=True)
     return p
 
-keys = """atari2600 a2600 atari5200 atari7800 atari8bit atarilynx atarijaguar colecovision
+def main():
+    keys = """atari2600 a2600 atari5200 atari7800 atari8bit atarilynx atarijaguar colecovision
 intellivision vectrex mastersystem sms megadrive genesis sega32x segacd gamegear nes
 famicom snes n64 gameboy gb gbc gba nds 3ds psx ps1 ps2 psp psvita vita dreamcast
 saturn neogeo neogeopocket wonderswan wonderswancolor switch switch2 gamecube gc wii
@@ -196,12 +197,16 @@ daphne pinball pinballfx pinballfx2 pinballfx3 pinballarcade futurepinball arcad
 nesicaxlive nesica coinops retroarch amiga amigacd32 c64 c128 vic20 amstradcpc cpc msx
 msx2 spectrum zxspectrum zx81 dos pcdos macintosh apple2 atarist x68000 pc88 pc98
 scummvm pc windows winlator""".split()
-seen, n, tot = set(), 0, 0
-for k in keys:
-    if k in seen or k == "hbmame":
-        continue
-    seen.add(k)
-    p = make(k)
-    n += 1
-    tot += os.path.getsize(p)
-print("gerados:", n, "%.1f MB" % (tot / 1e6))
+    seen, n, tot = set(), 0, 0
+    for k in keys:
+        if k in seen or k == "hbmame":
+            continue
+        seen.add(k)
+        p = make(k)
+        n += 1
+        tot += os.path.getsize(p)
+    print("gerados:", n, "%.1f MB" % (tot / 1e6))
+
+
+if __name__ == "__main__":
+    main()

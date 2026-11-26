@@ -112,12 +112,13 @@ nada, e são ativos já na primeira abertura — não precisa permissão de cart
   do tema ativo, depois `layout/backgrounds/<sistema>.png|jpg` no cartao (coloca ali o seu fundo
   propio para qualquer sistema, sem editar nada). Saindo da lista, volta o fundo global do tema.
 - **Temas nativos de TODOS os emuladores** (estilo dos multijogos dos videos): o tema nativo
-  `adv-multi` ja vem com fundo Full HD proprio para os 125+ sistemas da navegacao
+  `adv-multi` ja vem com fundo Full HD proprio para os 250 sistemas da navegacao
   (`art/background_<sistema>.jpg` — arte ORIGINAL deste projeto: gradiente escuro por familia,
   mascote e silhueta de console/portatil/CD/gabinete/pinball; o HBMAME usa o dragao em fogo do
   usuario). Na tela so aparece o **nome do emulador** no topo e o **nome do jogo + snapshot**
   (video AVI/MP4 ou imagem JPG) na lista — sem fabricante, ano ou genero.
-  Para regenerar a arte: `python3 android-project/tools/gen-themes.py`.
+  Para regenerar a arte: `python3 android-project/tools/gen_themes.py` (fundos)
+  e `python3 android-project/tools/gen_logos.py` (bolinhas do carrossel).
 
 ### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
 
