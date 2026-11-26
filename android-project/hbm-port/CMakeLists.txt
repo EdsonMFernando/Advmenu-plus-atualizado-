@@ -45,7 +45,6 @@ include_directories(
     "${HBM_DIR}/3rdparty/zstd/lib"
     "${HBM_DIR}/3rdparty/expat/lib"
     "${HBM_DIR}/3rdparty/utf8proc"
-    "${HBM_DIR}/3rdparty/nanosvg/src"
     "${HBM_DIR}/3rdparty/lzma/C"
     "${HBM_DIR}/3rdparty/aes128cbc"
     "${HBM_DIR}/3rdparty/aes192cbc"
@@ -263,3 +262,23 @@ target_include_directories(hbmfrontend PRIVATE
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
 target_compile_definitions(hbmfrontend PRIVATE
     OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
+# Fase 4 (parte 2): glue do APK avulso HBMAME Android. O libmain.so empacota
+# os 4 alvos estaticos com --whole-archive (o SDL_main do OSD SDL e o registro
+# de devices/drivers dependem dos construtores estaticos) + SDL2 estatico (o
+# Java so carrega "main"). O glue/hbmmain.cpp so ajusta HOME/cwd no dlopen.
+option(HBM_APK_GLUE "Gera o libmain.so do APK avulso HBMAME Android" OFF)
+if(HBM_APK_GLUE)
+    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2"
+        SDL2-build EXCLUDE_FROM_ALL)
+    add_library(main SHARED glue/hbmmain.cpp)
+    target_compile_definitions(main PRIVATE
+        HBM_ANDROID_DATADIR="/data/data/com.edsonmfernando.hbmame/files")
+    target_link_libraries(main PRIVATE
+        -Wl,--whole-archive
+        hbmfrontend hbmemu hbmosd hbmcore
+        -Wl,--no-whole-archive
+        SDL2::SDL2-static
+        EGL GLESv2 android log m
+        c++_static c++abi)
+endif()

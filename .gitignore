@@ -11,3 +11,10 @@ hbmame/
 android-project/hbm-port/build-smoke/
 *.hprof
 android-project/hbm-port/build/
+android-project/hbm-port/dist/
+
+# APK avulso do HBMAME (projeto local, fora do CI)
+android-project/hbm-apk/build/
+android-project/hbm-apk/.gradle/
+android-project/hbm-apk/app/build/
+android-project/hbm-apk/local.properties

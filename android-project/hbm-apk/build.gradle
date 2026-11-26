@@ -1,0 +1,59 @@
+// APK avulso do HBMAME 0.289 Android (Fase 4 do port). Projeto Gradle
+// independente do Advmenu (nao entra no settings.gradle do android-project e
+// nao e compilado no CI, porque depende da arvore vendored hbmame/ que o
+// sync-hbmame.sh baixa localmente). O nativo vem pronto de
+// ../hbm-port/dist/<abi>/libmain.so (jniLibs), gerado com:
+//
+//   cmake -G Ninja -S ../hbm-port -B ../hbm-port/build/<abi> \
+//     -DCMAKE_TOOLCHAIN_FILE=<ndk>/build/cmake/android.toolchain.cmake \
+//     -DCMAKE_BUILD_TYPE=Release \
+//     -DCMAKE_CXX_FLAGS_RELEASE="-O1 -DNDEBUG -g0" \
+//     -DANDROID_ABI=<abi> -DANDROID_PLATFORM=android-24 -DHBM_APK_GLUE=ON
+//   cmake --build ../hbm-port/build/<abi> -t main -j 2
+//
+// com <abi> em arm64-v8a (Snapdragon/MediaTek Dimensity modernos) e
+// armeabi-v7a (MediaTek antigos) e o resultado copiado para
+// ../hbm-port/dist/<abi>/libmain.so.
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.edsonmfernando.hbmame'
+    compileSdk 34
+    ndkVersion '26.3.11579264'
+
+    defaultConfig {
+        applicationId 'com.edsonmfernando.hbmame'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '0.289.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['../../hbm-port/dist']
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+// Sem dependencias externas: so SDL2 (java vendored em org.libsdl.app) e o
+// libmain.so nativo. Nada de androidx neste APK.
