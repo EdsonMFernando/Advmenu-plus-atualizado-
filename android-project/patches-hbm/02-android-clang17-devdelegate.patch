@@ -1,0 +1,30 @@
+# clang 17 (NDK r26): construtores com requires-clause variadic falham com
+# "substitution into constraint expression resulted in a non-constant
+# expression"; equivalente por SFINAE, sem mudar semantica.
+--- a/src/emu/devdelegate.h
++++ b/src/emu/devdelegate.h
+@@ -189,18 +189,18 @@
+ 	{ }
+ 
+ 	// construct with target object
+-	template <class T, class D>
+-	device_delegate_base(T &object, ReturnType (D::*funcptr)(Params...), char const *name) requires (is_related_device<D, T>::value)
++	template <class T, class D, typename std::enable_if<is_related_device<D, T>::value, int>::type = 0>
++	device_delegate_base(T &object, ReturnType (D::*funcptr)(Params...), char const *name)
+ 		: basetype(funcptr, name, static_cast<D *>(&object))
+ 		, device_delegate_helper(get_device(object))
+ 	{ }
+-	template <class T, class D>
+-	device_delegate_base(T &object, ReturnType (D::*funcptr)(Params...) const, char const *name) requires (is_related_device<D, T>::value)
++	template <class T, class D, typename std::enable_if<is_related_device<D, T>::value, int>::type = 0>
++	device_delegate_base(T &object, ReturnType (D::*funcptr)(Params...) const, char const *name)
+ 		: basetype(funcptr, name, static_cast<D *>(&object))
+ 		, device_delegate_helper(get_device(object))
+ 	{ }
+-	template <class T, class D>
+-	device_delegate_base(T &object, ReturnType (*funcptr)(D &, Params...), char const *name) requires (is_related_device<D, T>::value)
++	template <class T, class D, typename std::enable_if<is_related_device<D, T>::value, int>::type = 0>
++	device_delegate_base(T &object, ReturnType (*funcptr)(D &, Params...), char const *name)
+ 		: basetype(funcptr, name, static_cast<D *>(&object))
+ 		, device_delegate_helper(get_device(object))
+ 	{ }

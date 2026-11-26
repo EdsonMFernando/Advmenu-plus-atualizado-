@@ -107,6 +107,13 @@ nada, e são ativos já na primeira abertura — não precisa permissão de cart
   e tambem o **menu de navegacao de SISTEMAS/EMULADORES** e o menu de **jogos de cada sistema**
   (mesmo menu, mesmo visual, para cada emulador/sistema da navegacao).
 
+- **Fundo por sistema** (ex.: o olho de dragao de fogo preto do HBMAME): quando voce entra na
+  lista de jogos de um sistema, o app procura na ordem: `art/background_<sistema>.png|jpg` dentro
+  do tema ativo (o tema nativo **adv-multi** ja vem com `background_hbmame.png` — arte original,
+  Full HD, criada para este projeto), depois `layout/backgrounds/<sistema>.png|jpg` no cartao
+  (coloca ali o seu fundo propio para qualquer sistema, sem editar nada). Saindo da lista, volta
+  o fundo global do tema.
+
 ### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
 
 Como nos multijogos de PC (estilo Clandoordie/AdvMenu Plus):

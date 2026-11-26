@@ -58,6 +58,24 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     o <SDL2/SDL.h> do SDL vendored e exposto por link `sdl2-shim/SDL2` gerado
     pelo proprio CMake na arvore de build
 
+- [ ] Fase 2.5 (src/emu) — ALCANÇADA (sem script solto): o mesmo
+  `hbm-port/CMakeLists.txt` tem o alvo `hbmemu` (nucleo de emulacao MAME
+  moderno inteiro), Release -O1, arm64-v8a E armeabi-v7a:
+  - **116/116** arquivos compila e linka em `libhbmemu.a` (~98 MB arm64 /
+    ~91 MB armv7) — inclui render/rendlay/rendfont completo, ioport,
+    emumem (todos os handlers), debug completo, audio_effects e video
+  - os 2 unicos fora do alvo, de proposito: `src/emu/http.cpp`
+    (servidor de rede host-only, precisa asio) e
+    `src/emu/drivers/testcpu.cpp` (ferramenta de teste de CPU, nunca
+    linkada no nucleo)
+  - headers gerados (layout comprimido `internal_layout` e fontes da UI)
+    SAO GERADOS PELO PROPRIO CMake com os scripts oficiais do HBMAME
+    (`complay.py`, `png2bdc.py`, `file2str.py`), dentro da arvore
+    `build/` — igual o `has_formats.h` da Fase 2
+  - unico ajuste de codigo: `patches-hbm/02-android-clang17-devdelegate.patch`
+    (SFINAE para o clang 17 do NDK r26), aplicado automaticamente pelo
+    `tools/sync-hbmame.sh` (vendor no PC)
+
 - [ ] Fase 4 (glue)
 - [ ] Fase 5 (build verde)
 

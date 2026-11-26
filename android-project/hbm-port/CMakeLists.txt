@@ -53,7 +53,7 @@ include_directories(
     "${HBM_DIR}/3rdparty/aes256cbc"
     "${HBM_DIR}/3rdparty/libjpeg"
     "${HBM_DIR}/3rdparty/expat"
-    "${HBM_DIR}/3rdparty/pugixml"
+    "${HBM_DIR}/3rdparty/pugixml/src"
     "${HBM_DIR}/3rdparty/softfloat3/include"
     "${HBM_DIR}/3rdparty/glm"
     "${HBM_DIR}/3rdparty/rapidjson/include"
@@ -122,4 +122,76 @@ target_include_directories(hbmosd PRIVATE
     "${HBM_DIR}/3rdparty/bgfx/examples/common"
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
 target_compile_definitions(hbmosd PRIVATE
+    OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
+# Fase 2.5: nucleo de emulacao (src/emu). Os headers gerados upstream pelo
+# GENie (layouts comprimidos e fontes da UI) sao reproduzidos aqui com os
+# scripts oficiais do proprio HBMAME (complay.py, png2bdc.py, file2str.py),
+# dentro da arvore de build do CMake — sem tocar na fonte vendored.
+find_program(PYTHON3_EXECUTABLE python3 REQUIRED)
+
+set(EMU_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/emu")
+file(MAKE_DIRECTORY "${EMU_GEN_DIR}/layout")
+file(MAKE_DIRECTORY "${EMU_GEN_DIR}/ui")
+
+set(HBM_EMU_GENS "")
+foreach(lay noscreens monitors dualhsxs dualhovu dualhuov triphsxs quadhsxs)
+    add_custom_command(OUTPUT "${EMU_GEN_DIR}/layout/${lay}.lh"
+        COMMAND ${PYTHON3_EXECUTABLE} "${HBM_DIR}/scripts/build/complay.py"
+                "${HBM_DIR}/src/emu/layout/${lay}.lay"
+                "${EMU_GEN_DIR}/layout/${lay}.lh" "layout_${lay}"
+        DEPENDS "${HBM_DIR}/src/emu/layout/${lay}.lay"
+                "${HBM_DIR}/scripts/build/complay.py"
+        VERBATIM)
+    list(APPEND HBM_EMU_GENS "${EMU_GEN_DIR}/layout/${lay}.lh")
+endforeach()
+
+add_custom_command(OUTPUT "${EMU_GEN_DIR}/uismall.fh"
+    COMMAND ${PYTHON3_EXECUTABLE} "${HBM_DIR}/scripts/build/file2str.py"
+            "${HBM_DIR}/scripts/font/NotoSans-Bold.bdc"
+            "${EMU_GEN_DIR}/uismall.fh" "font_uismall" "uint8_t"
+    DEPENDS "${HBM_DIR}/scripts/font/NotoSans-Bold.bdc"
+            "${HBM_DIR}/scripts/build/file2str.py"
+    VERBATIM)
+list(APPEND HBM_EMU_GENS "${EMU_GEN_DIR}/uismall.fh")
+
+add_custom_command(OUTPUT "${EMU_GEN_DIR}/ui/uicmd14.fh"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/tmp"
+    COMMAND ${PYTHON3_EXECUTABLE} "${HBM_DIR}/scripts/build/png2bdc.py"
+            "${HBM_DIR}/src/frontend/mame/ui/uicmd14.png"
+            "${CMAKE_CURRENT_BINARY_DIR}/tmp/uicmd14.bdc"
+    COMMAND ${PYTHON3_EXECUTABLE} "${HBM_DIR}/scripts/build/file2str.py"
+            "${CMAKE_CURRENT_BINARY_DIR}/tmp/uicmd14.bdc"
+            "${EMU_GEN_DIR}/ui/uicmd14.fh" "font_uicmd14" "uint8_t"
+    DEPENDS "${HBM_DIR}/src/frontend/mame/ui/uicmd14.png"
+            "${HBM_DIR}/scripts/build/png2bdc.py"
+            "${HBM_DIR}/scripts/build/file2str.py"
+    VERBATIM)
+list(APPEND HBM_EMU_GENS "${EMU_GEN_DIR}/ui/uicmd14.fh")
+
+add_custom_target(hbmgen-emu DEPENDS ${HBM_EMU_GENS})
+
+file(GLOB_RECURSE HBM_EMU_SOURCES CONFIGURE_DEPENDS
+    "${HBM_DIR}/src/emu/*.cpp")
+list(FILTER HBM_EMU_SOURCES EXCLUDE REGEX
+    "/emu/http\\.cpp$|/emu/drivers/testcpu\\.cpp$")
+add_library(hbmemu STATIC ${HBM_EMU_SOURCES})
+add_dependencies(hbmemu hbmgen-emu)
+target_include_directories(hbmemu PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${EMU_GEN_DIR}"
+    "${EMU_GEN_DIR}/layout"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim"
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${HBM_DIR}/src/osd"
+    "${HBM_DIR}/src/osd/sdl"
+    "${HBM_DIR}/src/osd/modules/render"
+    "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/3rdparty/bgfx/include"
+    "${HBM_DIR}/3rdparty/bx/include"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty"
+    "${HBM_DIR}/3rdparty/bgfx/examples/common"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
+target_compile_definitions(hbmemu PRIVATE
     OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)

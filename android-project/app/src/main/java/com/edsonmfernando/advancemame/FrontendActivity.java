@@ -907,6 +907,7 @@ public class FrontendActivity extends Activity {
     private void backToSystems() {
         systemGamesMode = false;
         currentSystem = null;
+        applyLayoutBackground();
         systemsMode = true;
         sysToggle.setAlpha(1f);
         topSystem.setText("SISTEMAS  \u2022  EMULADORES");
@@ -921,6 +922,7 @@ public class FrontendActivity extends Activity {
         systemsMode = false;
         systemGamesMode = false;
         currentSystem = null;
+        applyLayoutBackground();
         sysToggle.setAlpha(0.45f);
         topSystem.setText("ARCADE  \u2022  ADVANCEMAME");
         adapter.load(this);
@@ -947,6 +949,7 @@ public class FrontendActivity extends Activity {
         }
         systemGamesMode = true;
         currentSystem = e;
+        applyLayoutBackground();
         topSystem.setText(e.label.toUpperCase(Locale.US) + "  (" + e.games.size() + " JOGOS)");
         adapter.load(this);
         list.setSelection(0);
@@ -1267,7 +1270,27 @@ public class FrontendActivity extends Activity {
             layoutBg = null;
         }
         File img = null;
-        if (tc.bgImage != null) {
+        String bgKey = systemGamesMode && currentSystem != null ? currentSystem.key : null;
+        if (bgKey != null && themeDir != null && themeDir.isDirectory()) {
+            File cand = new File(new File(themeDir, "art"), "background_" + bgKey + ".png");
+            if (!cand.isFile()) {
+                cand = new File(new File(themeDir, "art"), "background_" + bgKey + ".jpg");
+            }
+            if (cand.isFile()) {
+                img = cand;
+            }
+        }
+        if (img == null && bgKey != null && layoutDir != null) {
+            File bgs = new File(layoutDir, "backgrounds");
+            File cand = new File(bgs, bgKey + ".png");
+            if (!cand.isFile()) {
+                cand = new File(bgs, bgKey + ".jpg");
+            }
+            if (cand.isFile()) {
+                img = cand;
+            }
+        }
+        if (img == null && tc.bgImage != null) {
             File cand = new File(tc.bgImage);
             if (!cand.isAbsolute() && themeDir != null) {
                 cand = new File(themeDir, tc.bgImage);
