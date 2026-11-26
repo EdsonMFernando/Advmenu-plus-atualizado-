@@ -36,7 +36,6 @@ include_directories(
     "${HBM_DIR}/src/lib/netlist/core"
     "${HBM_DIR}/src/lib/netlist/devices"
     "${HBM_DIR}/src/lib/netlist/prg"
-    "${HBM_DIR}/src/lib/util"
     "${HBM_DIR}/src/lib/formats"
     "${HBM_DIR}/src/osd"
     "${HBM_DIR}/src/devices"
@@ -86,7 +85,8 @@ file(WRITE "${HAS_FORMATS_H}" "${HAS_FORMATS_CONTENT}")
 add_library(hbmcore STATIC
     ${HBM_UTIL_SOURCES} ${HBM_FORMATS_SOURCES} ${HBM_NETLIST_SOURCES})
 target_include_directories(hbmcore PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/generated")
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${HBM_DIR}/src/lib/util")
 
 # Fase 3: OSD SDL (src/osd) sobre o SDL2 vendored (app/src/main/cpp/SDL2).
 file(GLOB_RECURSE HBM_OSD_SOURCES CONFIGURE_DEPENDS
@@ -115,6 +115,7 @@ target_include_directories(hbmosd PRIVATE
     "${HBM_DIR}/src/osd/sdl"
     "${HBM_DIR}/src/osd/modules/render"
     "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/src/lib/util"
     "${HBM_DIR}/3rdparty/bgfx/include"
     "${HBM_DIR}/3rdparty/bx/include"
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
@@ -169,6 +170,16 @@ add_custom_command(OUTPUT "${EMU_GEN_DIR}/ui/uicmd14.fh"
     VERBATIM)
 list(APPEND HBM_EMU_GENS "${EMU_GEN_DIR}/ui/uicmd14.fh")
 
+# COPYING -> copying.ipp (file2lines.py), exigido pelo frontend (about.cpp)
+# tem de entrar ANTES do add_custom_target para virar dependencia dele.
+add_custom_command(OUTPUT "${EMU_GEN_DIR}/copying.ipp"
+    COMMAND ${PYTHON3_EXECUTABLE} "${HBM_DIR}/scripts/build/file2lines.py"
+            "${HBM_DIR}/COPYING" "${EMU_GEN_DIR}/copying.ipp" "copying_text"
+    DEPENDS "${HBM_DIR}/COPYING"
+            "${HBM_DIR}/scripts/build/file2lines.py"
+    VERBATIM)
+list(APPEND HBM_EMU_GENS "${EMU_GEN_DIR}/copying.ipp")
+
 add_custom_target(hbmgen-emu DEPENDS ${HBM_EMU_GENS})
 
 file(GLOB_RECURSE HBM_EMU_SOURCES CONFIGURE_DEPENDS
@@ -187,6 +198,7 @@ target_include_directories(hbmemu PRIVATE
     "${HBM_DIR}/src/osd/sdl"
     "${HBM_DIR}/src/osd/modules/render"
     "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/src/lib/util"
     "${HBM_DIR}/3rdparty/bgfx/include"
     "${HBM_DIR}/3rdparty/bx/include"
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
@@ -194,4 +206,60 @@ target_include_directories(hbmemu PRIVATE
     "${HBM_DIR}/3rdparty/bgfx/examples/common"
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
 target_compile_definitions(hbmemu PRIVATE
+    OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
+# Fase 4 (parte 1): frontend do MAME moderno (src/frontend/mame) — o menu
+# interno (lista de sistemas/jogos) e a glue principal. Ordem de includes
+# IGUAL ao frontend.lua upstream (frontend/mame antes de lib/util — o
+# "language.h" da UI tem de resolver no frontend, nao no util). Fora do
+# alvo, de proposito: ui/slider.cpp (arquivo morto, nao esta no build
+# upstream do GENie).
+
+file(GLOB_RECURSE HBM_FRONTEND_SOURCES CONFIGURE_DEPENDS
+    "${HBM_DIR}/src/frontend/mame/*.cpp")
+list(FILTER HBM_FRONTEND_SOURCES EXCLUDE REGEX "/frontend/mame/ui/slider\\.cpp$")
+add_library(hbmfrontend STATIC ${HBM_FRONTEND_SOURCES})
+add_dependencies(hbmfrontend hbmgen-emu)
+target_include_directories(hbmfrontend PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${EMU_GEN_DIR}"
+    "${EMU_GEN_DIR}/layout"
+    "${HBM_DIR}/src/osd"
+    "${HBM_DIR}/src/emu"
+    "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/src/devices"
+    "${HBM_DIR}/src/lib"
+    "${HBM_DIR}/src/lib/netlist"
+    "${HBM_DIR}/src/lib/util"
+    "${HBM_DIR}/src/lib/formats"
+    "${HBM_DIR}/src/osd/modules/render"
+    "${HBM_DIR}/src/osd/sdl"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim"
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${HBM_DIR}/3rdparty"
+    "${HBM_DIR}/3rdparty/sol2"
+    "${HBM_DIR}/3rdparty/lua/src"
+    "${HBM_DIR}/3rdparty/flac/include"
+    "${HBM_DIR}/3rdparty/zstd/lib"
+    "${HBM_DIR}/3rdparty/expat/lib"
+    "${HBM_DIR}/3rdparty/utf8proc"
+    "${HBM_DIR}/3rdparty/nanosvg/src"
+    "${HBM_DIR}/3rdparty/lzma/C"
+    "${HBM_DIR}/3rdparty/aes128cbc"
+    "${HBM_DIR}/3rdparty/aes192cbc"
+    "${HBM_DIR}/3rdparty/aes256cbc"
+    "${HBM_DIR}/3rdparty/libjpeg"
+    "${HBM_DIR}/3rdparty/expat"
+    "${HBM_DIR}/3rdparty/pugixml/src"
+    "${HBM_DIR}/3rdparty/softfloat3/include"
+    "${HBM_DIR}/3rdparty/glm"
+    "${HBM_DIR}/3rdparty/rapidjson/include"
+    "${HBM_DIR}/3rdparty/zlib"
+    "${HBM_DIR}/3rdparty/bgfx/include"
+    "${HBM_DIR}/3rdparty/bx/include"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty"
+    "${HBM_DIR}/3rdparty/bgfx/examples/common"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
+target_compile_definitions(hbmfrontend PRIVATE
     OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)

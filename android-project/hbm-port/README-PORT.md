@@ -84,7 +84,19 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     (SFINAE para o clang 17 do NDK r26), aplicado automaticamente pelo
     `tools/sync-hbmame.sh` (vendor no PC)
 
-- [ ] Fase 4 (glue)
+- [x] Fase 4 (parte 1 — frontend) **ALCANÇADA**: `src/frontend/mame` inteiro
+    compila pelo alvo CMake `hbmfrontend` (75/76; o `ui/slider.cpp` fica fora
+    de proposito — arquivo morto, ausente do build upstream do GENie).
+    `libhbmfrontend.a` gerado nas 2 ABIs (arm64 ~57 MB, armv7 ~48 MB).
+    Detalhes que destravaram: (a) o `copying.ipp` (COPYING via
+    `file2lines.py`) virou dependencia do `hbmgen-emu`; (b) a ordem de
+    includes upstream (`frontend.lua`: `frontend/mame` ANTES de `lib/util`)
+    foi replicada POR ALVO — o `include_directories()` global do CMake entra
+    antes dos includes de alvo no clang, e `lib/util` no bloco global fazia o
+    `"language.h"` de `ui/ui.h` resolver no util (sem o
+    `using util::lang_translate`) e `luaengine.cpp` falhar; agora `lib/util`
+    esta so nos blocos de alvo, depois de `frontend/mame`.
+- [ ] Fase 4 (parte 2 — glue)
   - **fundo do menu de navegacao interno**: a UI interna do MAME/HBMAME
     carrega `background.jpg` (depois `background.png`) DA RAIZ do emulador
     quando `use_background = 1` (padrao ja ligado,`moptions.cpp:77`) na tela
