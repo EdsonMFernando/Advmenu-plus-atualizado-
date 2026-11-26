@@ -109,10 +109,15 @@ nada, e são ativos já na primeira abertura — não precisa permissão de cart
 
 - **Fundo por sistema** (ex.: o olho de dragao de fogo preto do HBMAME): quando voce entra na
   lista de jogos de um sistema, o app procura na ordem: `art/background_<sistema>.png|jpg` dentro
-  do tema ativo (o tema nativo **adv-multi** ja vem com `background_hbmame.png` — arte original,
-  Full HD, criada para este projeto), depois `layout/backgrounds/<sistema>.png|jpg` no cartao
-  (coloca ali o seu fundo propio para qualquer sistema, sem editar nada). Saindo da lista, volta
-  o fundo global do tema.
+  do tema ativo, depois `layout/backgrounds/<sistema>.png|jpg` no cartao (coloca ali o seu fundo
+  propio para qualquer sistema, sem editar nada). Saindo da lista, volta o fundo global do tema.
+- **Temas nativos de TODOS os emuladores** (estilo dos multijogos dos videos): o tema nativo
+  `adv-multi` ja vem com fundo Full HD proprio para os 125+ sistemas da navegacao
+  (`art/background_<sistema>.jpg` — arte ORIGINAL deste projeto: gradiente escuro por familia,
+  mascote e silhueta de console/portatil/CD/gabinete/pinball; o HBMAME usa o dragao em fogo do
+  usuario). Na tela so aparece o **nome do emulador** no topo e o **nome do jogo + snapshot**
+  (video AVI/MP4 ou imagem JPG) na lista — sem fabricante, ano ou genero.
+  Para regenerar a arte: `python3 android-project/tools/gen-themes.py`.
 
 ### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
 
@@ -191,7 +196,25 @@ todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
 | MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
 | TeknoParrot | via **Winlator** | experimental: nao existe versao Android; todo Windows emulado |
 | PS4 / PS5 | PS4: ports experimentais de shadPS4 (Bachata-S4, shandroidPS4, SharpEmu) — PS5: Kyty/PS5Droid/OmniEmu/AnyPS5 | experimental: poucos jogos rodam, exige aparelho forte; a rota abre o emulador instalado pela pasta `ps4/` ou `ps5/` |
-| Switch 2 | **nao existe emulador utilizavel** | emulacao do Switch 2 esta no comeco mesmo no PC |
+| Switch 2 | **nao existe emulador Android** (no PC: Eden-NX2, so Windows e experimental) | a pasta `switch2/` ja esta pronta no Advmenu; quando um fork do Eden com Switch 2 sair para Android, entra pela mesma rota |
+
+### Eden (emulador unico Switch 1, pronto para o Switch 2)
+
+- O **Eden** (`git.eden-emu.dev/eden-emu/eden`, open source) e o emulador unico de
+  Nintendo Switch do Advmenu Android: rota padrao `switch/` **e** `switch2/`,
+  deteccao automatica por pacote (`dev.eden.eden_emulator`) ou por nome/prefixo
+  "eden" em emuladores avulsos, com RetroArch como segunda opcao.
+- O APK oficial Android do Eden e **arm64** (Snapdragon, MediaTek Dimensity e
+  qualquer aparelho com GPU Mali/Adreno via Vulkan) — baixe em
+  `eden-emu.dev/downloads` ou nos releases oficiais. Nao existe build armv7
+  (o JIT do Switch exige arm64), entao aparelhos MediaTek muito antigos ficam
+  fora do Switch; todos os demais sistemas do Advmenu seguem funcionando neles.
+- **Switch 2 hoje**: nenhum fork do Eden com Switch 2 (Eden-NX2 e variantes)
+  publica build Android — sao experimentais e so para Windows. O Advmenu ja
+  reconhece `.nsp/.xci/.nsz/.xcz/.nca` na pasta `switch2/`; assim que existir
+  um Eden Android com Switch 2, os jogos abrem sem mudar nada no Advmenu.
+- Chaves (`prod.keys`) e firmware NUNCA vêm embundados (nem no Eden, nem aqui)
+  — forneca os seus dentro do proprio Eden.
 
 O Advmenu Plus ABRE esses apps — a configuracao dos jogos (BIOS/keys/ firmware, pastas
 de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front-end

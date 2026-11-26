@@ -264,6 +264,7 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("psvita", "org.vita3k.emulator");
         SYSTEM_PACKAGES.put("vita", "org.vita3k.emulator");
         SYSTEM_PACKAGES.put("switch", "dev.eden.eden_emulator");
+        SYSTEM_PACKAGES.put("switch2", "dev.eden.eden_emulator");
         SYSTEM_PACKAGES.put("gamecube", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("gc", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("wii", "org.dolphinemu.dolphinemu");
@@ -292,7 +293,7 @@ public class FrontendActivity extends Activity {
 
     private static final String[] GAME_FILE_EXTS = {
             ".zip", ".7z", ".rom", ".bin", ".iso", ".img", ".cue", ".chd", ".cso",
-            ".nsp", ".xci", ".nca", ".pak", ".a26", ".a78", ".lnx", ".jag", ".j64",
+            ".nsp", ".xci", ".nca", ".nsz", ".xcz", ".pak", ".a26", ".a78", ".lnx", ".jag", ".j64",
             ".nes", ".fds", ".sfc", ".smc", ".gb", ".gbc", ".gba", ".nds", ".3ds",
             ".cia", ".v64", ".z64", ".n64", ".md", ".sms", ".gg", ".32x", ".pbp",
             ".vec", ".col", ".int", ".ws", ".wsc", ".ngp", ".ngc", ".dsk", ".cas",
@@ -2003,9 +2004,13 @@ public class FrontendActivity extends Activity {
             return;
         }
         if (pkg == null || getPackageManager().getLaunchIntentForPackage(pkg) == null) {
-            String ra = findEmuByPrefixes(new String[]{"retroarch"});
-            if (ra != null) {
-                pkg = ra;
+            String alt = sysKey != null && sysKey.startsWith("switch")
+                    ? findEmuByPrefixes(new String[]{"eden"}) : null;
+            if (alt == null) {
+                alt = findEmuByPrefixes(new String[]{"retroarch"});
+            }
+            if (alt != null) {
+                pkg = alt;
             }
         }
         try {
