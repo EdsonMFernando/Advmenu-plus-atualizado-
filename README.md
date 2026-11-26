@@ -176,6 +176,9 @@ todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
 | PSP | PPSSPP | excelente em quase todo aparelho |
 | GameCube/Wii | Dolphin | bom em flagships |
 | PS3 | RPCS3 (`net.rpcs3.rpcs3`) | pesado: so flagships e jogos especificos |
+| Sega Model 1 / 2 | RetroArch (core MAME Current) | roda (MAME emula essas placas) |
+| Sega Model 3 | via **Winlator** (Supermodel PC) | experimental: nao existe port Android do Supermodel |
+| Zinc (ZN1/ZN2) | RetroArch (core MAME Current) | roda (MAME emula essas placas) |
 | PS Vita | Vita3K (nao oficial) | parcial, em desenvolvimento |
 | OpenBOR | OpenBOR (`org.openbor.engine`) | leve (2D), roda bem; mods `.pak` escolhidos dentro do app |
 | MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
