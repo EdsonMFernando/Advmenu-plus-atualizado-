@@ -239,9 +239,17 @@ Winlator e o setup unico que nenhum front-end pode pular — o resto e automáti
 - **PS4/PS5/Switch 2:** nao existe emulador Android (nem no PC completo) — impossivel
   hoje; documentado de forma honesta porque emuladores "PS4" na Play Store sao falsos.
 
-### Nucleos do RetroArch (oficiais, nao precisa instalar nada separado)
+### RetroArch 1.22.2 (oficial) no Advmenu Android
 
-O RetroArch traz os nucleos no proprio app (menu Online Updater > Core Downloader).
+- Instale o **RetroArch 1.22.2** por uma via oficial: Google Play, ou
+  `retroarch.com` / GitHub do libretro (APK oficial assinado). Nao reempacotamos esse
+  APK dentro do Advmenu (app de terceiros, licenca propria).
+- O Advmenu detecta **sozinho** o RetroArch instalado (pelo pacote `com.retroarch` ou
+  pelo nome do app, incluindo variantes 64-bit/forks) e abre nele a pasta `retroarch/`
+  do cartao e TODO sistema que nao tiver emulador nativo instalado.
+- Nucleos: dentro do RetroArch > Online Updater > Core Downloader (tabela abaixo).
+- BIOS/system: coloque os SEUS arquivos de BIOS em `Android/data/com.retroarch/files/system`.
+  Por licenca o Advmenu nao vem (nem viram) com BIOSes — cada um provisiona a sua.
 Sistemas suportados pelo botao de sistemas do Advmenu e o nucleo libretro de cada um:
 
 | Pasta do sistema | Nucleo RetroArch (libretro) |
@@ -395,17 +403,24 @@ mesa tiver, junte na MESMA pasta `NomeDaMesa.directb2s` (backglass) e a rom dent
 Advmenu reconhece `.vpx`, `.vpt`, `.fpt` automaticamente e mostra na lista unica, com
 snapshot se voce colocar `snapshot/NomeDaMesa.jpg|.mp4`.
 
-### HBMAME 0.289 (duas vias)
+### HBMAME 0.289 (tres vias)
 
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
    *MAME (Current)*, que acompanha o MAME moderno. O fluxo ja funciona: pasta `hbmame/`
-   no cartao → botao EMULADORES → toque no jogo → abre no RetroArch.
+   no cartao → botao EMULADORES → toque no jogo → abre no RetroArch (e se o APK
+   avulso do item 2 estiver instalado, ele tem PREFERENCIA na rota, com o RetroArch
+   como alternativa).
 2. **Emulador HBMAME Android avulso (em construcao):** o port nativo (Fase 2 núcleo
    e Fase 3 OSD já compilando via CMake no NDK, arm64 e armv7) vai virar um APK
    standalone — quando instalado, o Advmenu Plus Android o detecta
    automaticamente (prefixo/nome `hbmame`) e a pasta `hbmame/` passa a abrir
    nele sozinho, sem configurar nada.
-3. **Port nativo dentro do APK (projeto em andamento — longo):** o plano para
+3. **Core libretro PROPRIO do HBMAME (planejado — Fase 2.6 do port):** o libretro
+   nao tem core oficial do HBMAME (o “MAME Current” e do MAME puro). A partir do
+   port nativo (item 4) sera gerado o core `libretro_hbmame.so` do NOSSO port — o
+   RetroArch do seu aparelho o carrega como qualquer outro core e as rotas do
+   Advmenu passam a usa-lo automaticamente.
+4. **Port nativo dentro do APK (projeto em andamento — longo):** o plano para
    portar o nucleo MAME 0.289/HBMAME para DENTRO do APK esta em
    `android-project/hbm-port/README-PORT.md`; a fonte fixada (0.289.6,
    `fa040eced0d`) e baixada por `tools/sync-hbmame.sh` (idempotente, fora do

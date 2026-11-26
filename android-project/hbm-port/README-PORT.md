@@ -25,6 +25,14 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
    ate linkar `libhbmame.so` e o front-end passa a listar os jogos de
    `hbmame/` nativamente.
 6. **FBA/FBNeo**: repetir o modelo (o FinalBurn Neo moderno e muito menor).
+7. **Core libretro do HBMAME** (PROPRIO, Fase 2.6): o libretro NAO tem core
+   oficial do HBMAME (o core "MAME Current" e do MAME puro — nao roda os
+   drivers homebrew/hacks do HBMAME). Vamos gerar o NOSSO core libretro
+   (`libretro_hbmame.so`) a partir DESTE port: reuso as libs `hbmcore`,
+   `hbmemu` e `hbmosd` ja concluidas e encaixo a interface `retro_*` no
+   lugar do OSD de janela; o Advmenu Android deteta o core e o RetroArch
+   passa a abrir os drivers do HBMAME nativamente (ate la: APK avulso e
+   RetroArch com core MAME Current seguem funcionando).
 
 ## Estado
 

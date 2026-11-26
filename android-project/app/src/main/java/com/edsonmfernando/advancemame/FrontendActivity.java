@@ -287,6 +287,7 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("coinops", "com.winlator");
         SYSTEM_PACKAGES.put("dos", "com.winlator");
         SYSTEM_PACKAGES.put("pcdos", "com.winlator");
+        SYSTEM_PACKAGES.put("retroarch", "com.retroarch");
     }
 
     private static final String[] GAME_FILE_EXTS = {
@@ -2000,6 +2001,12 @@ public class FrontendActivity extends Activity {
         }
         if ("com.winlator".equals(pkg) && launchWinlatorCombo(f)) {
             return;
+        }
+        if (pkg == null || getPackageManager().getLaunchIntentForPackage(pkg) == null) {
+            String ra = findEmuByPrefixes(new String[]{"retroarch"});
+            if (ra != null) {
+                pkg = ra;
+            }
         }
         try {
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f);
