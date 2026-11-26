@@ -85,6 +85,13 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     `tools/sync-hbmame.sh` (vendor no PC)
 
 - [ ] Fase 4 (glue)
+  - **fundo do menu de navegacao interno**: a UI interna do MAME/HBMAME
+    carrega `background.jpg` (depois `background.png`) DA RAIZ do emulador
+    quando `use_background = 1` (padrao ja ligado,`moptions.cpp:77`) na tela
+    de selecao de jogos (`menu.cpp:88-110`, tela `___empty`). O `hbm-port/`
+    ja guarda o `background.jpg` oficial (dragao em fogo, Full HD, Full-bleed)
+    para ser instalado na raiz de arquivos do APK avulso na Fase 4 — igual ao
+    que o Advmenu usa no tema (`art/background_hbmame.jpg`)
 - [ ] Fase 5 (build verde)
 
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
