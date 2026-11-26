@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # Gerador dos fundos de tema nativos do Advmenu Android (arte ORIGINAL):
-# padrao dos videos de multijogos - bonequinhos grandes dos dois lados,
-# centro limpo para o snapshot grande do topo e faixa escura embaixo para
-# a lista de jogos. Rode da raiz do repo:
+# padrao final conforme as imagens de referencia do usuario - bonequinhos
+# cartoon GRANDES nas duas laterais, MOLDURA METALICA central vazia para o
+# snapshot/video do jogo, FILEIRA DE SLOTS embaixo para a lista de jogos e
+# rodape escuro para o nome do jogo selecionado. A estrutura e fixa; o que
+# muda por sistema sao os bonecos e a paleta. Rode da raiz do repo:
 #   python3 android-project/tools/gen-themes.py
 # O fundo do HBMAME (dragao do usuario) nao e regenerado aqui.
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
@@ -120,23 +122,52 @@ def make(key):
     ov = ov.filter(ImageFilter.GaussianBlur(160))
     img = Image.alpha_composite(img, ov)
 
-    # feixes de luz diagonais discretos
-    bd = ImageDraw.Draw(ov)
-    for i in range(5):
-        x = int(W * (0.05 + 0.22 * i))
-        bd.polygon([(x, 0), (x + 120, 0), (x + 480, H), (x + 360, H)], fill=accent + (12,))
-    img = Image.alpha_composite(img, ov.filter(ImageFilter.GaussianBlur(6)))
+    # textura industrial discreta: engrenagens grandes ao fundo
+    td = ImageDraw.Draw(img)
+    for gx, gy, gr in ((180, 140, 130), (960, 80, 170), (1740, 160, 140),
+                       (1500, 940, 120), (420, 980, 110)):
+        for k in range(10):
+            a = k * 36
+            td.pieslice([gx - gr, gy - gr, gx + gr, gy + gr], a, a + 16,
+                        fill=(255, 255, 255, 10))
+        td.ellipse([gx - gr * 0.45, gy - gr * 0.45, gx + gr * 0.45, gy + gr * 0.45],
+                   outline=(255, 255, 255, 14), width=8)
 
-    # BONEQUINHOS GRANDES dos dois lados (padrao dos videos)
+    # BONEQUINHOS GRANDES nas laterais (altura quase toda, padrao das imagens)
     md = ImageDraw.Draw(img)
-    s = 150
-    mascot(md, 250, 400, s, accent, flip=False)   # esquerda
-    mascot(md, W - 250, 400, s, accent, flip=True)  # direita
+    s = 185
+    mascot(md, 300, 470, s, accent, flip=False)
+    mascot(md, W - 300, 470, s, accent, flip=True)
 
-    # faixa inferior mais escura (a lista de jogos roda por aqui)
-    bd2 = ImageDraw.Draw(img)
-    bd2.rectangle([0, H - 300, W, H], fill=(5, 5, 10, 120))
-    bd2.line([(0, H - 300), (W, H - 300)], fill=accent + (90,), width=5)
+    # MOLDURA CENTRAL do snapshot/video: retangulo grande com borda metalica
+    fx0, fy0, fx1, fy1 = 560, 130, 1360, 650
+    md.rounded_rectangle([fx0 - 16, fy0 - 16, fx1 + 16, fy1 + 16], radius=30,
+                         fill=accent + (80,))
+    md.rounded_rectangle([fx0 - 10, fy0 - 10, fx1 + 10, fy1 + 10], radius=24,
+                         fill=(205, 208, 216, 255))
+    md.rounded_rectangle([fx0 - 3, fy0 - 3, fx1 + 3, fy1 + 3], radius=18,
+                         fill=(88, 92, 102, 255))
+    md.rounded_rectangle([fx0, fy0, fx1, fy1], radius=14, fill=(8, 8, 12, 255))
+    md.line([(fx0 + 26, fy0 + 14), (fx1 - 26, fy0 + 14)],
+            fill=(255, 255, 255, 40), width=4)
+
+    # FILEIRA DE SLOTS da lista de jogos (embaixo da moldura, largura toda)
+    y0, y1, n, gap, margin = 760, 856, 6, 26, 84
+    slotw = (W - 2 * margin - (n - 1) * gap) // n
+    for i in range(n):
+        x0 = margin + i * (slotw + gap)
+        md.rounded_rectangle([x0 - 7, y0 - 7, x0 + slotw + 7, y1 + 7], radius=16,
+                             fill=accent + (70,))
+        md.rounded_rectangle([x0 - 3, y0 - 3, x0 + slotw + 3, y1 + 3], radius=12,
+                             fill=(190, 194, 202, 255))
+        md.rounded_rectangle([x0, y0, x0 + slotw, y1], radius=9,
+                             fill=(10, 10, 16, 255))
+        md.rounded_rectangle([x0 + 8, y1 - 12, x0 + slotw - 8, y1 - 6], radius=4,
+                             fill=accent + (130,))
+
+    # rodape escuro para o nome do jogo selecionado
+    md.rectangle([0, 900, W, H], fill=(5, 5, 10, 110))
+    md.line([(0, 900), (W, 900)], fill=accent + (90,), width=4)
 
     # vinheta leve
     vmask = Image.new("L", (W, H), 0)

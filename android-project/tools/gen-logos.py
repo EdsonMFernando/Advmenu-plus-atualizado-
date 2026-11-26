@@ -18,10 +18,9 @@ for p in sorted(glob.glob(os.path.join(ART, "background_*.jpg"))):
     key = os.path.basename(p)[len("background_"):-len(".jpg")]
     src = Image.open(p).convert("RGB")
     w, h = src.size
-    # crop central (rosto do bonequinho da esquerda + brilho central)
-    s = min(w, h)
-    cx, cy = int(w * 0.5), int(h * 0.42)
-    half = s // 3
+    # crop do bonequinho da esquerda (o centro do fundo agora e a moldura
+    # metalica do snapshot, que nao serve de logo)
+    cx, cy, half = 310, 420, 300
     sq = src.crop((cx - half, cy - half, cx + half, cy + half))
     logo = sq.resize((PX, PX), Image.LANCZOS)
     out = Image.new("RGBA", (PX + 40, PX + 40), (0, 0, 0, 0))
