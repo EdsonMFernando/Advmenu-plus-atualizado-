@@ -1925,6 +1925,12 @@ public class FrontendActivity extends Activity {
                 pkg = "com.winlator";
             }
         }
+        if ("hbmame".equals(sysKey)) {
+            String hbm = findEmuByPrefixes(new String[]{"hbmame"});
+            if (hbm != null) {
+                pkg = hbm;
+            }
+        }
         if ("xbox360".equals(sysKey)) {
             String[] xb = {"xendroid", "x360mobile", "org.xeniaae"};
             String xen = findEmuByPrefixes(xb);
