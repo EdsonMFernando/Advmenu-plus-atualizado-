@@ -44,7 +44,20 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
   `patches-hbm/01-android-zlib-const.patch`, aplicado automaticamente
   pelo `tools/sync-hbmame.sh` (vendor no PC; o APK contem apenas o resultado).
 
-- [ ] Fase 3 (OSD SDL)
+- [ ] Fase 3 (OSD SDL) — ALCANCADA (sem script solto): o mesmo
+  `hbm-port/CMakeLists.txt` tem o alvo `hbmosd` (src/osd sobre o SDL2 2.30.11
+  vendored no app), Release, arm64-v8a E armeabi-v7a:
+  - **126/147** arquivos do OSD compilam e linkam em `libhbmosd.a`
+    (~46 MB arm64 / ~32 MB armv7) — inclui sdlmain/window/android_main,
+    som/input/render SDL e o render **BGFX completo** (12 arquivos + drawbgfx)
+  - as 21 exclusoes sao modules de hosts desktop, fora do build Android de
+    proposito (Windows: win*/winrt*/drawd3d/d3dhlsl, macOS, pulse/pipewire/
+    portaudio/portmidi, asio/network), e `/modules/file/stdfile.cpp`:
+    `posixfile.cpp` cobre Android, `stdfile` precisa de ajuste proprio
+  - definicoes: `-DOSD_SDL -DUSE_OPENGL=0 -DUSE_BGFX=1 -DBX_CONFIG_DEBUG=0`;
+    o <SDL2/SDL.h> do SDL vendored e exposto por link `sdl2-shim/SDL2` gerado
+    pelo proprio CMake na arvore de build
+
 - [ ] Fase 4 (glue)
 - [ ] Fase 5 (build verde)
 

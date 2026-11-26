@@ -87,3 +87,39 @@ add_library(hbmcore STATIC
     ${HBM_UTIL_SOURCES} ${HBM_FORMATS_SOURCES} ${HBM_NETLIST_SOURCES})
 target_include_directories(hbmcore PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Fase 3: OSD SDL (src/osd) sobre o SDL2 vendored (app/src/main/cpp/SDL2).
+file(GLOB_RECURSE HBM_OSD_SOURCES CONFIGURE_DEPENDS
+    "${HBM_DIR}/src/osd/*.cpp")
+list(FILTER HBM_OSD_SOURCES EXCLUDE REGEX
+    "/osd/windows/|/osd/mac/|/osd/winui/|/osd/sdl3/|/osd/asio\\.cpp$")
+list(FILTER HBM_OSD_SOURCES EXCLUDE REGEX
+    "/debugger/win/|/debugger/qt/")
+list(FILTER HBM_OSD_SOURCES EXCLUDE REGEX
+    "/modules/file/(win|winrt|stdfile)")
+list(FILTER HBM_OSD_SOURCES EXCLUDE REGEX
+    "/modules/(midi/portmidi|sound/(pa|pulse|pipewire)_sound|output/network|opengl/gl_shader|lib/osdlib_(macosx|win32)|render/drawd3d|render/d3d/|lib/asio)")
+# "SDL2/SDL.h": no CMake, o caminho SDL2/include do SDL vendored e exposto
+# como <SDL2/...> por um link dentro da arvore de build.
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim")
+file(CREATE_LINK
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim/SDL2"
+    SYMBOLIC)
+add_library(hbmosd STATIC ${HBM_OSD_SOURCES})
+target_include_directories(hbmosd PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim"
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${HBM_DIR}/src/osd"
+    "${HBM_DIR}/src/osd/sdl"
+    "${HBM_DIR}/src/osd/modules/render"
+    "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/3rdparty/bgfx/include"
+    "${HBM_DIR}/3rdparty/bx/include"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty"
+    "${HBM_DIR}/3rdparty/bgfx/examples/common"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
+target_compile_definitions(hbmosd PRIVATE
+    OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
