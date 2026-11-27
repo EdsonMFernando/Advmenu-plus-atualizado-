@@ -1,0 +1,68 @@
+// APK AVULSO HBMAME ANDROID — standalone (Fase 4/5 do hbm-port).
+// Reaproveita o CMake do port (android-project/hbm-port/CMakeLists.txt) com
+// HBM_APK_GLUE=ON (gera o libmain.so com hbmcore+hbmemu+hbmosd+hbmfrontend
+// e o entrypoint glue) e o core libretro junto (HBM_LIBRETRO=ON).
+// O vendor (HBMAME 0.289.6 + SDL2) e baixado sozinho antes de compilar.
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.edsonmfernando.hbmame'
+    compileSdk 34
+    ndkVersion '26.3.11579264'
+
+    defaultConfig {
+        applicationId 'com.edsonmfernando.hbmame'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '0.289.6'
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_static', '-DHBM_APK_GLUE=ON', '-DHBM_LIBRETRO=ON'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../hbm-port/CMakeLists.txt'
+            version '3.22.1+'
+        }
+    }
+
+    sourceSets {
+        main {
+            // Java do SDL2 (SDLActivity etc.) vem da arvore vendored do app 0.106
+            java.srcDirs += ['../../app/src/main/cpp/SDL2/android-project/app/src/main/java']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// Vendorizacao AUTOMATICA: baixa HBMAME 0.289.6 (sync-hbmame.sh) e SDL2
+// (sync-vendor.sh) antes de compilar; ambos idempotentes.
+tasks.register('syncHbmame', Exec) {
+    workingDir '..'
+    commandLine 'bash', 'tools/sync-hbmame.sh'
+}
+tasks.register('syncVendor', Exec) {
+    workingDir '../..' // na raiz do repo (mesma pasta do APK 0.106)
+    commandLine 'bash', 'android-project/tools/sync-vendor.sh'
+}
+preBuild.dependsOn 'syncHbmame', 'syncVendor'

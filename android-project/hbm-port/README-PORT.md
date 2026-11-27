@@ -122,5 +122,10 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
   PARTE 2 (proximo passo): OSD libretro, acionando hbmemu + hbmfrontend
   para o video/audio/input real dos drivers HBMAME
 
+- APK AVULSO pronto para o CI: o projeto `android-project-hbm/` (pacote
+  `com.edsonmfernando.hbmame`) gera o APK standalone do HBMAME com o MESMO
+  CMake do port (`HBM_APK_GLUE=ON`); o job `hbm-apk` do workflow compila e
+  publica o `app-debug.apk` como artefato `HBMAME-Android-apk`
+
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
 arquivos do port 0.106 (funcionando) NAO sao tocados por este projeto.
