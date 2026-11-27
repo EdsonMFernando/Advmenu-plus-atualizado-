@@ -42,7 +42,7 @@ jobs:
           tail -n 400 build-${{ matrix.abi }}.log
           exit $rc
 
-      - name: Sobrir log de build como artefato
+      - name: Subir log de build como artefato
         if: always()
         uses: actions/upload-artifact@v4
         with:
