@@ -593,7 +593,11 @@ public class FrontendActivity extends Activity {
         carousel.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (!systemsMode && adapter.getCount() > 0
+                if (systemsMode) {
+                    openSystemAt(carousel.selected);
+                    return true;
+                }
+                if (adapter.getCount() > 0
                         && carousel.selected < adapter.getCount()) {
                     showGameMenu(carousel.selected);
                     return true;
@@ -1089,7 +1093,14 @@ public class FrontendActivity extends Activity {
             int act = actionForKey(keyCode);
             if (act == 0 || act == 2) { carousel.move(-1); return true; }
             if (act == 1 || act == 3) { carousel.move(1); return true; }
-            if (act == 4) { carousel.activate(); return true; }
+            if (act == 4) {
+                if (systemsMode && event != null && event.getRepeatCount() >= 2) {
+                    openSystemAt(carousel.selected);
+                } else {
+                    carousel.activate();
+                }
+                return true;
+            }
             if (act == 5) { onBackPressed(); return true; }
             if (act == 6) { carousel.move(-5); return true; }
             if (act == 7) { carousel.move(5); return true; }
@@ -1234,6 +1245,25 @@ public class FrontendActivity extends Activity {
         topSystem.setText(systemsMode
                 ? "SISTEMAS  \u2022  EMULADORES" : "ARCADE  \u2022  ADVANCEMAME");
         updateSnapshotVisibility();
+    }
+
+    /** Liga/desliga o emulador parado na bolinha (anel verde/vermelho na hora). */
+    private void toggleCurrentSystem() {
+        if (carousel == null || carousel.selected >= systems.size()) {
+            return;
+        }
+        String k = systems.get(carousel.selected).key;
+        boolean on = !emuEnabled(k);
+        setEmuEnabled(k, on);
+        computeMediaDirs();
+        adapter.load(this);
+        updateEmptyState();
+        carousel.setSelectedIndex(carousel.selected, true);
+        updateCount(carousel.selected);
+        android.widget.Toast.makeText(this,
+                systems.get(Math.min(carousel.selected, systems.size() - 1)).label
+                        + ": " + (on ? "LIGADO" : "DESLIGADO"),
+                android.widget.Toast.LENGTH_SHORT).show();
     }
 
     private void toggleFavs() {
@@ -2055,6 +2085,15 @@ public class FrontendActivity extends Activity {
     /** Pastas de sistema (atari2600, nes, snes, ps1, psp, switch, hbmame, fba...) em cada armazenamento. */
     private ArrayList<SystemEntry> collectSystems(ArrayList<File> roots) {
         LinkedHashMap<String, SystemEntry> byLabel = new LinkedHashMap<>();
+        // TODOS os sistemas do catalogo entram no carrossel (anel verde/vermelho);
+        // a pasta so e varrida se o emulador estiver LIGADO.
+        for (java.util.Map.Entry<String, String> en : SYSTEM_FOLDERS.entrySet()) {
+            String k = en.getKey();
+            String lb = PINBALL_SCAN_KEYS.contains(k) ? "PINBALL (tudo)" : en.getValue();
+            if (!byLabel.containsKey(lb)) {
+                byLabel.put(lb, new SystemEntry(k, lb));
+            }
+        }
         for (File rootDir : roots) {
             File[] children = rootDir.listFiles();
             if (children == null) {
@@ -2764,10 +2803,10 @@ public class FrontendActivity extends Activity {
             setSelectedIndex(selected + delta, true);
         }
 
-        /** Botao CENTER: abre o sistema (menu SISTEMAS) ou o jogo (menu JOGOS). */
+        /** Botao CENTER: liga/desliga o emulador (menu SISTEMAS) ou abre o jogo. */
         void activate() {
             if (systemsMode) {
-                openSystemAt(selected);
+                toggleCurrentSystem();
             } else if (adapter.getCount() > 0 && selected < adapter.getCount()) {
                 if (systemGamesMode) {
                     openGameFile(adapter.fileAt(selected), currentSystem.key);
@@ -2832,7 +2871,8 @@ public class FrontendActivity extends Activity {
                     if (sel) {
                         p.setStyle(Paint.Style.STROKE);
                         p.setStrokeWidth(dp(5));
-                        p.setColor(0xFFFFD75A);
+                        p.setColor(!forGames && systems.get(idx).games.isEmpty()
+                                ? 0xFFE04848 : 0xFF35D06A);
                         canvas.drawCircle(cx, cy, r, p);
                     } else {
                         p.setStyle(Paint.Style.STROKE);
