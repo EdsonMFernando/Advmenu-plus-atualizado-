@@ -504,6 +504,35 @@ solto: o que os scripts fazem, o Gradle (no build) e o app (na execucao) fazem s
 
 Edite `AdvConfig.java` para mudar os padroes de fabrica e recompile.
 
+### Desempenho por aparelho (Mali/MediaTek/Unisoc/Exynos/Kirin/Snapdragon)
+
+Sendo honesto sobre o limite: **os drivers de GPU (Adreno, Mali, PowerVR) sao
+fechados dos fabricantes (Qualcomm/ARM/MediaTek) - nenhum aplicativo pode
+cria-los ou substitui-los**. O que o Advmenu Plus Android controla, e faz
+de fabrica:
+
+- **APK multi-ABI nativo** (arm64-v8a + armeabi-v7a): roda codigo nativo em
+  qualquer processador, sem traducao.
+- **Perfil automatico de desempenho por chipset** (em `MainActivity.java`,
+  config dentro do codigo): na geracao do `advmame.rc` o app detecta o
+  chipset (`Build.HARDWARE` + `Build.SOC_MODEL` no Android 12+) e injeta
+  opcoes validadas no advance/osd do port:
+
+  | Perfil | Chipsets | Linhas injetadas |
+  |--------|----------|------------------|
+  | full | Snapdragon/Qualcomm, Dimensity (mt68/69), Exynos 9/2, Kirin 9, Tegra | `misc_smp yes`, `sound_samplerate 44100`, `sound_latency 0.1`, `display_vsync yes` |
+  | mid | Exynos 7/8, Kirin 6/7, Rockchip, Amlogic, MediaTek mt8/mt83 | `misc_smp yes`, `sound_samplerate 32000`, `sound_latency 0.2`, `display_vsync yes` |
+  | eco | Unisoc/Spreadtrum (Tiger), MediaTek de entrada (mt65/mt67) | `misc_smp yes`, `sound_samplerate 22050`, `sound_latency 0.3`, `display_vsync yes` |
+
+- **Prioridade da config**: `advmenu.rc`/`.ini` do cartao (do usuario, o app
+  nao altera) > perfil automatico por chipset > padrao embutido. O perfil
+  reduz o custo de audio/blit nos chips mais fracos SEM mudar a imagem do
+  jogo (o mesmo jogo roda igual; so o custo de CPU muda).
+- **Emuladores externos** (RetroArch, PPSSPP, Eden, Winlator/GameHub): cada
+  um tem seus proprios ajustes internos, que o Advmenu nao altera - dentro
+  de cada um, use o video/audio driver que o aparelho oferece (ex.: Vulkan
+  no RetroArch/Eden, que Mali e Adreno modernos suportam).
+
 ## Editando o codigo e recompilando
 
 1. Edite o que quiser em `advancemame/` (nucleo, drivers, etc.) ou no glue Android
