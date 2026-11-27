@@ -35,7 +35,7 @@ final class AssetInstaller {
                 Log.e(TAG, "erro extraindo assets", e);
             }
         }
-        File themesMarker = new File(ctx.getFilesDir(), ".themes_installed");
+        File themesMarker = new File(ctx.getFilesDir(), ".themes_installed_v2");
         if (!themesMarker.exists()) {
             try {
                 unpackDir(ctx, "themes", new File(ctx.getFilesDir(), "themes"));

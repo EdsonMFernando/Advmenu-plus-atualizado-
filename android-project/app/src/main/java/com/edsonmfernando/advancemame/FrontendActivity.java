@@ -487,6 +487,7 @@ public class FrontendActivity extends Activity {
     private TextView sysToggle;
     private TextView gearBtn;
     private TextView gameNameView;
+    private ImageView consoleView;
     private SysCarouselView carousel;
     private android.hardware.input.InputManager.InputDeviceListener deviceListener;
 
@@ -607,6 +608,13 @@ public class FrontendActivity extends Activity {
                 Gravity.CENTER_HORIZONTAL | Gravity.TOP);
         gnp.topMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.535f);
         root.addView(gameNameView, gnp);
+
+        consoleView = new ImageView(this);
+        consoleView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        consoleView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams cvp = snapshotFrameParams();
+        cvp.setMargins(dp(30), dp(30), dp(30), dp(30));
+        root.addView(consoleView, cvp);
 
         int pad = dp(14);
         LinearLayout topbar = new LinearLayout(this);
@@ -2366,6 +2374,50 @@ public class FrontendActivity extends Activity {
         if (!vis) {
             snapshotHost.show(null);
         }
+        updateConsoleImage();
+    }
+
+    /**
+     * Menu de SISTEMAS: no lugar do antigo quadro aparece a imagem do console
+     * que representa o emulador selecionado (muda so quando muda o emulador).
+     */
+    private void updateConsoleImage() {
+        if (consoleView == null) {
+            return;
+        }
+        boolean vis = systemsMode && carousel != null
+                && carousel.getVisibility() == View.VISIBLE
+                && carousel.selected < systems.size();
+        if (!vis) {
+            consoleView.setVisibility(View.GONE);
+            return;
+        }
+        String key = systems.get(carousel.selected).key;
+        Bitmap bmp = null;
+        File themeDir = activeTheme != null ? themeDirs.get(activeTheme) : null;
+        if (themeDir != null && themeDir.isDirectory()) {
+            bmp = BitmapFactory.decodeFile(new File(new File(themeDir, "art"),
+                    "console_" + key + ".png").getAbsolutePath());
+        }
+        if (bmp == null) {
+            try {
+                java.io.InputStream is = getAssets().open(
+                        "themes/adv-multi/art/console_" + key + ".png");
+                try {
+                    bmp = BitmapFactory.decodeStream(is);
+                } finally {
+                    is.close();
+                }
+            } catch (Throwable t) {
+                bmp = null;
+            }
+        }
+        if (bmp == null) {
+            consoleView.setVisibility(View.GONE);
+            return;
+        }
+        consoleView.setImageBitmap(bmp);
+        consoleView.setVisibility(View.VISIBLE);
     }
 
     private void showGameName(String t) {
@@ -2630,6 +2682,7 @@ public class FrontendActivity extends Activity {
                 showGameName(adapter.titleAt(selected));
             } else {
                 applyLayoutBackground();
+                updateConsoleImage();
             }
             updateCount(selected);
             invalidate();
