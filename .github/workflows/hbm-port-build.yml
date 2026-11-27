@@ -1,0 +1,51 @@
+name: HBMAME port (CI)
+
+# Iteracao da Fase 5 (build verde) do port nativo HBMAME: roda manualmente
+# (aba Actions > Run workflow). Compila os alvos hbmcore/hbmosd/hbmmain com
+# o clang do NDK e sobe o log de erros como artefato para corrigir por lotes.
+on:
+  workflow_dispatch:
+
+jobs:
+  hbmport:
+    strategy:
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vendor do HBMAME 0.289.6 (fixado)
+        run: bash android-project/tools/sync-hbmame.sh
+
+      - name: Vendor do SDL2 (mesmo do APK)
+        run: bash android-project/tools/sync-vendor.sh
+
+      - name: Instalar NDK e CMake
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;26.3.11579264" "cmake;3.22.1" >/dev/null
+          echo "NDK_ROOT=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
+
+      - name: Configurar CMake (${{ matrix.abi }})
+        run: |
+          cmake -G Ninja -B build/${{ matrix.abi }} -S android-project/hbm-port \
+            -DCMAKE_TOOLCHAIN_FILE="$NDK_ROOT/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=${{ matrix.abi }} -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compilar alvos do port (hbmcore + hbmosd + hbmmain)
+        run: |
+          set +e
+          cmake --build build/${{ matrix.abi }} --target hbm-port-all -j 2 > build-${{ matrix.abi }}.log 2>&1
+          rc=$?
+          tail -n 400 build-${{ matrix.abi }}.log
+          exit $rc
+
+      - name: Subir log de build como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbm-port-log-${{ matrix.abi }}
+          path: build-${{ matrix.abi }}.log
+          if-no-files-found: error

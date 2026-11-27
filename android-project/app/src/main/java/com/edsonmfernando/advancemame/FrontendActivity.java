@@ -204,6 +204,10 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("cps1", "Arcade Capcom CPS-1");
         SYSTEM_FOLDERS.put("cps2", "Arcade Capcom CPS-2");
         SYSTEM_FOLDERS.put("cps3", "Arcade Capcom CPS-3");
+        SYSTEM_FOLDERS.put("zinc", "Arcade Zinc (ZN1/ZN2)");
+        SYSTEM_FOLDERS.put("model1", "Arcade Sega Model 1");
+        SYSTEM_FOLDERS.put("model2", "Arcade Sega Model 2");
+        SYSTEM_FOLDERS.put("model3", "Arcade Sega Model 3");
         SYSTEM_FOLDERS.put("naomi", "Arcade Sega Naomi");
         SYSTEM_FOLDERS.put("naomi2", "Arcade Sega Naomi 2");
         SYSTEM_FOLDERS.put("atomiswave", "Arcade Atomiswave");
@@ -1923,6 +1927,15 @@ public class FrontendActivity extends Activity {
                 }
             } else {
                 pkg = "com.winlator";
+            }
+        }
+        if ("model3".equals(sysKey)) {
+            pkg = "com.winlator";
+        }
+        if ("hbmame".equals(sysKey)) {
+            String hbm = findEmuByPrefixes(new String[]{"hbmame"});
+            if (hbm != null) {
+                pkg = hbm;
             }
         }
         if ("xbox360".equals(sysKey)) {

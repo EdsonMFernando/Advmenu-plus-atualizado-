@@ -176,6 +176,9 @@ todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
 | PSP | PPSSPP | excelente em quase todo aparelho |
 | GameCube/Wii | Dolphin | bom em flagships |
 | PS3 | RPCS3 (`net.rpcs3.rpcs3`) | pesado: so flagships e jogos especificos |
+| Sega Model 1 / 2 | RetroArch (core MAME Current) | roda (MAME emula essas placas) |
+| Sega Model 3 | via **Winlator** (Supermodel PC) | experimental: nao existe port Android do Supermodel |
+| Zinc (ZN1/ZN2) | RetroArch (core MAME Current) | roda (MAME emula essas placas) |
 | PS Vita | Vita3K (nao oficial) | parcial, em desenvolvimento |
 | OpenBOR | OpenBOR (`org.openbor.engine`) | leve (2D), roda bem; mods `.pak` escolhidos dentro do app |
 | MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
@@ -390,10 +393,16 @@ snapshot se voce colocar `snapshot/NomeDaMesa.jpg|.mp4`.
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
    *MAME (Current)*, que acompanha o MAME moderno. O fluxo ja funciona: pasta `hbmame/`
    no cartao → botao EMULADORES → toque no jogo → abre no RetroArch.
-2. **Port nativo (projeto em andamento — longo):** o plano para portar o nucleo
-   MAME 0.289/HBMAME para DENTRO do APK esta em `android-project/hbm-port/README-PORT.md`;
-   a fonte fixada (0.289.6, `fa040eced0d`) e baixada por `tools/sync-hbmame.sh`
-   (idempotente, fora do git — 973 MB / 15.945 arquivos).
+2. **Emulador HBMAME Android avulso (em construcao):** o port nativo (Fase 2 núcleo
+   e Fase 3 OSD já compilando via CMake no NDK, arm64 e armv7) vai virar um APK
+   standalone — quando instalado, o Advmenu Plus Android o detecta
+   automaticamente (prefixo/nome `hbmame`) e a pasta `hbmame/` passa a abrir
+   nele sozinho, sem configurar nada.
+3. **Port nativo dentro do APK (projeto em andamento — longo):** o plano para
+   portar o nucleo MAME 0.289/HBMAME para DENTRO do APK esta em
+   `android-project/hbm-port/README-PORT.md`; a fonte fixada (0.289.6,
+   `fa040eced0d`) e baixada por `tools/sync-hbmame.sh` (idempotente, fora do
+   git — 973 MB / 15.945 arquivos).
 
 ### Snapshots (estilo ES-DE)
 
