@@ -18,3 +18,4 @@ android-project/hbm-apk/build/
 android-project/hbm-apk/.gradle/
 android-project/hbm-apk/app/build/
 android-project/hbm-apk/local.properties
+android-project/tools/__pycache__/

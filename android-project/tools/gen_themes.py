@@ -38,7 +38,7 @@ FAMS = {
 def fam_for(k):
     if k.startswith("pinball"): return "pinball"
     if k in ("corrida", "outrun", "daytona", "segarally", "cruisn",
-             "ridgeracer", "harddrivin"): return "racing"
+             "cruisnusa", "ridgeracer", "harddrivin"): return "racing"
     if k in ("tiro", "lightgun", "timecrisis", "hotd", "virtuacop",
              "pointblank", "opwolf"): return "shooting"
     if k in ("mame", "fba", "fbneo", "finalburn", "arcade", "cps1", "cps2", "cps3",
@@ -46,7 +46,8 @@ def fam_for(k):
              "stv", "lindbergh", "daphne", "neogeo", "neogeocd", "neogeopocket",
              "neogeopocketcolor", "ngpc", "taitotypex", "typex", "nesicaxlive",
              "nesica", "coinops", "pcengine", "pce", "pcecd", "turbografx",
-             "turbografx16", "tg16", "supergrafx", "pcfx", "fliperama"): return "arcade"
+             "turbografx16", "tg16", "supergrafx", "pcfx", "fliperama", "kof", "streetfighter",
+             "mortalkombat", "marvelvscapcom"): return "arcade"
     if k in ("gb", "gameboy", "gbc", "gba"): return "gameboy"
     if k in ("nes", "famicom", "fds"): return "nes"
     if k in ("snes", "sfc", "sufami", "sufamiturbo", "satellaview", "virtualboy"): return "snes"
@@ -122,7 +123,7 @@ def base_gradient(top, base):
             px[x, y] = c
     return img
 
-def make(key):
+def make(key, sys_variant=False):
     fam = fam_for(key)
     top, base, accent = FAMS[fam]
     img = base_gradient(top, base).convert("RGBA")
@@ -151,31 +152,36 @@ def make(key):
     mascot(md, 300, 470, s, accent, flip=False)
     mascot(md, W - 300, 470, s, accent, flip=True)
 
-    # MOLDURA CENTRAL do snapshot/video: retangulo grande com borda metalica
-    fx0, fy0, fx1, fy1 = 560, 130, 1360, 650
-    md.rounded_rectangle([fx0 - 16, fy0 - 16, fx1 + 16, fy1 + 16], radius=30,
-                         fill=accent + (80,))
-    md.rounded_rectangle([fx0 - 10, fy0 - 10, fx1 + 10, fy1 + 10], radius=24,
-                         fill=(205, 208, 216, 255))
-    md.rounded_rectangle([fx0 - 3, fy0 - 3, fx1 + 3, fy1 + 3], radius=18,
-                         fill=(88, 92, 102, 255))
-    md.rounded_rectangle([fx0, fy0, fx1, fy1], radius=14, fill=(8, 8, 12, 255))
-    md.line([(fx0 + 26, fy0 + 14), (fx1 - 26, fy0 + 14)],
-            fill=(255, 255, 255, 40), width=4)
+    if sys_variant:
+        # variante SEM quadro (menu de SISTEMAS): area central limpa
+        md.ellipse([W//2 - 520, 150, W//2 + 520, 700],
+                   outline=(255, 255, 255, 22), width=6)
+    else:
+        # MOLDURA CENTRAL do snapshot/video: retangulo com borda metalica
+        fx0, fy0, fx1, fy1 = 560, 130, 1360, 650
+        md.rounded_rectangle([fx0 - 16, fy0 - 16, fx1 + 16, fy1 + 16], radius=30,
+                             fill=accent + (80,))
+        md.rounded_rectangle([fx0 - 10, fy0 - 10, fx1 + 10, fy1 + 10], radius=24,
+                             fill=(205, 208, 216, 255))
+        md.rounded_rectangle([fx0 - 3, fy0 - 3, fx1 + 3, fy1 + 3], radius=18,
+                             fill=(88, 92, 102, 255))
+        md.rounded_rectangle([fx0, fy0, fx1, fy1], radius=14, fill=(8, 8, 12, 255))
+        md.line([(fx0 + 26, fy0 + 14), (fx1 - 26, fy0 + 14)],
+                fill=(255, 255, 255, 40), width=4)
 
-    # FILEIRA DE SLOTS da lista de jogos (embaixo da moldura, largura toda)
-    y0, y1, n, gap, margin = 760, 856, 6, 26, 84
-    slotw = (W - 2 * margin - (n - 1) * gap) // n
-    for i in range(n):
-        x0 = margin + i * (slotw + gap)
-        md.rounded_rectangle([x0 - 7, y0 - 7, x0 + slotw + 7, y1 + 7], radius=16,
-                             fill=accent + (70,))
-        md.rounded_rectangle([x0 - 3, y0 - 3, x0 + slotw + 3, y1 + 3], radius=12,
-                             fill=(190, 194, 202, 255))
-        md.rounded_rectangle([x0, y0, x0 + slotw, y1], radius=9,
-                             fill=(10, 10, 16, 255))
-        md.rounded_rectangle([x0 + 8, y1 - 12, x0 + slotw - 8, y1 - 6], radius=4,
-                             fill=accent + (130,))
+        # FILEIRA DE SLOTS da lista de jogos (embaixo da moldura, largura toda)
+        y0, y1, n, gap, margin = 760, 856, 6, 26, 84
+        slotw = (W - 2 * margin - (n - 1) * gap) // n
+        for i in range(n):
+            x0 = margin + i * (slotw + gap)
+            md.rounded_rectangle([x0 - 7, y0 - 7, x0 + slotw + 7, y1 + 7], radius=16,
+                                 fill=accent + (70,))
+            md.rounded_rectangle([x0 - 3, y0 - 3, x0 + slotw + 3, y1 + 3], radius=12,
+                                 fill=(190, 194, 202, 255))
+            md.rounded_rectangle([x0, y0, x0 + slotw, y1], radius=9,
+                                 fill=(10, 10, 16, 255))
+            md.rounded_rectangle([x0 + 8, y1 - 12, x0 + slotw - 8, y1 - 6], radius=4,
+                                 fill=accent + (130,))
 
     # rodape escuro para o nome do jogo selecionado
     md.rectangle([0, 900, W, H], fill=(5, 5, 10, 110))
@@ -192,8 +198,13 @@ def make(key):
 
     img = img.convert("RGB")
     img = ImageEnhance.Color(img).enhance(1.12)
-    p = os.path.join(OUT, "background_%s.jpg" % key)
-    img.save(p, "JPEG", quality=82, optimize=True, progressive=True)
+    if sys_variant:
+        img = img.resize((1600, 900), Image.LANCZOS)
+        p = os.path.join(OUT, "background_%s_sys.jpg" % key)
+        img.save(p, "JPEG", quality=78, optimize=True, progressive=True)
+    else:
+        p = os.path.join(OUT, "background_%s.jpg" % key)
+        img.save(p, "JPEG", quality=82, optimize=True, progressive=True)
     return p
 
 def system_keys_from_java():
@@ -221,6 +232,8 @@ def main():
         p = make(k)
         n += 1
         tot += os.path.getsize(p)
+        tot += os.path.getsize(make(k, sys_variant=True))
+        n += 1
     print("gerados:", n, "%.1f MB" % (tot / 1e6))
 
 

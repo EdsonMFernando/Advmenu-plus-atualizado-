@@ -7,7 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
@@ -399,6 +403,11 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("psxone", "PS One");
         SYSTEM_FOLDERS.put("playstation", "PlayStation (todos)");
         SYSTEM_FOLDERS.put("fliperama", "Fliperama (arcade)");
+        SYSTEM_FOLDERS.put("kof", "The King of Fighters (arcade)");
+        SYSTEM_FOLDERS.put("streetfighter", "Street Fighter (arcade)");
+        SYSTEM_FOLDERS.put("mortalkombat", "Mortal Kombat (arcade)");
+        SYSTEM_FOLDERS.put("marvelvscapcom", "Marvel vs. Capcom (arcade)");
+        SYSTEM_FOLDERS.put("cruisnusa", "Cruis'n USA (arcade)");
     }
 
     /**
@@ -477,6 +486,8 @@ public class FrontendActivity extends Activity {
     private TextView favToggle;
     private TextView sysToggle;
     private TextView gearBtn;
+    private TextView gameNameView;
+    private SysCarouselView carousel;
     private android.hardware.input.InputManager.InputDeviceListener deviceListener;
 
     private FrameLayout root;
@@ -503,8 +514,7 @@ public class FrontendActivity extends Activity {
         root.setBackgroundColor(COR_FUNDO);
 
         snapshotHost = new SnapshotHost(this);
-        root.addView(snapshotHost, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(snapshotHost, snapshotFrameParams());
 
         computeMediaDirs();
         storageGranted = hasStoragePermission();
@@ -552,7 +562,6 @@ public class FrontendActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 adapter.selected = position;
                 list.invalidateViews();
-                snapshotHost.show(systemsMode ? null : adapter.romAt(position));
             }
 
             @Override
@@ -562,6 +571,42 @@ public class FrontendActivity extends Activity {
 
         root.addView(list, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        carousel = new SysCarouselView(this);
+        carousel.setVisibility(View.GONE);
+        carousel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                carousel.activate();
+            }
+        });
+        carousel.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (!systemsMode && adapter.getCount() > 0
+                        && carousel.selected < adapter.getCount()) {
+                    showGameMenu(carousel.selected);
+                    return true;
+                }
+                return false;
+            }
+        });
+        root.addView(carousel, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        gameNameView = new TextView(this);
+        gameNameView.setSingleLine(true);
+        gameNameView.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        gameNameView.setTextSize(26);
+        gameNameView.setTextColor(Color.WHITE);
+        gameNameView.setShadowLayer(dp(3), 0, dp(2), Color.BLACK);
+        gameNameView.setGravity(Gravity.CENTER);
+        gameNameView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams gnp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        gnp.topMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.535f);
+        root.addView(gameNameView, gnp);
 
         int pad = dp(14);
         LinearLayout topbar = new LinearLayout(this);
@@ -761,8 +806,8 @@ public class FrontendActivity extends Activity {
             public void run() {
                 if (adapter.getCount() > 0) {
                     list.setSelection(0);
-                    snapshotHost.show(adapter.romAt(0));
                 }
+                updateSnapshotVisibility();
                 updateCount(0);
             }
         });
@@ -803,9 +848,10 @@ public class FrontendActivity extends Activity {
         updateEmptyState();
         if (adapter.getCount() > 0) {
             list.setSelection(adapter.selected);
-            snapshotHost.show(adapter.romAt(adapter.selected));
-        } else {
-            snapshotHost.show(null);
+        }
+        updateSnapshotVisibility();
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            carousel.setSelectedIndex(carousel.selected, true);
         }
     }
 
@@ -1022,6 +1068,15 @@ public class FrontendActivity extends Activity {
             mapTarget = -1;
             return true;
         }
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            int act = actionForKey(keyCode);
+            if (act == 0 || act == 2) { carousel.move(-1); return true; }
+            if (act == 1 || act == 3) { carousel.move(1); return true; }
+            if (act == 4) { carousel.activate(); return true; }
+            if (act == 5) { onBackPressed(); return true; }
+            if (act == 6) { carousel.move(-5); return true; }
+            if (act == 7) { carousel.move(5); return true; }
+        }
         if (list != null) {
             int act = actionForKey(keyCode);
             if (act == 0) { sendKey(KeyEvent.KEYCODE_DPAD_UP); return true; }
@@ -1051,9 +1106,14 @@ public class FrontendActivity extends Activity {
         topSystem.setText("SISTEMAS  \u2022  EMULADORES");
         adapter.load(this);
         list.setSelection(0);
-        snapshotHost.show(null);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(false);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        showGameName(null);
+        updateSnapshotVisibility();
     }
 
     private void backToSystems() {
@@ -1065,9 +1125,14 @@ public class FrontendActivity extends Activity {
         topSystem.setText("SISTEMAS  \u2022  EMULADORES");
         adapter.load(this);
         list.setSelection(0);
-        snapshotHost.show(null);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(false);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(adapter.selected, true);
+        showGameName(null);
+        updateSnapshotVisibility();
     }
 
     private void backToArcade() {
@@ -1079,13 +1144,13 @@ public class FrontendActivity extends Activity {
         topSystem.setText("ARCADE  \u2022  ADVANCEMAME");
         adapter.load(this);
         list.setSelection(0);
-        if (adapter.getCount() > 0) {
-            snapshotHost.show(adapter.romAt(0));
-        } else {
-            snapshotHost.show(null);
-        }
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(true);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        updateSnapshotVisibility();
     }
 
     private void openSystemAt(int position) {
@@ -1107,6 +1172,11 @@ public class FrontendActivity extends Activity {
         list.setSelection(0);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(true);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        updateSnapshotVisibility();
     }
 
     private void toggleFavs() {
@@ -1116,6 +1186,9 @@ public class FrontendActivity extends Activity {
         list.setSelection(0);
         updateEmptyState();
         updateCount(0);
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            carousel.setSelectedIndex(0, true);
+        }
     }
 
     private boolean isFavorite(String rom) {
@@ -1422,14 +1495,27 @@ public class FrontendActivity extends Activity {
             layoutBg = null;
         }
         File img = null;
-        String bgKey = systemGamesMode && currentSystem != null ? currentSystem.key : null;
+        String bgKey = null;
+        if (systemGamesMode && currentSystem != null) {
+            bgKey = currentSystem.key;
+        } else if (systemsMode && carousel != null
+                && carousel.selected < systems.size()) {
+            bgKey = systems.get(carousel.selected).key;
+        }
         if (bgKey != null && themeDir != null && themeDir.isDirectory()) {
-            File cand = new File(new File(themeDir, "art"), "background_" + bgKey + ".png");
-            if (!cand.isFile()) {
-                cand = new File(new File(themeDir, "art"), "background_" + bgKey + ".jpg");
-            }
-            if (cand.isFile()) {
-                img = cand;
+            String[] names = systemsMode
+                    ? new String[]{"background_" + bgKey + "_sys.jpg",
+                                   "background_" + bgKey + "_sys.png",
+                                   "background_" + bgKey + ".jpg",
+                                   "background_" + bgKey + ".png"}
+                    : new String[]{"background_" + bgKey + ".png",
+                                   "background_" + bgKey + ".jpg"};
+            for (String nm : names) {
+                File cand = new File(new File(themeDir, "art"), nm);
+                if (cand.isFile()) {
+                    img = cand;
+                    break;
+                }
             }
         }
         if (img == null && bgKey != null && layoutDir != null) {
@@ -1483,7 +1569,7 @@ public class FrontendActivity extends Activity {
                 layoutBg.setImageBitmap(bmp);
                 layoutBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 layoutBg.setAlpha(0.55f);
-                root.addView(layoutBg, 1, new FrameLayout.LayoutParams(
+                root.addView(layoutBg, 0, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
         }
@@ -2259,6 +2345,42 @@ public class FrontendActivity extends Activity {
         }
     }
 
+    /** Quadro central do tema (moldura metalica) onde o snapshot do jogo aparece. */
+    private FrameLayout.LayoutParams snapshotFrameParams() {
+        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+        int w = (int) (dm.widthPixels * 0.416f);
+        int h = (int) (dm.heightPixels * 0.481f);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h,
+                Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        lp.topMargin = (int) (dm.heightPixels * 0.120f);
+        return lp;
+    }
+
+    /** O snapshot aparece no quadro central so no menu de JOGOS. */
+    private void updateSnapshotVisibility() {
+        if (snapshotHost == null) {
+            return;
+        }
+        boolean vis = !systemsMode;
+        snapshotHost.setVisibility(vis ? View.VISIBLE : View.GONE);
+        if (!vis) {
+            snapshotHost.show(null);
+        }
+    }
+
+    private void showGameName(String t) {
+        if (gameNameView == null) {
+            return;
+        }
+        if (t == null) {
+            gameNameView.setVisibility(View.GONE);
+            return;
+        }
+        gameNameView.setText(t);
+        gameNameView.setVisibility(View.VISIBLE);
+    }
+
+
     private void launch(final String rom) {
         View wipe = new View(this);
         wipe.setBackgroundColor(Color.BLACK);
@@ -2467,6 +2589,183 @@ public class FrontendActivity extends Activity {
         }
     }
 
+    /**
+     * Carrossel de bolinhas metalicas: no menu de SISTEMAS cada bolinha mostra
+     * o NOME DO EMULADOR dentro; no menu de JOGOS cada bolinha mostra o NOME
+     * DO JOGO dentro e o quadro central do tema mostra a snapshot (video ou
+     * imagem) do jogo parado na bolinha.
+     */
+    private final class SysCarouselView extends View {
+
+        private boolean forGames;
+        private int selected;
+
+        SysCarouselView(Context ctx) {
+            super(ctx);
+        }
+
+        void setGamesMode(boolean games) {
+            forGames = games;
+        }
+
+        private int count() {
+            return forGames ? adapter.getCount() : systems.size();
+        }
+
+        private String labelAt(int idx) {
+            return forGames ? adapter.titleAt(idx) : systems.get(idx).label;
+        }
+
+        void setSelectedIndex(int index, boolean center) {
+            int n = count();
+            if (n <= 0) {
+                selected = 0;
+                invalidate();
+                return;
+            }
+            selected = Math.max(0, Math.min(index, n - 1));
+            adapter.selected = selected;
+            if (forGames) {
+                snapshotHost.show(adapter.romAt(selected));
+                showGameName(adapter.titleAt(selected));
+            } else {
+                applyLayoutBackground();
+            }
+            updateCount(selected);
+            invalidate();
+        }
+
+        void move(int delta) {
+            setSelectedIndex(selected + delta, true);
+        }
+
+        /** Botao CENTER: abre o sistema (menu SISTEMAS) ou o jogo (menu JOGOS). */
+        void activate() {
+            if (systemsMode) {
+                openSystemAt(selected);
+            } else if (adapter.getCount() > 0 && selected < adapter.getCount()) {
+                if (systemGamesMode) {
+                    openGameFile(adapter.fileAt(selected), currentSystem.key);
+                } else {
+                    launch(adapter.romAt(selected));
+                }
+            }
+        }
+
+        private java.util.ArrayList<String> wrap(Paint p, String text, float maxW, int maxLines) {
+            java.util.ArrayList<String> out = new java.util.ArrayList<>();
+            String[] words = text.split(" ");
+            String cur = "";
+            for (String wd : words) {
+                String t = cur.isEmpty() ? wd : cur + " " + wd;
+                if (p.measureText(t) <= maxW || cur.isEmpty()) {
+                    cur = t;
+                } else {
+                    out.add(cur);
+                    cur = wd;
+                    if (out.size() == maxLines) {
+                        break;
+                    }
+                }
+            }
+            if (out.size() < maxLines && !cur.isEmpty()) {
+                out.add(cur);
+            }
+            return out;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            int w = getWidth();
+            int h = getHeight();
+            if (w <= 0 || h <= 0) {
+                return;
+            }
+            int n = count();
+            if (n <= 0) {
+                return;
+            }
+            float cy = h * 0.76f;
+            float spacing = h * 0.30f;
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            for (int pass = 0; pass < 2; pass++) {
+                for (int i = -2; i <= 2; i++) {
+                    int idx = selected + i;
+                    if (idx < 0 || idx >= n) {
+                        continue;
+                    }
+                    boolean sel = i == 0;
+                    if ((pass == 0) == sel) {
+                        continue;
+                    }
+                    float r = sel ? h * 0.155f : h * 0.105f;
+                    float cx = w / 2f + i * spacing;
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(0xFF0C0A10);
+                    canvas.drawCircle(cx, cy, r, p);
+                    if (sel) {
+                        p.setStyle(Paint.Style.STROKE);
+                        p.setStrokeWidth(dp(5));
+                        p.setColor(0xFFFFD75A);
+                        canvas.drawCircle(cx, cy, r, p);
+                    } else {
+                        p.setStyle(Paint.Style.STROKE);
+                        p.setStrokeWidth(dp(3));
+                        p.setColor(0xFFCED2DC);
+                        canvas.drawCircle(cx, cy, r, p);
+                    }
+                    String label = labelAt(idx);
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(sel ? 0xFFFFFFFF : 0xFFC9CDD8);
+                    p.setFakeBoldText(sel);
+                    p.setTextSize(sel ? dp(16) : dp(10));
+                    p.setShadowLayer(dp(3), 0, dp(2), Color.BLACK);
+                    java.util.ArrayList<String> lines = wrap(p, label, r * 1.6f, 3);
+                    float lineH = p.getTextSize() * 1.15f;
+                    float y0 = cy - (lines.size() - 1) * lineH / 2f + p.getTextSize() / 3f;
+                    for (int li = 0; li < lines.size(); li++) {
+                        float tw = p.measureText(lines.get(li));
+                        canvas.drawText(lines.get(li), cx - tw / 2f, y0 + li * lineH, p);
+                    }
+                    p.setShadowLayer(0, 0, 0, 0);
+                }
+            }
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent ev) {
+            if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                int w = getWidth();
+                int h = getHeight();
+                float cy = h * 0.76f;
+                float spacing = h * 0.30f;
+                float r = h * 0.155f;
+                if (Math.abs(ev.getY() - cy) <= r * 1.2f) {
+                    int n = count();
+                    int best = -1;
+                    float bestD = spacing;
+                    for (int i = -2; i <= 2; i++) {
+                        int idx = selected + i;
+                        if (idx < 0 || idx >= n) {
+                            continue;
+                        }
+                        float d = Math.abs(ev.getX() - (w / 2f + i * spacing));
+                        if (d < bestD) {
+                            bestD = d;
+                            best = idx;
+                        }
+                    }
+                    if (best >= 0) {
+                        setSelectedIndex(best, true);
+                        return true;
+                    }
+                }
+            }
+            return super.onTouchEvent(ev);
+        }
+    }
+
     private final class GameAdapter extends BaseAdapter {
 
         private final ArrayList<String> roms = new ArrayList<>();
@@ -2536,6 +2835,10 @@ public class FrontendActivity extends Activity {
 
         String romAt(int position) {
             return roms.get(position);
+        }
+
+        String titleAt(int position) {
+            return titles.get(position);
         }
 
         File fileAt(int position) {

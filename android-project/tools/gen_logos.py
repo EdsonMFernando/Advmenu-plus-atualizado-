@@ -69,6 +69,8 @@ EXTRA_FAM = {
     "atari800": "atari", "megacd": "sega", "32x": "sega", "pce": "arcade",
     "sufamiturbo": "snes", "ereader": "nintendo", "nsw": "nintendo",
     "psxone": "sony", "playstation": "sony", "fliperama": "arcade",
+    "kof": "arcade", "streetfighter": "arcade", "mortalkombat": "arcade",
+    "marvelvscapcom": "arcade", "cruisnusa": "racing",
 }
 
 FAMS.update({
@@ -105,6 +107,8 @@ FIXED = {
     "atarixl": "marine", "atari800": "marine", "megacd": "racer",
     "32x": "racer", "pce": "cap", "sufamiturbo": "hero", "ereader": "cap",
     "nsw": "hero", "psxone": "cyborg", "playstation": "heroine",
+    "kof": "fighter", "streetfighter": "fighter", "mortalkombat": "ninja",
+    "marvelvscapcom": "hero", "cruisnusa": "racer",
 }
 
 KINDS = [
