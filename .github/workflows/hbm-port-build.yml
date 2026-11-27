@@ -50,6 +50,19 @@ jobs:
             > build-${{ matrix.abi }}.log 2>&1
           rc=$?
           tail -n 400 build-${{ matrix.abi }}.log
+          if [ $rc -ne 0 ]; then
+            {
+              echo "### Erros do build (${{ matrix.abi }})"
+              echo '```'
+              grep -m 60 -E "error:|Error:|undefined reference|fatal error" build-${{ matrix.abi }}.log | head -n 60
+              echo '```'
+              echo '<details><summary>ultimas 300 linhas</summary>'
+              echo '```'
+              tail -n 300 build-${{ matrix.abi }}.log
+              echo '```'
+              echo '</details>'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
           exit $rc
 
       - name: Subir log de build como artefato
