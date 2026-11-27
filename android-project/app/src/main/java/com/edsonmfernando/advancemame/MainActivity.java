@@ -99,6 +99,9 @@ public class MainActivity extends SDLActivity {
                 }
             }
             lines.add("dir_rom " + paths);
+            if (!fromCard) {
+                applyChipProfile(lines);
+            }
             writeRc(new File(advDir, "advmame.rc"), lines);
             ArrayList<String> menuBase = fromCard ? base : splitLines(AdvConfig.ADVMENU_RC);
             ArrayList<String> menuLines = new ArrayList<>();
@@ -112,6 +115,122 @@ public class MainActivity extends SDLActivity {
         } catch (IOException e) {
             Log.e("AdvanceMAME", "erro configurando advmame.rc/advmenu.rc", e);
         }
+    }
+
+    /**
+     * Perfil de desempenho por chipset (config DENTRO do codigo).
+     *
+     * GPU drivers (Adreno/Mali/PowerVR) sao fechados dos fabricantes: nenhum
+     * aplicativo pode cria-los ou troca-los. O que o Advmenu Plus controla sao
+     * os padroes do advmame.rc gerado, ajustados automaticamente ao aparelho:
+     * /misc_smp (blit em thread separada), /sound_samplerate (menos CPU de
+     * audio), /sound_latency (evita estouro no som em chips lentos) e
+     * /display_vsync — todas confirmadas no advance/osd do port (video.c,
+     * sound.c). Prioridade: advmenu.rc/.ini do cartao (nao mexe) > perfil
+     * automatico por chipset > padrao embutido.
+     */
+    private static final String[][] PROFILE_FULL = {
+            {"misc_smp", "yes"},
+            {"sound_samplerate", "44100"},
+            {"sound_latency", "0.1"},
+            {"display_vsync", "yes"},
+    };
+
+    private static final String[][] PROFILE_MID = {
+            {"misc_smp", "yes"},
+            {"sound_samplerate", "32000"},
+            {"sound_latency", "0.2"},
+            {"display_vsync", "yes"},
+    };
+
+    private static final String[][] PROFILE_ECO = {
+            {"misc_smp", "yes"},
+            {"sound_samplerate", "22050"},
+            {"sound_latency", "0.3"},
+            {"display_vsync", "yes"},
+    };
+
+    /** Detecta o chipset do aparelho e devolve o perfil de desempenho:
+     *  "full" (Snapdragon/Qualcomm, Dimensity, Exynos 9/2, Kirin 9, Tegra),
+     *  "eco" (Unisoc/Spreadtrum, MediaTek de entrada) ou "mid" (demais).
+     */
+    private static String chipProfile() {
+        String hw = "";
+        try {
+            hw = android.os.Build.HARDWARE == null ? "" : android.os.Build.HARDWARE.toLowerCase();
+        } catch (Throwable t) {
+            hw = "";
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            try {
+                String soc = android.os.Build.SOC_MODEL;
+                if (soc != null && soc.length() > 0) {
+                    hw = hw + " " + soc.toLowerCase();
+                }
+            } catch (Throwable t) {
+                // campo novo (Android 12+), ignorado em aparelhos antigos
+            }
+        }
+        boolean snap = hw.contains("qcom") || hw.contains("qualcomm")
+                || hw.contains("tegra")
+                || hw.matches(".*(sm[0-9]{4}|sdm[0-9]+|msm[0-9]+|apq[0-9]+|qcs[0-9]+).*");
+        if (snap) {
+            return "full";
+        }
+        if (hw.contains("mediatek") || hw.contains("dimensity")
+                || hw.matches(".*mt[0-9]{4}.*")) {
+            if (hw.matches(".*mt6[89].*")) {
+                return "full";
+            }
+            if (hw.matches(".*mt6[57].*")) {
+                return "eco";
+            }
+            return "mid";
+        }
+        if (hw.contains("sprd") || hw.contains("unisoc")
+                || hw.matches(".*(ums[0-9]|sp98|sc98|sc96|sc77).*")) {
+            return "eco";
+        }
+        if (hw.contains("kirin") || hw.contains("hisi")
+                || hw.contains("hi36") || hw.contains("hi6")) {
+            return hw.matches(".*(kirin9|hi36[6-9]0).*") ? "full" : "mid";
+        }
+        if (hw.contains("exynos") || hw.contains("universal") || hw.contains("s5e")) {
+            return hw.matches(".*(exynos9|exynos98|exynos99|exynos2|universal9|universal2|s5e99).*")
+                    ? "full" : "mid";
+        }
+        if (hw.matches(".*rk3[0-9]{3}.*") || hw.contains("rockchip")) {
+            return "mid";
+        }
+        if (hw.contains("meson") || hw.contains("amlogic")
+                || hw.matches(".*s9[0-9]{2}[a-z]?.*")) {
+            return "mid";
+        }
+        return "mid";
+    }
+
+    /** Injeta as linhas do perfil no advmame.rc gerado. NAO roda quando o
+     *  advmame.rc/advmenu.rc veio do cartao (config do usuario manda). */
+    private static void applyChipProfile(ArrayList<String> lines) {
+        String profile = chipProfile();
+        String[][] opts = "full".equals(profile) ? PROFILE_FULL
+                : "eco".equals(profile) ? PROFILE_ECO : PROFILE_MID;
+        for (int i = 0; i < opts.length; ++i) {
+            String key = opts[i][0];
+            for (int j = lines.size() - 1; j >= 0; --j) {
+                String t = lines.get(j).trim();
+                if (t.startsWith(key) && (t.length() == key.length()
+                        || t.charAt(key.length()) == ' '
+                        || t.charAt(key.length()) == '\t')) {
+                    lines.remove(j);
+                }
+            }
+        }
+        lines.add("# Perfil de desempenho automatico (chipset " + profile + ")");
+        for (int i = 0; i < opts.length; ++i) {
+            lines.add(opts[i][0] + " " + opts[i][1]);
+        }
+        Log.i("AdvanceMAME", "perfil de chipset: " + profile);
     }
 
     private static ArrayList<String> splitLines(String s) {

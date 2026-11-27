@@ -107,6 +107,33 @@ nada, e são ativos já na primeira abertura — não precisa permissão de cart
   e tambem o **menu de navegacao de SISTEMAS/EMULADORES** e o menu de **jogos de cada sistema**
   (mesmo menu, mesmo visual, para cada emulador/sistema da navegacao).
 
+- **Fundo por sistema** (ex.: o olho de dragao de fogo preto do HBMAME): quando voce entra na
+  lista de jogos de um sistema, o app procura na ordem: `art/background_<sistema>.png|jpg` dentro
+  do tema ativo, depois `layout/backgrounds/<sistema>.png|jpg` no cartao (coloca ali o seu fundo
+  propio para qualquer sistema, sem editar nada). Saindo da lista, volta o fundo global do tema.
+- **Temas nativos de TODOS os emuladores** (estilo dos multijogos dos videos): o tema nativo
+  `adv-multi` ja vem com fundo Full HD proprio para os 250 sistemas da navegacao
+  (`art/background_<sistema>.jpg` — arte ORIGINAL deste projeto: gradiente escuro por familia,
+  mascote e silhueta de console/portatil/CD/gabinete/pinball; o HBMAME usa o dragao em fogo do
+  usuario). Na tela so aparece o **nome do emulador** no topo e o **nome do jogo + snapshot**
+  (video AVI/MP4 ou imagem JPG) na lista — sem fabricante, ano ou genero.
+  Para regenerar a arte: `python3 android-project/tools/gen_themes.py` (fundos),
+  `python3 android-project/tools/gen_logos.py` (bolinhas) e
+  `python3 android-project/tools/gen_consoles.py` (consoles).
+- **UI dinamica (padrao final)**: no menu de SISTEMAS a navegacao e um carrossel de
+  bolinhas metalicas com o **nome do emulador dentro**, e no lugar do antigo quadro
+  aparece a **imagem do console do emulador selecionado** (`art/console_<sistema>.png`,
+  interpretacao original estilizada por familia/console) junto com os bonequinhos das
+  laterais; os fundos e o console so mudam quando muda o emulador. No menu de JOGOS as
+  bolinhas mostram o **nome do jogo** e o quadro central do tema mostra a **snapshot**
+  (video ou imagem) do jogo parado na bolinha, com o nome no rodape do quadro. Tela de
+  jogos/systemas so aparece para emulador ativo (ligado e com jogos).
+- **EMULADORES: LIGA / DESLIGA** (menu da engrenagem): lista com todos os sistemas;
+  navega pelo joy pad (cima/baixo) e liga/desliga com clique no dedo, botao do gamepad
+  fisico ou botao CENTER do controle virtual. Circulo **verde** = ligado, **vermelho** =
+  desligado. Emulador desligado deixa de ser varrido e nao aparece no carrossel
+  (economia de memoria e bateria do aparelho).
+
 ### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
 
 Como nos multijogos de PC (estilo Clandoordie/AdvMenu Plus):
@@ -184,7 +211,25 @@ todos os apps abaixo que estiverem instalados, mais os `.apk`s da pasta
 | MUGEN | via **Winlator** | leve (2D): roda bem em aparelho medio/forte |
 | TeknoParrot | via **Winlator** | experimental: nao existe versao Android; todo Windows emulado |
 | PS4 / PS5 | PS4: ports experimentais de shadPS4 (Bachata-S4, shandroidPS4, SharpEmu) — PS5: Kyty/PS5Droid/OmniEmu/AnyPS5 | experimental: poucos jogos rodam, exige aparelho forte; a rota abre o emulador instalado pela pasta `ps4/` ou `ps5/` |
-| Switch 2 | **nao existe emulador utilizavel** | emulacao do Switch 2 esta no comeco mesmo no PC |
+| Switch 2 | **nao existe emulador Android** (no PC: Eden-NX2, so Windows e experimental) | a pasta `switch2/` ja esta pronta no Advmenu; quando um fork do Eden com Switch 2 sair para Android, entra pela mesma rota |
+
+### Eden (emulador unico Switch 1, pronto para o Switch 2)
+
+- O **Eden** (`git.eden-emu.dev/eden-emu/eden`, open source) e o emulador unico de
+  Nintendo Switch do Advmenu Android: rota padrao `switch/` **e** `switch2/`,
+  deteccao automatica por pacote (`dev.eden.eden_emulator`) ou por nome/prefixo
+  "eden" em emuladores avulsos, com RetroArch como segunda opcao.
+- O APK oficial Android do Eden e **arm64** (Snapdragon, MediaTek Dimensity e
+  qualquer aparelho com GPU Mali/Adreno via Vulkan) — baixe em
+  `eden-emu.dev/downloads` ou nos releases oficiais. Nao existe build armv7
+  (o JIT do Switch exige arm64), entao aparelhos MediaTek muito antigos ficam
+  fora do Switch; todos os demais sistemas do Advmenu seguem funcionando neles.
+- **Switch 2 hoje**: nenhum fork do Eden com Switch 2 (Eden-NX2 e variantes)
+  publica build Android — sao experimentais e so para Windows. O Advmenu ja
+  reconhece `.nsp/.xci/.nsz/.xcz/.nca` na pasta `switch2/`; assim que existir
+  um Eden Android com Switch 2, os jogos abrem sem mudar nada no Advmenu.
+- Chaves (`prod.keys`) e firmware NUNCA vêm embundados (nem no Eden, nem aqui)
+  — forneca os seus dentro do proprio Eden.
 
 O Advmenu Plus ABRE esses apps — a configuracao dos jogos (BIOS/keys/ firmware, pastas
 de ROMs de cada sistema, graficos) e feita dentro de cada emulador. Nenhum front-end
@@ -232,9 +277,17 @@ Winlator e o setup unico que nenhum front-end pode pular — o resto e automáti
 - **PS4/PS5/Switch 2:** nao existe emulador Android (nem no PC completo) — impossivel
   hoje; documentado de forma honesta porque emuladores "PS4" na Play Store sao falsos.
 
-### Nucleos do RetroArch (oficiais, nao precisa instalar nada separado)
+### RetroArch 1.22.2 (oficial) no Advmenu Android
 
-O RetroArch traz os nucleos no proprio app (menu Online Updater > Core Downloader).
+- Instale o **RetroArch 1.22.2** por uma via oficial: Google Play, ou
+  `retroarch.com` / GitHub do libretro (APK oficial assinado). Nao reempacotamos esse
+  APK dentro do Advmenu (app de terceiros, licenca propria).
+- O Advmenu detecta **sozinho** o RetroArch instalado (pelo pacote `com.retroarch` ou
+  pelo nome do app, incluindo variantes 64-bit/forks) e abre nele a pasta `retroarch/`
+  do cartao e TODO sistema que nao tiver emulador nativo instalado.
+- Nucleos: dentro do RetroArch > Online Updater > Core Downloader (tabela abaixo).
+- BIOS/system: coloque os SEUS arquivos de BIOS em `Android/data/com.retroarch/files/system`.
+  Por licenca o Advmenu nao vem (nem viram) com BIOSes — cada um provisiona a sua.
 Sistemas suportados pelo botao de sistemas do Advmenu e o nucleo libretro de cada um:
 
 | Pasta do sistema | Nucleo RetroArch (libretro) |
@@ -388,17 +441,24 @@ mesa tiver, junte na MESMA pasta `NomeDaMesa.directb2s` (backglass) e a rom dent
 Advmenu reconhece `.vpx`, `.vpt`, `.fpt` automaticamente e mostra na lista unica, com
 snapshot se voce colocar `snapshot/NomeDaMesa.jpg|.mp4`.
 
-### HBMAME 0.289 (duas vias)
+### HBMAME 0.289 (tres vias)
 
 1. **Hoje (pratico — recomendado):** ROMs de HBMAME rodam no **RetroArch** com o core
    *MAME (Current)*, que acompanha o MAME moderno. O fluxo ja funciona: pasta `hbmame/`
-   no cartao → botao EMULADORES → toque no jogo → abre no RetroArch.
+   no cartao → botao EMULADORES → toque no jogo → abre no RetroArch (e se o APK
+   avulso do item 2 estiver instalado, ele tem PREFERENCIA na rota, com o RetroArch
+   como alternativa).
 2. **Emulador HBMAME Android avulso (em construcao):** o port nativo (Fase 2 núcleo
    e Fase 3 OSD já compilando via CMake no NDK, arm64 e armv7) vai virar um APK
    standalone — quando instalado, o Advmenu Plus Android o detecta
    automaticamente (prefixo/nome `hbmame`) e a pasta `hbmame/` passa a abrir
    nele sozinho, sem configurar nada.
-3. **Port nativo dentro do APK (projeto em andamento — longo):** o plano para
+3. **Core libretro PROPRIO do HBMAME (planejado — Fase 2.6 do port):** o libretro
+   nao tem core oficial do HBMAME (o “MAME Current” e do MAME puro). A partir do
+   port nativo (item 4) sera gerado o core `libretro_hbmame.so` do NOSSO port — o
+   RetroArch do seu aparelho o carrega como qualquer outro core e as rotas do
+   Advmenu passam a usa-lo automaticamente.
+4. **Port nativo dentro do APK (projeto em andamento — longo):** o plano para
    portar o nucleo MAME 0.289/HBMAME para DENTRO do APK esta em
    `android-project/hbm-port/README-PORT.md`; a fonte fixada (0.289.6,
    `fa040eced0d`) e baixada por `tools/sync-hbmame.sh` (idempotente, fora do
@@ -443,6 +503,35 @@ do cartao continuam sendo injetadas no `dir_rom` automaticamente). Nenhum script
 solto: o que os scripts fazem, o Gradle (no build) e o app (na execucao) fazem sozinhos.
 
 Edite `AdvConfig.java` para mudar os padroes de fabrica e recompile.
+
+### Desempenho por aparelho (Mali/MediaTek/Unisoc/Exynos/Kirin/Snapdragon)
+
+Sendo honesto sobre o limite: **os drivers de GPU (Adreno, Mali, PowerVR) sao
+fechados dos fabricantes (Qualcomm/ARM/MediaTek) - nenhum aplicativo pode
+cria-los ou substitui-los**. O que o Advmenu Plus Android controla, e faz
+de fabrica:
+
+- **APK multi-ABI nativo** (arm64-v8a + armeabi-v7a): roda codigo nativo em
+  qualquer processador, sem traducao.
+- **Perfil automatico de desempenho por chipset** (em `MainActivity.java`,
+  config dentro do codigo): na geracao do `advmame.rc` o app detecta o
+  chipset (`Build.HARDWARE` + `Build.SOC_MODEL` no Android 12+) e injeta
+  opcoes validadas no advance/osd do port:
+
+  | Perfil | Chipsets | Linhas injetadas |
+  |--------|----------|------------------|
+  | full | Snapdragon/Qualcomm, Dimensity (mt68/69), Exynos 9/2, Kirin 9, Tegra | `misc_smp yes`, `sound_samplerate 44100`, `sound_latency 0.1`, `display_vsync yes` |
+  | mid | Exynos 7/8, Kirin 6/7, Rockchip, Amlogic, MediaTek mt8/mt83 | `misc_smp yes`, `sound_samplerate 32000`, `sound_latency 0.2`, `display_vsync yes` |
+  | eco | Unisoc/Spreadtrum (Tiger), MediaTek de entrada (mt65/mt67) | `misc_smp yes`, `sound_samplerate 22050`, `sound_latency 0.3`, `display_vsync yes` |
+
+- **Prioridade da config**: `advmenu.rc`/`.ini` do cartao (do usuario, o app
+  nao altera) > perfil automatico por chipset > padrao embutido. O perfil
+  reduz o custo de audio/blit nos chips mais fracos SEM mudar a imagem do
+  jogo (o mesmo jogo roda igual; so o custo de CPU muda).
+- **Emuladores externos** (RetroArch, PPSSPP, Eden, Winlator/GameHub): cada
+  um tem seus proprios ajustes internos, que o Advmenu nao altera - dentro
+  de cada um, use o video/audio driver que o aparelho oferece (ex.: Vulkan
+  no RetroArch/Eden, que Mali e Adreno modernos suportam).
 
 ## Editando o codigo e recompilando
 

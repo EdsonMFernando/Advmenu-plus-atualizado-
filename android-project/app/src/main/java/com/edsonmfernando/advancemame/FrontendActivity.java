@@ -7,7 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
@@ -249,6 +253,161 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("pc", "PC (Windows)");
         SYSTEM_FOLDERS.put("windows", "PC (Windows)");
         SYSTEM_FOLDERS.put("winlator", "PC Windows (Winlator)");
+        SYSTEM_FOLDERS.put("fairchild", "Fairchild Channel F");
+        SYSTEM_FOLDERS.put("channelf", "Fairchild Channel F");
+        SYSTEM_FOLDERS.put("odyssey", "Magnavox Odyssey");
+        SYSTEM_FOLDERS.put("odyssey2", "Odyssey 2");
+        SYSTEM_FOLDERS.put("videopac", "Philips VideoPac");
+        SYSTEM_FOLDERS.put("o2", "Odyssey 2");
+        SYSTEM_FOLDERS.put("apfm1000", "APF-M1000");
+        SYSTEM_FOLDERS.put("arcadia", "Arcadia 2001");
+        SYSTEM_FOLDERS.put("vc4000", "Interton VC 4000");
+        SYSTEM_FOLDERS.put("scv", "Super Cassette Vision");
+        SYSTEM_FOLDERS.put("cassettevision", "Epoch Cassette Vision");
+        SYSTEM_FOLDERS.put("gamecom", "Tiger Game.com");
+        SYSTEM_FOLDERS.put("microvision", "Microvision");
+        SYSTEM_FOLDERS.put("pokemini", "Pokemon Mini");
+        SYSTEM_FOLDERS.put("arduboy", "Arduboy");
+        SYSTEM_FOLDERS.put("uzebox", "Uzebox");
+        SYSTEM_FOLDERS.put("vsmile", "VTech V.Smile");
+        SYSTEM_FOLDERS.put("vflash", "VTech V.Flash");
+        SYSTEM_FOLDERS.put("playdia", "Bandai Playdia");
+        SYSTEM_FOLDERS.put("cdi", "Philips CD-i");
+        SYSTEM_FOLDERS.put("pico", "Sega Pico");
+        SYSTEM_FOLDERS.put("gamepock", "Game Pocket Computer");
+        SYSTEM_FOLDERS.put("gameking", "GameKing");
+        SYSTEM_FOLDERS.put("pocketchallenge", "Pocket Challenge V2");
+        SYSTEM_FOLDERS.put("gp32", "GP32");
+        SYSTEM_FOLDERS.put("gp2x", "GP2X");
+        SYSTEM_FOLDERS.put("gizmondo", "Gizmondo");
+        SYSTEM_FOLDERS.put("loopy", "Casio Loopy");
+        SYSTEM_FOLDERS.put("rca", "RCA Studio II");
+        SYSTEM_FOLDERS.put("studio2", "RCA Studio II");
+        SYSTEM_FOLDERS.put("gmaster", "Game Master");
+        SYSTEM_FOLDERS.put("myvision", "My Vision");
+        SYSTEM_FOLDERS.put("xegs", "Atari XEGS");
+        SYSTEM_FOLDERS.put("atarijaguarcd", "Atari Jaguar CD");
+        SYSTEM_FOLDERS.put("superacan", "Super A'Can");
+        SYSTEM_FOLDERS.put("satellaview", "Satellaview");
+        SYSTEM_FOLDERS.put("sufami", "Sufami Turbo");
+        SYSTEM_FOLDERS.put("sfc", "Super Famicom");
+        SYSTEM_FOLDERS.put("n3ds", "New Nintendo 3DS");
+        SYSTEM_FOLDERS.put("n64dd", "Nintendo 64DD");
+        SYSTEM_FOLDERS.put("gameandwatch", "Game & Watch");
+        SYSTEM_FOLDERS.put("apple2gs", "Apple IIgs");
+        SYSTEM_FOLDERS.put("apple1", "Apple I");
+        SYSTEM_FOLDERS.put("pet", "Commodore PET");
+        SYSTEM_FOLDERS.put("c16", "Commodore 16");
+        SYSTEM_FOLDERS.put("plus4", "Commodore Plus/4");
+        SYSTEM_FOLDERS.put("samcoupe", "SAM Coupe");
+        SYSTEM_FOLDERS.put("sordm5", "Sord M5");
+        SYSTEM_FOLDERS.put("sorcerer", "Exidy Sorcerer");
+        SYSTEM_FOLDERS.put("trs80", "TRS-80");
+        SYSTEM_FOLDERS.put("coco", "TRS-80 Color Computer");
+        SYSTEM_FOLDERS.put("dragon32", "Dragon 32");
+        SYSTEM_FOLDERS.put("atom", "Acorn Atom");
+        SYSTEM_FOLDERS.put("bbc", "BBC Micro");
+        SYSTEM_FOLDERS.put("electron", "Acorn Electron");
+        SYSTEM_FOLDERS.put("archimedes", "Acorn Archimedes");
+        SYSTEM_FOLDERS.put("thomson", "Thomson MO/TO");
+        SYSTEM_FOLDERS.put("tomytutor", "Tomy Tutor");
+        SYSTEM_FOLDERS.put("pyuuta", "Tomy PyuTa");
+        SYSTEM_FOLDERS.put("mtx", "Memotech MTX");
+        SYSTEM_FOLDERS.put("vz200", "VTech VZ 200");
+        SYSTEM_FOLDERS.put("laser200", "VTech Laser 200");
+        SYSTEM_FOLDERS.put("laser310", "VTech Laser 310");
+        SYSTEM_FOLDERS.put("laser500", "VTech Laser 500");
+        SYSTEM_FOLDERS.put("uk101", "UK101");
+        SYSTEM_FOLDERS.put("jupiter", "Jupiter Ace");
+        SYSTEM_FOLDERS.put("aquarius", "Mattel Aquarius");
+        SYSTEM_FOLDERS.put("x1", "Sharp X1");
+        SYSTEM_FOLDERS.put("mz", "Sharp MZ");
+        SYSTEM_FOLDERS.put("fm7", "Fujitsu FM-7");
+        SYSTEM_FOLDERS.put("fm77av", "Fujitsu FM-77AV");
+        SYSTEM_FOLDERS.put("fmtowns", "FM Towns");
+        SYSTEM_FOLDERS.put("galaksija", "Galaksija");
+        SYSTEM_FOLDERS.put("enterprise", "Enterprise 64");
+        SYSTEM_FOLDERS.put("creativision", "CreatiVision");
+        SYSTEM_FOLDERS.put("einstein", "Tatung Einstein");
+        SYSTEM_FOLDERS.put("cpm", "CP/M");
+        SYSTEM_FOLDERS.put("adam", "Coleco Adam");
+        SYSTEM_FOLDERS.put("sc3000", "Sega SC-3000");
+        SYSTEM_FOLDERS.put("ti99", "TI-99/4A");
+        SYSTEM_FOLDERS.put("sol20", "Sol-20");
+        SYSTEM_FOLDERS.put("nabu", "NABU PC");
+        SYSTEM_FOLDERS.put("spectrumnext", "ZX Spectrum Next");
+        SYSTEM_FOLDERS.put("vg5k", "Philips VG 5000");
+        SYSTEM_FOLDERS.put("pv2000", "Casio PV-2000");
+        SYSTEM_FOLDERS.put("pc6001", "NEC PC-6001");
+        SYSTEM_FOLDERS.put("tvc", "Videoton TV Computer");
+        SYSTEM_FOLDERS.put("comx", "COMX-35");
+        SYSTEM_FOLDERS.put("mc1000", "CCE MC-1000");
+        SYSTEM_FOLDERS.put("spectravideo", "Spectravideo");
+        SYSTEM_FOLDERS.put("amstradnc", "Amstrad NC100");
+        SYSTEM_FOLDERS.put("z88", "Cambridge Z88");
+        SYSTEM_FOLDERS.put("newbrain", "Grundy NewBrain");
+        SYSTEM_FOLDERS.put("sinclairql", "Sinclair QL");
+        SYSTEM_FOLDERS.put("amigacdtv", "Amiga CDTV");
+        SYSTEM_FOLDERS.put("apricot", "Apricot PC");
+        SYSTEM_FOLDERS.put("kaypro", "Kaypro");
+        SYSTEM_FOLDERS.put("interact", "Interact Computer");
+        SYSTEM_FOLDERS.put("mc10", "Tandy MC-10");
+        SYSTEM_FOLDERS.put("vector06c", "Vector-06C");
+        SYSTEM_FOLDERS.put("socrates", "Sanyo Socrates");
+        SYSTEM_FOLDERS.put("chihiro", "Chihiro (arcade)");
+        SYSTEM_FOLDERS.put("triforce", "Triforce (arcade)");
+        SYSTEM_FOLDERS.put("gaelco", "Gaelco (arcade)");
+        SYSTEM_FOLDERS.put("hng64", "Hyper Neo Geo 64 (arcade)");
+        SYSTEM_FOLDERS.put("megaplay", "Sega Mega Play (arcade)");
+        SYSTEM_FOLDERS.put("megatech", "Sega Mega Tech (arcade)");
+        SYSTEM_FOLDERS.put("playchoice10", "PlayChoice-10 (arcade)");
+        SYSTEM_FOLDERS.put("pcecd", "PC Engine CD");
+        SYSTEM_FOLDERS.put("tg16", "TurboGrafx-16");
+        SYSTEM_FOLDERS.put("pico8", "PICO-8");
+        SYSTEM_FOLDERS.put("tic80", "TIC-80");
+        SYSTEM_FOLDERS.put("zmachine", "Infocom (Z-machine)");
+        SYSTEM_FOLDERS.put("flash", "Adobe Flash");
+        SYSTEM_FOLDERS.put("j2me", "Java ME (J2ME)");
+        SYSTEM_FOLDERS.put("hypervision", "HyperScan");
+        SYSTEM_FOLDERS.put("atari", "Atari (todos)");
+        SYSTEM_FOLDERS.put("sega", "Sega (todos)");
+        SYSTEM_FOLDERS.put("nintendo", "Nintendo (todos)");
+        SYSTEM_FOLDERS.put("sony", "PlayStation (todos)");
+        SYSTEM_FOLDERS.put("palm", "Palm OS");
+        SYSTEM_FOLDERS.put("wince", "Windows CE");
+        SYSTEM_FOLDERS.put("megajet", "Mega Jet");
+        SYSTEM_FOLDERS.put("wondermega", "Wondermega");
+        SYSTEM_FOLDERS.put("teradrive", "Teradrive");
+        SYSTEM_FOLDERS.put("corrida", "Simulador de Corrida (arcade)");
+        SYSTEM_FOLDERS.put("outrun", "OutRun (corrida)");
+        SYSTEM_FOLDERS.put("daytona", "Daytona USA (corrida)");
+        SYSTEM_FOLDERS.put("segarally", "Sega Rally (corrida)");
+        SYSTEM_FOLDERS.put("cruisn", "Cruis'n USA (corrida)");
+        SYSTEM_FOLDERS.put("ridgeracer", "Ridge Racer (corrida)");
+        SYSTEM_FOLDERS.put("harddrivin", "Hard Drivin' (corrida)");
+        SYSTEM_FOLDERS.put("tiro", "Simulador de Tiro (fliperama)");
+        SYSTEM_FOLDERS.put("lightgun", "Pistola (Light Gun)");
+        SYSTEM_FOLDERS.put("timecrisis", "Time Crisis (tiro)");
+        SYSTEM_FOLDERS.put("hotd", "House of the Dead (tiro)");
+        SYSTEM_FOLDERS.put("virtuacop", "Virtua Cop (tiro)");
+        SYSTEM_FOLDERS.put("pointblank", "Point Blank (tiro)");
+        SYSTEM_FOLDERS.put("opwolf", "Operation Wolf (tiro)");
+        SYSTEM_FOLDERS.put("atarixl", "Atari XL/XE");
+        SYSTEM_FOLDERS.put("atari800", "Atari 800");
+        SYSTEM_FOLDERS.put("megacd", "Mega CD");
+        SYSTEM_FOLDERS.put("32x", "Mega Drive 32X");
+        SYSTEM_FOLDERS.put("pce", "PC Engine");
+        SYSTEM_FOLDERS.put("sufamiturbo", "Sufami Turbo");
+        SYSTEM_FOLDERS.put("ereader", "e-Reader");
+        SYSTEM_FOLDERS.put("nsw", "Nintendo Switch");
+        SYSTEM_FOLDERS.put("psxone", "PS One");
+        SYSTEM_FOLDERS.put("playstation", "PlayStation (todos)");
+        SYSTEM_FOLDERS.put("fliperama", "Fliperama (arcade)");
+        SYSTEM_FOLDERS.put("kof", "The King of Fighters (arcade)");
+        SYSTEM_FOLDERS.put("streetfighter", "Street Fighter (arcade)");
+        SYSTEM_FOLDERS.put("mortalkombat", "Mortal Kombat (arcade)");
+        SYSTEM_FOLDERS.put("marvelvscapcom", "Marvel vs. Capcom (arcade)");
+        SYSTEM_FOLDERS.put("cruisnusa", "Cruis'n USA (arcade)");
     }
 
     /**
@@ -264,6 +423,7 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("psvita", "org.vita3k.emulator");
         SYSTEM_PACKAGES.put("vita", "org.vita3k.emulator");
         SYSTEM_PACKAGES.put("switch", "dev.eden.eden_emulator");
+        SYSTEM_PACKAGES.put("switch2", "dev.eden.eden_emulator");
         SYSTEM_PACKAGES.put("gamecube", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("gc", "org.dolphinemu.dolphinemu");
         SYSTEM_PACKAGES.put("wii", "org.dolphinemu.dolphinemu");
@@ -287,11 +447,12 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("coinops", "com.winlator");
         SYSTEM_PACKAGES.put("dos", "com.winlator");
         SYSTEM_PACKAGES.put("pcdos", "com.winlator");
+        SYSTEM_PACKAGES.put("retroarch", "com.retroarch");
     }
 
     private static final String[] GAME_FILE_EXTS = {
             ".zip", ".7z", ".rom", ".bin", ".iso", ".img", ".cue", ".chd", ".cso",
-            ".nsp", ".xci", ".nca", ".pak", ".a26", ".a78", ".lnx", ".jag", ".j64",
+            ".nsp", ".xci", ".nca", ".nsz", ".xcz", ".pak", ".a26", ".a78", ".lnx", ".jag", ".j64",
             ".nes", ".fds", ".sfc", ".smc", ".gb", ".gbc", ".gba", ".nds", ".3ds",
             ".cia", ".v64", ".z64", ".n64", ".md", ".sms", ".gg", ".32x", ".pbp",
             ".vec", ".col", ".int", ".ws", ".wsc", ".ngp", ".ngc", ".dsk", ".cas",
@@ -321,10 +482,14 @@ public class FrontendActivity extends Activity {
     private boolean systemsMode;
     private boolean systemGamesMode;
     private boolean showFavs;
+    private boolean emuListMode;
     private SystemEntry currentSystem;
     private TextView favToggle;
     private TextView sysToggle;
     private TextView gearBtn;
+    private TextView gameNameView;
+    private ImageView consoleView;
+    private SysCarouselView carousel;
     private android.hardware.input.InputManager.InputDeviceListener deviceListener;
 
     private FrameLayout root;
@@ -351,8 +516,7 @@ public class FrontendActivity extends Activity {
         root.setBackgroundColor(COR_FUNDO);
 
         snapshotHost = new SnapshotHost(this);
-        root.addView(snapshotHost, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(snapshotHost, snapshotFrameParams());
 
         computeMediaDirs();
         storageGranted = hasStoragePermission();
@@ -376,6 +540,14 @@ public class FrontendActivity extends Activity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (emuListMode) {
+                    String k = adapter.romAt(position);
+                    setEmuEnabled(k, !emuEnabled(k));
+                    adapter.load(FrontendActivity.this);
+                    list.setSelection(position);
+                    updateCount(position);
+                    return;
+                }
                 if (systemsMode) {
                     openSystemAt(position);
                 } else if (systemGamesMode) {
@@ -400,7 +572,6 @@ public class FrontendActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 adapter.selected = position;
                 list.invalidateViews();
-                snapshotHost.show(systemsMode ? null : adapter.romAt(position));
             }
 
             @Override
@@ -410,6 +581,53 @@ public class FrontendActivity extends Activity {
 
         root.addView(list, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        carousel = new SysCarouselView(this);
+        carousel.setVisibility(View.GONE);
+        carousel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                carousel.activate();
+            }
+        });
+        carousel.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (systemsMode) {
+                    openSystemAt(carousel.selected);
+                    return true;
+                }
+                if (adapter.getCount() > 0
+                        && carousel.selected < adapter.getCount()) {
+                    showGameMenu(carousel.selected);
+                    return true;
+                }
+                return false;
+            }
+        });
+        root.addView(carousel, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        gameNameView = new TextView(this);
+        gameNameView.setSingleLine(true);
+        gameNameView.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        gameNameView.setTextSize(26);
+        gameNameView.setTextColor(Color.WHITE);
+        gameNameView.setShadowLayer(dp(3), 0, dp(2), Color.BLACK);
+        gameNameView.setGravity(Gravity.CENTER);
+        gameNameView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams gnp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        gnp.topMargin = (int) (getResources().getDisplayMetrics().heightPixels * 0.535f);
+        root.addView(gameNameView, gnp);
+
+        consoleView = new ImageView(this);
+        consoleView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        consoleView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams cvp = snapshotFrameParams();
+        cvp.setMargins(dp(30), dp(30), dp(30), dp(30));
+        root.addView(consoleView, cvp);
 
         int pad = dp(14);
         LinearLayout topbar = new LinearLayout(this);
@@ -609,8 +827,8 @@ public class FrontendActivity extends Activity {
             public void run() {
                 if (adapter.getCount() > 0) {
                     list.setSelection(0);
-                    snapshotHost.show(adapter.romAt(0));
                 }
+                updateSnapshotVisibility();
                 updateCount(0);
             }
         });
@@ -651,9 +869,10 @@ public class FrontendActivity extends Activity {
         updateEmptyState();
         if (adapter.getCount() > 0) {
             list.setSelection(adapter.selected);
-            snapshotHost.show(adapter.romAt(adapter.selected));
-        } else {
-            snapshotHost.show(null);
+        }
+        updateSnapshotVisibility();
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            carousel.setSelectedIndex(carousel.selected, true);
         }
     }
 
@@ -870,6 +1089,39 @@ public class FrontendActivity extends Activity {
             mapTarget = -1;
             return true;
         }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START && systemsMode
+                && carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            // START: aperta uma vez = LIGA; aperta de novo = DESLIGA
+            toggleCurrentSystem();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START && emuListMode && list != null) {
+            int pos = list.getSelectedItemPosition();
+            if (pos >= 0 && pos < adapter.getCount()) {
+                String k = adapter.romAt(pos);
+                setEmuEnabled(k, !emuEnabled(k));
+                adapter.load(this);
+                list.setSelection(pos);
+                updateCount(pos);
+            }
+            return true;
+        }
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            int act = actionForKey(keyCode);
+            if (act == 0 || act == 2) { carousel.move(-1); return true; }
+            if (act == 1 || act == 3) { carousel.move(1); return true; }
+            if (act == 4) {
+                if (systemsMode && event != null && event.getRepeatCount() >= 2) {
+                    openSystemAt(carousel.selected);
+                } else {
+                    carousel.activate();
+                }
+                return true;
+            }
+            if (act == 5) { onBackPressed(); return true; }
+            if (act == 6) { carousel.move(-5); return true; }
+            if (act == 7) { carousel.move(5); return true; }
+        }
         if (list != null) {
             int act = actionForKey(keyCode);
             if (act == 0) { sendKey(KeyEvent.KEYCODE_DPAD_UP); return true; }
@@ -899,39 +1151,51 @@ public class FrontendActivity extends Activity {
         topSystem.setText("SISTEMAS  \u2022  EMULADORES");
         adapter.load(this);
         list.setSelection(0);
-        snapshotHost.show(null);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(false);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        showGameName(null);
+        updateSnapshotVisibility();
     }
 
     private void backToSystems() {
         systemGamesMode = false;
         currentSystem = null;
+        applyLayoutBackground();
         systemsMode = true;
         sysToggle.setAlpha(1f);
         topSystem.setText("SISTEMAS  \u2022  EMULADORES");
         adapter.load(this);
         list.setSelection(0);
-        snapshotHost.show(null);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(false);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(adapter.selected, true);
+        showGameName(null);
+        updateSnapshotVisibility();
     }
 
     private void backToArcade() {
         systemsMode = false;
         systemGamesMode = false;
         currentSystem = null;
+        applyLayoutBackground();
         sysToggle.setAlpha(0.45f);
         topSystem.setText("ARCADE  \u2022  ADVANCEMAME");
         adapter.load(this);
         list.setSelection(0);
-        if (adapter.getCount() > 0) {
-            snapshotHost.show(adapter.romAt(0));
-        } else {
-            snapshotHost.show(null);
-        }
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(true);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        updateSnapshotVisibility();
     }
 
     private void openSystemAt(int position) {
@@ -947,11 +1211,76 @@ public class FrontendActivity extends Activity {
         }
         systemGamesMode = true;
         currentSystem = e;
+        applyLayoutBackground();
         topSystem.setText(e.label.toUpperCase(Locale.US) + "  (" + e.games.size() + " JOGOS)");
         adapter.load(this);
         list.setSelection(0);
         updateEmptyState();
         updateCount(0);
+        list.setVisibility(View.GONE);
+        carousel.setGamesMode(true);
+        carousel.setVisibility(View.VISIBLE);
+        carousel.setSelectedIndex(0, true);
+        updateSnapshotVisibility();
+    }
+
+    /** Tela com TODOS os emuladores: clique (dedo ou botao) liga/desliga. */
+    private void toggleEmuList() {
+        if (emuListMode) {
+            exitEmuList();
+            return;
+        }
+        emuListMode = true;
+        carousel.setVisibility(View.GONE);
+        list.setVisibility(View.VISIBLE);
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        updateCount(0);
+        showGameName(null);
+        updateSnapshotVisibility();
+        topSystem.setText("EMULADORES  \u2022  TOQUE PARA LIGAR/DESLIGAR");
+    }
+
+    private void exitEmuList() {
+        emuListMode = false;
+        computeMediaDirs();
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        if (systemsMode) {
+            list.setVisibility(View.GONE);
+            carousel.setGamesMode(false);
+            carousel.setVisibility(View.VISIBLE);
+            carousel.setSelectedIndex(0, true);
+        } else {
+            list.setVisibility(View.GONE);
+            carousel.setGamesMode(true);
+            carousel.setVisibility(View.VISIBLE);
+            carousel.setSelectedIndex(0, true);
+        }
+        topSystem.setText(systemsMode
+                ? "SISTEMAS  \u2022  EMULADORES" : "ARCADE  \u2022  ADVANCEMAME");
+        updateSnapshotVisibility();
+    }
+
+    /** Liga/desliga o emulador parado na bolinha (anel verde/vermelho na hora). */
+    private void toggleCurrentSystem() {
+        if (carousel == null || carousel.selected >= systems.size()) {
+            return;
+        }
+        String k = systems.get(carousel.selected).key;
+        boolean on = !emuEnabled(k);
+        setEmuEnabled(k, on);
+        computeMediaDirs();
+        adapter.load(this);
+        updateEmptyState();
+        carousel.setSelectedIndex(carousel.selected, true);
+        updateCount(carousel.selected);
+        android.widget.Toast.makeText(this,
+                systems.get(Math.min(carousel.selected, systems.size() - 1)).label
+                        + ": " + (on ? "LIGADO" : "DESLIGADO"),
+                android.widget.Toast.LENGTH_SHORT).show();
     }
 
     private void toggleFavs() {
@@ -961,6 +1290,20 @@ public class FrontendActivity extends Activity {
         list.setSelection(0);
         updateEmptyState();
         updateCount(0);
+        if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            carousel.setSelectedIndex(0, true);
+        }
+    }
+
+    /** Emulador LIGADO por padrao; o usuario desliga na lista ON/OFF (economia). */
+    private boolean emuEnabled(String key) {
+        return getSharedPreferences("advmenu", MODE_PRIVATE)
+                .getBoolean("emu_on_" + key, true);
+    }
+
+    private void setEmuEnabled(String key, boolean on) {
+        getSharedPreferences("advmenu", MODE_PRIVATE).edit()
+                .putBoolean("emu_on_" + key, on).apply();
     }
 
     private boolean isFavorite(String rom) {
@@ -1045,6 +1388,7 @@ public class FrontendActivity extends Activity {
                         ? "LIGADO" : "DESLIGADO"));
         labels.add("MAPEAR GAMEPAD FISICO...");
         labels.add("SISTEMAS / EMULADORES");
+        labels.add("EMULADORES: LIGA / DESLIGA...");
         labels.add("FAVORITOS: " + (showFavs ? "LIGADO" : "DESLIGADO"));
         labels.add(hasPhysicalController()
                 ? "GAMEPAD FISICO: DETECTADO" : "GAMEPAD FISICO: NAO DETECTADO");
@@ -1061,8 +1405,10 @@ public class FrontendActivity extends Activity {
                 } else if (which == 3) {
                     toggleSystemsView();
                 } else if (which == 4) {
+                    toggleEmuList();
+                } else if (which == 5) {
                     toggleFavs();
-                } else if (which == 6) {
+                } else if (which == 7) {
                     reloadGames();
                 }
             }
@@ -1071,6 +1417,10 @@ public class FrontendActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (emuListMode) {
+            exitEmuList();
+            return;
+        }
         if (systemGamesMode) {
             backToSystems();
             return;
@@ -1267,7 +1617,41 @@ public class FrontendActivity extends Activity {
             layoutBg = null;
         }
         File img = null;
-        if (tc.bgImage != null) {
+        String bgKey = null;
+        if (systemGamesMode && currentSystem != null) {
+            bgKey = currentSystem.key;
+        } else if (systemsMode && carousel != null
+                && carousel.selected < systems.size()
+                && !systems.get(carousel.selected).games.isEmpty()) {
+            bgKey = systems.get(carousel.selected).key;
+        }
+        if (bgKey != null && themeDir != null && themeDir.isDirectory()) {
+            String[] names = systemsMode
+                    ? new String[]{"background_" + bgKey + "_sys.jpg",
+                                   "background_" + bgKey + "_sys.png",
+                                   "background_" + bgKey + ".jpg",
+                                   "background_" + bgKey + ".png"}
+                    : new String[]{"background_" + bgKey + ".png",
+                                   "background_" + bgKey + ".jpg"};
+            for (String nm : names) {
+                File cand = new File(new File(themeDir, "art"), nm);
+                if (cand.isFile()) {
+                    img = cand;
+                    break;
+                }
+            }
+        }
+        if (img == null && bgKey != null && layoutDir != null) {
+            File bgs = new File(layoutDir, "backgrounds");
+            File cand = new File(bgs, bgKey + ".png");
+            if (!cand.isFile()) {
+                cand = new File(bgs, bgKey + ".jpg");
+            }
+            if (cand.isFile()) {
+                img = cand;
+            }
+        }
+        if (img == null && tc.bgImage != null) {
             File cand = new File(tc.bgImage);
             if (!cand.isAbsolute() && themeDir != null) {
                 cand = new File(themeDir, tc.bgImage);
@@ -1308,7 +1692,7 @@ public class FrontendActivity extends Activity {
                 layoutBg.setImageBitmap(bmp);
                 layoutBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 layoutBg.setAlpha(0.55f);
-                root.addView(layoutBg, 1, new FrameLayout.LayoutParams(
+                root.addView(layoutBg, 0, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
         }
@@ -1718,6 +2102,15 @@ public class FrontendActivity extends Activity {
     /** Pastas de sistema (atari2600, nes, snes, ps1, psp, switch, hbmame, fba...) em cada armazenamento. */
     private ArrayList<SystemEntry> collectSystems(ArrayList<File> roots) {
         LinkedHashMap<String, SystemEntry> byLabel = new LinkedHashMap<>();
+        // TODOS os sistemas do catalogo entram no carrossel (anel verde/vermelho);
+        // a pasta so e varrida se o emulador estiver LIGADO.
+        for (java.util.Map.Entry<String, String> en : SYSTEM_FOLDERS.entrySet()) {
+            String k = en.getKey();
+            String lb = PINBALL_SCAN_KEYS.contains(k) ? "PINBALL (tudo)" : en.getValue();
+            if (!byLabel.containsKey(lb)) {
+                byLabel.put(lb, new SystemEntry(k, lb));
+            }
+        }
         for (File rootDir : roots) {
             File[] children = rootDir.listFiles();
             if (children == null) {
@@ -1730,6 +2123,9 @@ public class FrontendActivity extends Activity {
                 String n = child.getName().toLowerCase(Locale.US);
                 String label = SYSTEM_FOLDERS.get(n);
                 if (label == null) {
+                    continue;
+                }
+                if (!emuEnabled(n)) {
                     continue;
                 }
                 if (PINBALL_SCAN_KEYS.contains(n)) {
@@ -1978,6 +2374,16 @@ public class FrontendActivity extends Activity {
         if ("com.winlator".equals(pkg) && launchWinlatorCombo(f)) {
             return;
         }
+        if (pkg == null || getPackageManager().getLaunchIntentForPackage(pkg) == null) {
+            String alt = sysKey != null && sysKey.startsWith("switch")
+                    ? findEmuByPrefixes(new String[]{"eden"}) : null;
+            if (alt == null) {
+                alt = findEmuByPrefixes(new String[]{"retroarch"});
+            }
+            if (alt != null) {
+                pkg = alt;
+            }
+        }
         try {
             Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f);
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -2073,6 +2479,87 @@ public class FrontendActivity extends Activity {
             countView.setText((position + 1) + "/" + adapter.getCount());
         }
     }
+
+    /** Quadro central do tema (moldura metalica) onde o snapshot do jogo aparece. */
+    private FrameLayout.LayoutParams snapshotFrameParams() {
+        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+        int w = (int) (dm.widthPixels * 0.416f);
+        int h = (int) (dm.heightPixels * 0.481f);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h,
+                Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        lp.topMargin = (int) (dm.heightPixels * 0.120f);
+        return lp;
+    }
+
+    /** O snapshot aparece no quadro central so no menu de JOGOS. */
+    private void updateSnapshotVisibility() {
+        if (snapshotHost == null) {
+            return;
+        }
+        boolean vis = !systemsMode;
+        snapshotHost.setVisibility(vis ? View.VISIBLE : View.GONE);
+        if (!vis) {
+            snapshotHost.show(null);
+        }
+        updateConsoleImage();
+    }
+
+    /**
+     * Menu de SISTEMAS: no lugar do antigo quadro aparece a imagem do console
+     * que representa o emulador selecionado (muda so quando muda o emulador).
+     */
+    private void updateConsoleImage() {
+        if (consoleView == null) {
+            return;
+        }
+        boolean vis = systemsMode && carousel != null
+                && carousel.getVisibility() == View.VISIBLE
+                && carousel.selected < systems.size()
+                && !systems.get(carousel.selected).games.isEmpty();
+        if (!vis) {
+            consoleView.setVisibility(View.GONE);
+            return;
+        }
+        String key = systems.get(carousel.selected).key;
+        Bitmap bmp = null;
+        File themeDir = activeTheme != null ? themeDirs.get(activeTheme) : null;
+        if (themeDir != null && themeDir.isDirectory()) {
+            bmp = BitmapFactory.decodeFile(new File(new File(themeDir, "art"),
+                    "console_" + key + ".png").getAbsolutePath());
+        }
+        if (bmp == null) {
+            try {
+                java.io.InputStream is = getAssets().open(
+                        "themes/adv-multi/art/console_" + key + ".png");
+                try {
+                    bmp = BitmapFactory.decodeStream(is);
+                } finally {
+                    is.close();
+                }
+            } catch (Throwable t) {
+                bmp = null;
+            }
+        }
+        if (bmp == null) {
+            consoleView.setVisibility(View.GONE);
+            return;
+        }
+        consoleView.setImageBitmap(bmp);
+        consoleView.setVisibility(View.VISIBLE);
+    }
+
+    private void showGameName(String t) {
+        if (gameNameView == null) {
+            return;
+        }
+        if (t == null) {
+            gameNameView.setVisibility(View.GONE);
+            return;
+        }
+        gameNameView.setText(t);
+        gameNameView.setVisibility(View.VISIBLE);
+    }
+
 
     private void launch(final String rom) {
         View wipe = new View(this);
@@ -2282,6 +2769,185 @@ public class FrontendActivity extends Activity {
         }
     }
 
+    /**
+     * Carrossel de bolinhas metalicas: no menu de SISTEMAS cada bolinha mostra
+     * o NOME DO EMULADOR dentro; no menu de JOGOS cada bolinha mostra o NOME
+     * DO JOGO dentro e o quadro central do tema mostra a snapshot (video ou
+     * imagem) do jogo parado na bolinha.
+     */
+    private final class SysCarouselView extends View {
+
+        private boolean forGames;
+        private int selected;
+
+        SysCarouselView(Context ctx) {
+            super(ctx);
+        }
+
+        void setGamesMode(boolean games) {
+            forGames = games;
+        }
+
+        private int count() {
+            return forGames ? adapter.getCount() : systems.size();
+        }
+
+        private String labelAt(int idx) {
+            return forGames ? adapter.titleAt(idx) : systems.get(idx).label;
+        }
+
+        void setSelectedIndex(int index, boolean center) {
+            int n = count();
+            if (n <= 0) {
+                selected = 0;
+                invalidate();
+                return;
+            }
+            selected = Math.max(0, Math.min(index, n - 1));
+            adapter.selected = selected;
+            if (forGames) {
+                snapshotHost.show(adapter.romAt(selected));
+                showGameName(adapter.titleAt(selected));
+            } else {
+                applyLayoutBackground();
+                updateConsoleImage();
+            }
+            updateCount(selected);
+            invalidate();
+        }
+
+        void move(int delta) {
+            setSelectedIndex(selected + delta, true);
+        }
+
+        /** Botao CENTER: liga/desliga o emulador (menu SISTEMAS) ou abre o jogo. */
+        void activate() {
+            if (systemsMode) {
+                toggleCurrentSystem();
+            } else if (adapter.getCount() > 0 && selected < adapter.getCount()) {
+                if (systemGamesMode) {
+                    openGameFile(adapter.fileAt(selected), currentSystem.key);
+                } else {
+                    launch(adapter.romAt(selected));
+                }
+            }
+        }
+
+        private java.util.ArrayList<String> wrap(Paint p, String text, float maxW, int maxLines) {
+            java.util.ArrayList<String> out = new java.util.ArrayList<>();
+            String[] words = text.split(" ");
+            String cur = "";
+            for (String wd : words) {
+                String t = cur.isEmpty() ? wd : cur + " " + wd;
+                if (p.measureText(t) <= maxW || cur.isEmpty()) {
+                    cur = t;
+                } else {
+                    out.add(cur);
+                    cur = wd;
+                    if (out.size() == maxLines) {
+                        break;
+                    }
+                }
+            }
+            if (out.size() < maxLines && !cur.isEmpty()) {
+                out.add(cur);
+            }
+            return out;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            int w = getWidth();
+            int h = getHeight();
+            if (w <= 0 || h <= 0) {
+                return;
+            }
+            int n = count();
+            if (n <= 0) {
+                return;
+            }
+            float cy = h * 0.76f;
+            float spacing = h * 0.30f;
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            for (int pass = 0; pass < 2; pass++) {
+                for (int i = -2; i <= 2; i++) {
+                    int idx = selected + i;
+                    if (idx < 0 || idx >= n) {
+                        continue;
+                    }
+                    boolean sel = i == 0;
+                    if ((pass == 0) == sel) {
+                        continue;
+                    }
+                    float r = sel ? h * 0.155f : h * 0.105f;
+                    float cx = w / 2f + i * spacing;
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(0xFF0C0A10);
+                    canvas.drawCircle(cx, cy, r, p);
+                    if (sel) {
+                        p.setStyle(Paint.Style.STROKE);
+                        p.setStrokeWidth(dp(5));
+                        p.setColor(!forGames && systems.get(idx).games.isEmpty()
+                                ? 0xFFE04848 : 0xFF35D06A);
+                        canvas.drawCircle(cx, cy, r, p);
+                    } else {
+                        p.setStyle(Paint.Style.STROKE);
+                        p.setStrokeWidth(dp(3));
+                        p.setColor(0xFFCED2DC);
+                        canvas.drawCircle(cx, cy, r, p);
+                    }
+                    String label = labelAt(idx);
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(sel ? 0xFFFFFFFF : 0xFFC9CDD8);
+                    p.setFakeBoldText(sel);
+                    p.setTextSize(sel ? dp(16) : dp(10));
+                    p.setShadowLayer(dp(3), 0, dp(2), Color.BLACK);
+                    java.util.ArrayList<String> lines = wrap(p, label, r * 1.6f, 3);
+                    float lineH = p.getTextSize() * 1.15f;
+                    float y0 = cy - (lines.size() - 1) * lineH / 2f + p.getTextSize() / 3f;
+                    for (int li = 0; li < lines.size(); li++) {
+                        float tw = p.measureText(lines.get(li));
+                        canvas.drawText(lines.get(li), cx - tw / 2f, y0 + li * lineH, p);
+                    }
+                    p.setShadowLayer(0, 0, 0, 0);
+                }
+            }
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent ev) {
+            if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                int w = getWidth();
+                int h = getHeight();
+                float cy = h * 0.76f;
+                float spacing = h * 0.30f;
+                float r = h * 0.155f;
+                if (Math.abs(ev.getY() - cy) <= r * 1.2f) {
+                    int n = count();
+                    int best = -1;
+                    float bestD = spacing;
+                    for (int i = -2; i <= 2; i++) {
+                        int idx = selected + i;
+                        if (idx < 0 || idx >= n) {
+                            continue;
+                        }
+                        float d = Math.abs(ev.getX() - (w / 2f + i * spacing));
+                        if (d < bestD) {
+                            bestD = d;
+                            best = idx;
+                        }
+                    }
+                    if (best >= 0) {
+                        setSelectedIndex(best, true);
+                        return true;
+                    }
+                }
+            }
+            return super.onTouchEvent(ev);
+        }
+    }
+
     private final class GameAdapter extends BaseAdapter {
 
         private final ArrayList<String> roms = new ArrayList<>();
@@ -2294,6 +2960,14 @@ public class FrontendActivity extends Activity {
             roms.clear();
             titles.clear();
             files.clear();
+            if (act.emuListMode) {
+                for (java.util.Map.Entry<String, String> en
+                        : act.SYSTEM_FOLDERS.entrySet()) {
+                    roms.add(en.getKey());
+                    titles.add(en.getValue());
+                }
+                return;
+            }
             if (act.systemsMode) {
                 for (SystemEntry e : act.systems) {
                     roms.add(e.key);
@@ -2353,6 +3027,10 @@ public class FrontendActivity extends Activity {
             return roms.get(position);
         }
 
+        String titleAt(int position) {
+            return titles.get(position);
+        }
+
         File fileAt(int position) {
             return files.get(position);
         }
@@ -2398,7 +3076,21 @@ public class FrontendActivity extends Activity {
             int pad = dp(sel ? 6 : 2);
             row.setPadding(dp(16), pad, dp(16), pad);
 
-            Bitmap cover = thumb(roms.get(position), dp(48));
+            if (emuListMode) {
+                TextView dot = new TextView(FrontendActivity.this);
+                dot.setText("\u25CF");
+                dot.setTextSize(28);
+                dot.setTextColor(emuEnabled(roms.get(position))
+                        ? 0xFF35D06A : 0xFFE04848);
+                dot.setShadowLayer(dp(2), 0, dp(1), Color.BLACK);
+                LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                dlp.rightMargin = dp(12);
+                row.addView(dot, dlp);
+            }
+
+            Bitmap cover = emuListMode ? null : thumb(roms.get(position), dp(48));
             if (cover != null) {
                 ImageView img = new ImageView(FrontendActivity.this);
                 img.setImageBitmap(cover);

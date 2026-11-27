@@ -25,6 +25,14 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
    ate linkar `libhbmame.so` e o front-end passa a listar os jogos de
    `hbmame/` nativamente.
 6. **FBA/FBNeo**: repetir o modelo (o FinalBurn Neo moderno e muito menor).
+7. **Core libretro do HBMAME** (PROPRIO, Fase 2.6): o libretro NAO tem core
+   oficial do HBMAME (o core "MAME Current" e do MAME puro — nao roda os
+   drivers homebrew/hacks do HBMAME). Vamos gerar o NOSSO core libretro
+   (`libretro_hbmame.so`) a partir DESTE port: reuso as libs `hbmcore`,
+   `hbmemu` e `hbmosd` ja concluidas e encaixo a interface `retro_*` no
+   lugar do OSD de janela; o Advmenu Android deteta o core e o RetroArch
+   passa a abrir os drivers do HBMAME nativamente (ate la: APK avulso e
+   RetroArch com core MAME Current seguem funcionando).
 
 ## Estado
 
@@ -58,7 +66,44 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     o <SDL2/SDL.h> do SDL vendored e exposto por link `sdl2-shim/SDL2` gerado
     pelo proprio CMake na arvore de build
 
-- [ ] Fase 4 (glue)
+- [ ] Fase 2.5 (src/emu) — ALCANÇADA (sem script solto): o mesmo
+  `hbm-port/CMakeLists.txt` tem o alvo `hbmemu` (nucleo de emulacao MAME
+  moderno inteiro), Release -O1, arm64-v8a E armeabi-v7a:
+  - **116/116** arquivos compila e linka em `libhbmemu.a` (~98 MB arm64 /
+    ~91 MB armv7) — inclui render/rendlay/rendfont completo, ioport,
+    emumem (todos os handlers), debug completo, audio_effects e video
+  - os 2 unicos fora do alvo, de proposito: `src/emu/http.cpp`
+    (servidor de rede host-only, precisa asio) e
+    `src/emu/drivers/testcpu.cpp` (ferramenta de teste de CPU, nunca
+    linkada no nucleo)
+  - headers gerados (layout comprimido `internal_layout` e fontes da UI)
+    SAO GERADOS PELO PROPRIO CMake com os scripts oficiais do HBMAME
+    (`complay.py`, `png2bdc.py`, `file2str.py`), dentro da arvore
+    `build/` — igual o `has_formats.h` da Fase 2
+  - unico ajuste de codigo: `patches-hbm/02-android-clang17-devdelegate.patch`
+    (SFINAE para o clang 17 do NDK r26), aplicado automaticamente pelo
+    `tools/sync-hbmame.sh` (vendor no PC)
+
+- [x] Fase 4 (parte 1 — frontend) **ALCANÇADA**: `src/frontend/mame` inteiro
+    compila pelo alvo CMake `hbmfrontend` (75/76; o `ui/slider.cpp` fica fora
+    de proposito — arquivo morto, ausente do build upstream do GENie).
+    `libhbmfrontend.a` gerado nas 2 ABIs (arm64 ~57 MB, armv7 ~48 MB).
+    Detalhes que destravaram: (a) o `copying.ipp` (COPYING via
+    `file2lines.py`) virou dependencia do `hbmgen-emu`; (b) a ordem de
+    includes upstream (`frontend.lua`: `frontend/mame` ANTES de `lib/util`)
+    foi replicada POR ALVO — o `include_directories()` global do CMake entra
+    antes dos includes de alvo no clang, e `lib/util` no bloco global fazia o
+    `"language.h"` de `ui/ui.h` resolver no util (sem o
+    `using util::lang_translate`) e `luaengine.cpp` falhar; agora `lib/util`
+    esta so nos blocos de alvo, depois de `frontend/mame`.
+- [ ] Fase 4 (parte 2 — glue)
+  - **fundo do menu de navegacao interno**: a UI interna do MAME/HBMAME
+    carrega `background.jpg` (depois `background.png`) DA RAIZ do emulador
+    quando `use_background = 1` (padrao ja ligado,`moptions.cpp:77`) na tela
+    de selecao de jogos (`menu.cpp:88-110`, tela `___empty`). O `hbm-port/`
+    ja guarda o `background.jpg` oficial (dragao em fogo, Full HD, Full-bleed)
+    para ser instalado na raiz de arquivos do APK avulso na Fase 4 — igual ao
+    que o Advmenu usa no tema (`art/background_hbmame.jpg`)
 - [ ] Fase 5 (build verde)
 
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
