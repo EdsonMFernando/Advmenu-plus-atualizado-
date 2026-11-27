@@ -117,8 +117,22 @@ nada, e são ativos já na primeira abertura — não precisa permissão de cart
   mascote e silhueta de console/portatil/CD/gabinete/pinball; o HBMAME usa o dragao em fogo do
   usuario). Na tela so aparece o **nome do emulador** no topo e o **nome do jogo + snapshot**
   (video AVI/MP4 ou imagem JPG) na lista — sem fabricante, ano ou genero.
-  Para regenerar a arte: `python3 android-project/tools/gen_themes.py` (fundos)
-  e `python3 android-project/tools/gen_logos.py` (bolinhas do carrossel).
+  Para regenerar a arte: `python3 android-project/tools/gen_themes.py` (fundos),
+  `python3 android-project/tools/gen_logos.py` (bolinhas) e
+  `python3 android-project/tools/gen_consoles.py` (consoles).
+- **UI dinamica (padrao final)**: no menu de SISTEMAS a navegacao e um carrossel de
+  bolinhas metalicas com o **nome do emulador dentro**, e no lugar do antigo quadro
+  aparece a **imagem do console do emulador selecionado** (`art/console_<sistema>.png`,
+  interpretacao original estilizada por familia/console) junto com os bonequinhos das
+  laterais; os fundos e o console so mudam quando muda o emulador. No menu de JOGOS as
+  bolinhas mostram o **nome do jogo** e o quadro central do tema mostra a **snapshot**
+  (video ou imagem) do jogo parado na bolinha, com o nome no rodape do quadro. Tela de
+  jogos/systemas so aparece para emulador ativo (ligado e com jogos).
+- **EMULADORES: LIGA / DESLIGA** (menu da engrenagem): lista com todos os sistemas;
+  navega pelo joy pad (cima/baixo) e liga/desliga com clique no dedo, botao do gamepad
+  fisico ou botao CENTER do controle virtual. Circulo **verde** = ligado, **vermelho** =
+  desligado. Emulador desligado deixa de ser varrido e nao aparece no carrossel
+  (economia de memoria e bateria do aparelho).
 
 ### Navegacao estilo multijogos (SISTEMAS + FAVORITOS)
 

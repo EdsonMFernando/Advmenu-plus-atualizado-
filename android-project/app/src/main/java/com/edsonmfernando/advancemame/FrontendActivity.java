@@ -482,6 +482,7 @@ public class FrontendActivity extends Activity {
     private boolean systemsMode;
     private boolean systemGamesMode;
     private boolean showFavs;
+    private boolean emuListMode;
     private SystemEntry currentSystem;
     private TextView favToggle;
     private TextView sysToggle;
@@ -539,6 +540,14 @@ public class FrontendActivity extends Activity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (emuListMode) {
+                    String k = adapter.romAt(position);
+                    setEmuEnabled(k, !emuEnabled(k));
+                    adapter.load(FrontendActivity.this);
+                    list.setSelection(position);
+                    updateCount(position);
+                    return;
+                }
                 if (systemsMode) {
                     openSystemAt(position);
                 } else if (systemGamesMode) {
@@ -1187,6 +1196,46 @@ public class FrontendActivity extends Activity {
         updateSnapshotVisibility();
     }
 
+    /** Tela com TODOS os emuladores: clique (dedo ou botao) liga/desliga. */
+    private void toggleEmuList() {
+        if (emuListMode) {
+            exitEmuList();
+            return;
+        }
+        emuListMode = true;
+        carousel.setVisibility(View.GONE);
+        list.setVisibility(View.VISIBLE);
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        updateCount(0);
+        showGameName(null);
+        updateSnapshotVisibility();
+        topSystem.setText("EMULADORES  \u2022  TOQUE PARA LIGAR/DESLIGAR");
+    }
+
+    private void exitEmuList() {
+        emuListMode = false;
+        computeMediaDirs();
+        adapter.load(this);
+        list.setSelection(0);
+        updateEmptyState();
+        if (systemsMode) {
+            list.setVisibility(View.GONE);
+            carousel.setGamesMode(false);
+            carousel.setVisibility(View.VISIBLE);
+            carousel.setSelectedIndex(0, true);
+        } else {
+            list.setVisibility(View.GONE);
+            carousel.setGamesMode(true);
+            carousel.setVisibility(View.VISIBLE);
+            carousel.setSelectedIndex(0, true);
+        }
+        topSystem.setText(systemsMode
+                ? "SISTEMAS  \u2022  EMULADORES" : "ARCADE  \u2022  ADVANCEMAME");
+        updateSnapshotVisibility();
+    }
+
     private void toggleFavs() {
         showFavs = !showFavs;
         favToggle.setAlpha(showFavs ? 1f : 0.45f);
@@ -1197,6 +1246,17 @@ public class FrontendActivity extends Activity {
         if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
             carousel.setSelectedIndex(0, true);
         }
+    }
+
+    /** Emulador LIGADO por padrao; o usuario desliga na lista ON/OFF (economia). */
+    private boolean emuEnabled(String key) {
+        return getSharedPreferences("advmenu", MODE_PRIVATE)
+                .getBoolean("emu_on_" + key, true);
+    }
+
+    private void setEmuEnabled(String key, boolean on) {
+        getSharedPreferences("advmenu", MODE_PRIVATE).edit()
+                .putBoolean("emu_on_" + key, on).apply();
     }
 
     private boolean isFavorite(String rom) {
@@ -1281,6 +1341,7 @@ public class FrontendActivity extends Activity {
                         ? "LIGADO" : "DESLIGADO"));
         labels.add("MAPEAR GAMEPAD FISICO...");
         labels.add("SISTEMAS / EMULADORES");
+        labels.add("EMULADORES: LIGA / DESLIGA...");
         labels.add("FAVORITOS: " + (showFavs ? "LIGADO" : "DESLIGADO"));
         labels.add(hasPhysicalController()
                 ? "GAMEPAD FISICO: DETECTADO" : "GAMEPAD FISICO: NAO DETECTADO");
@@ -1297,8 +1358,10 @@ public class FrontendActivity extends Activity {
                 } else if (which == 3) {
                     toggleSystemsView();
                 } else if (which == 4) {
+                    toggleEmuList();
+                } else if (which == 5) {
                     toggleFavs();
-                } else if (which == 6) {
+                } else if (which == 7) {
                     reloadGames();
                 }
             }
@@ -1307,6 +1370,10 @@ public class FrontendActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (emuListMode) {
+            exitEmuList();
+            return;
+        }
         if (systemGamesMode) {
             backToSystems();
             return;
@@ -1507,7 +1574,8 @@ public class FrontendActivity extends Activity {
         if (systemGamesMode && currentSystem != null) {
             bgKey = currentSystem.key;
         } else if (systemsMode && carousel != null
-                && carousel.selected < systems.size()) {
+                && carousel.selected < systems.size()
+                && !systems.get(carousel.selected).games.isEmpty()) {
             bgKey = systems.get(carousel.selected).key;
         }
         if (bgKey != null && themeDir != null && themeDir.isDirectory()) {
@@ -2001,6 +2069,9 @@ public class FrontendActivity extends Activity {
                 if (label == null) {
                     continue;
                 }
+                if (!emuEnabled(n)) {
+                    continue;
+                }
                 if (PINBALL_SCAN_KEYS.contains(n)) {
                     label = "PINBALL (tudo)";
                 }
@@ -2387,7 +2458,8 @@ public class FrontendActivity extends Activity {
         }
         boolean vis = systemsMode && carousel != null
                 && carousel.getVisibility() == View.VISIBLE
-                && carousel.selected < systems.size();
+                && carousel.selected < systems.size()
+                && !systems.get(carousel.selected).games.isEmpty();
         if (!vis) {
             consoleView.setVisibility(View.GONE);
             return;
@@ -2831,6 +2903,14 @@ public class FrontendActivity extends Activity {
             roms.clear();
             titles.clear();
             files.clear();
+            if (act.emuListMode) {
+                for (java.util.Map.Entry<String, String> en
+                        : act.SYSTEM_FOLDERS.entrySet()) {
+                    roms.add(en.getKey());
+                    titles.add(en.getValue());
+                }
+                return;
+            }
             if (act.systemsMode) {
                 for (SystemEntry e : act.systems) {
                     roms.add(e.key);
@@ -2939,7 +3019,21 @@ public class FrontendActivity extends Activity {
             int pad = dp(sel ? 6 : 2);
             row.setPadding(dp(16), pad, dp(16), pad);
 
-            Bitmap cover = thumb(roms.get(position), dp(48));
+            if (emuListMode) {
+                TextView dot = new TextView(FrontendActivity.this);
+                dot.setText("\u25CF");
+                dot.setTextSize(28);
+                dot.setTextColor(emuEnabled(roms.get(position))
+                        ? 0xFF35D06A : 0xFFE04848);
+                dot.setShadowLayer(dp(2), 0, dp(1), Color.BLACK);
+                LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                dlp.rightMargin = dp(12);
+                row.addView(dot, dlp);
+            }
+
+            Bitmap cover = emuListMode ? null : thumb(roms.get(position), dp(48));
             if (cover != null) {
                 ImageView img = new ImageView(FrontendActivity.this);
                 img.setImageBitmap(cover);

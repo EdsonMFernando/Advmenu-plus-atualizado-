@@ -183,6 +183,59 @@ def lightgun(d, accent):
     d.ellipse([500, 320, 540, 360], fill=(80, 190, 255))
 
 
+def atari2600(d, accent):
+    rr(d, [140, 200, 420, 380], 16, (28, 28, 32), SILVER, 6)
+    rr(d, [150, 214, 410, 250], 8, (122, 82, 44))
+    rr(d, [150, 258, 410, 294], 8, (122, 82, 44))
+    rr(d, [180, 150, 380, 210], 10, DARK, SILVER, 5)
+    rr(d, [204, 104, 356, 160], 8, (50, 50, 58), SILVER, 4)
+    d.ellipse([352, 316, 388, 352], outline=accent + (255,), width=6)
+    # joystick ao lado
+    rr(d, [452, 290, 552, 380], 12, (28, 28, 32), SILVER, 5)
+    d.rectangle([486, 180, 518, 296], fill=(28, 28, 32), outline=SILVER, width=4)
+    d.ellipse([476, 152, 528, 204], fill=accent + (255,))
+    d.ellipse([470, 320, 500, 350], fill=(220, 60, 50))
+
+
+def box_console(d, accent, topCol, bodyCol, btnCol):
+    rr(d, [110, 180, 530, 250], 20, topCol, SILVER, 5)
+    rr(d, [110, 240, 530, 400], 20, bodyCol, SILVER, 6)
+    rr(d, [200, 204, 440, 234], 8, DARK)
+    d.ellipse([170, 300, 218, 348], fill=btnCol, outline=DARK, width=3)
+    d.ellipse([236, 300, 284, 348], fill=btnCol, outline=DARK, width=3)
+    rr(d, [330, 306, 470, 342], 8, DARK, SILVER, 4)
+    d.ellipse([492, 296, 516, 320], outline=accent + (255,), width=7)
+
+
+def cd_box(d, accent, bodyCol, ringCol):
+    rr(d, [110, 200, 530, 400], 26, bodyCol, SILVER, 6)
+    d.ellipse([250, 226, 390, 366], fill=DARK, outline=SILVER, width=6)
+    d.ellipse([284, 260, 356, 332], outline=ringCol, width=12)
+    d.ellipse([306, 282, 334, 310], fill=bodyCol)
+    rr(d, [146, 240, 226, 262], 8, DARK)
+    d.ellipse([430, 250, 494, 314], outline=accent + (255,), width=8)
+
+
+def cube_console(d, accent):
+    rr(d, [210, 120, 430, 380], 46, (86, 70, 160), SILVER, 6)
+    d.ellipse([262, 150, 378, 240], fill=DARK, outline=SILVER, width=6)
+    d.ellipse([290, 174, 350, 216], outline=accent + (255,), width=8)
+    rr(d, [250, 268, 390, 300], 10, DARK, SILVER, 4)
+    d.ellipse([368, 320, 404, 356], outline=accent + (255,), width=7)
+    rr(d, [252, 84, 388, 128], 20, (86, 70, 160), SILVER, 5)
+
+
+def tablet_console(d, accent):
+    rr(d, [150, 110, 490, 370], 30, DARK, SILVER, 6)
+    rr(d, [128, 140, 156, 340], 12, (220, 60, 60), SILVER, 4)
+    rr(d, [484, 140, 512, 340], 12, (60, 110, 230), SILVER, 4)
+    rr(d, [176, 132, 464, 348], 14, (14, 16, 24))
+    d.ellipse([286, 200, 354, 268], outline=accent + (255,), width=9)
+    dpad(d, 216, 234, 22, SILVER)
+    d.ellipse([424, 222, 452, 250], fill=accent + (255,))
+    d.ellipse([430, 256, 458, 284], fill=(230, 80, 80))
+
+
 DRAWERS = {
     "cartridge": cartridge,
     "handheld": handheld,
@@ -196,6 +249,29 @@ DRAWERS = {
     "gamepad": gamepad,
     "wheel": wheel,
     "lightgun": lightgun,
+    "atari2600": atari2600,
+    "cube": cube_console,
+    "tablet": tablet_console,
+}
+
+# consoles famosos: desenhos proprios mais reconheciveis (arte original)
+SPECIAL = {
+    "atari2600": lambda d, a: atari2600(d, a),
+    "a2600": lambda d, a: atari2600(d, a),
+    "nes": lambda d, a: box_console(d, a, (214, 208, 190), (150, 150, 158), (210, 60, 50)),
+    "famicom": lambda d, a: box_console(d, a, (230, 220, 210), (180, 60, 50), (240, 200, 80)),
+    "snes": lambda d, a: box_console(d, a, (208, 206, 212), (150, 148, 160), (120, 90, 200)),
+    "sfc": lambda d, a: box_console(d, a, (208, 206, 212), (150, 148, 160), (120, 90, 200)),
+    "megadrive": lambda d, a: box_console(d, a, (40, 40, 46), (24, 24, 30), (210, 50, 50)),
+    "genesis": lambda d, a: box_console(d, a, (40, 40, 46), (24, 24, 30), (210, 50, 50)),
+    "psx": lambda d, a: cd_box(d, a, (168, 168, 176), (140, 140, 150)),
+    "ps1": lambda d, a: cd_box(d, a, (168, 168, 176), (140, 140, 150)),
+    "saturn": lambda d, a: cd_box(d, a, (30, 30, 36), (90, 90, 100)),
+    "dreamcast": lambda d, a: cd_box(d, a, (238, 238, 240), (240, 130, 40)),
+    "gamecube": cube_console,
+    "switch": tablet_console,
+    "switch2": tablet_console,
+    "nsw": tablet_console,
 }
 
 FAM_ARCH = dict(ARCH)
@@ -211,7 +287,6 @@ def main():
     for k in keys:
         fam = fam_for(k)
         accent = FAMS[fam][2]
-        arch = FAM_ARCH.get(fam, "cartridge")
         img = Image.new("RGBA", (CW, CH), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
         # sombra suave no chao
@@ -219,7 +294,10 @@ def main():
         img = img.filter(__import__("PIL.ImageFilter", fromlist=["GaussianBlur"])
                          .GaussianBlur(10))
         d = ImageDraw.Draw(img)
-        DRAWERS[arch](d, accent)
+        if k in SPECIAL:
+            SPECIAL[k](d, accent)
+        else:
+            DRAWERS[FAM_ARCH.get(fam, "cartridge")](d, accent)
         img.save(os.path.join(OUT, "console_%s.png" % k), "PNG", optimize=True)
         n += 1
     print("consoles gerados:", n)
