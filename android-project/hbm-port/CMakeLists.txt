@@ -123,3 +123,18 @@ target_include_directories(hbmosd PRIVATE
     "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
 target_compile_definitions(hbmosd PRIVATE
     OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
+# Fase 4: glue Android — entrypoint que repassa para o main do OSD SDL do
+# HBMAME (compilado com -Dmain=hbmame_main), mesmo esquema do port 0.106.
+add_library(hbmmain STATIC hbm-main.cpp)
+target_include_directories(hbmmain PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim"
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${HBM_DIR}/src/osd"
+    "${HBM_DIR}/src/osd/sdl")
+target_compile_definitions(hbmmain PRIVATE
+    OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
+# Alvo de conveniencia para o CI: compila tudo o que existe hoje do port.
+add_custom_target(hbm-port-all DEPENDS hbmcore hbmosd hbmmain)
