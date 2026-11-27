@@ -127,5 +127,15 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
   CMake do port (`HBM_APK_GLUE=ON`); o job `hbm-apk` do workflow compila e
   publica o `app-debug.apk` como artefato `HBMAME-Android-apk`
 
+- Sistemas cobertos PELO NUCLEO (base MAME 0.289 completa): como o port
+  usa o MAME inteiro, os drivers de **Zinc (ZN1/ZN2)**, **Sega Model 1/2**,
+  **IGS PGM e PGM2**, **Master System**, **Mega Drive** e **SNES** (parcial,
+  igual no MAME) estao todos no alvo `hbmdrivers` (src/mame) — o MESMO core
+  (APK avulso ou libretro_hbmame) roda esses jogos; N64 no MAME e
+  experimental e segue no route proprio (RetroArch/Mupen). No Advmenu, as
+  pastas `zinc/`, `model1/`, `model2/`, `pgm/`, `pgm2/` abrem no RetroArch
+  (core MAME Current) ate o core proprio ficar verde; `model3/` segue via
+  Winlator+Supermodel
+
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
 arquivos do port 0.106 (funcionando) NAO sao tocados por este projeto.

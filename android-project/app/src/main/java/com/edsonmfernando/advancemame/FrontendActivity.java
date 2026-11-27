@@ -212,6 +212,8 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("model1", "Arcade Sega Model 1");
         SYSTEM_FOLDERS.put("model2", "Arcade Sega Model 2");
         SYSTEM_FOLDERS.put("model3", "Arcade Sega Model 3");
+        SYSTEM_FOLDERS.put("pgm", "Arcade IGS PGM");
+        SYSTEM_FOLDERS.put("pgm2", "Arcade IGS PGM2");
         SYSTEM_FOLDERS.put("naomi", "Arcade Sega Naomi");
         SYSTEM_FOLDERS.put("naomi2", "Arcade Sega Naomi 2");
         SYSTEM_FOLDERS.put("atomiswave", "Arcade Atomiswave");
@@ -447,6 +449,8 @@ public class FrontendActivity extends Activity {
         SYSTEM_PACKAGES.put("coinops", "com.winlator");
         SYSTEM_PACKAGES.put("dos", "com.winlator");
         SYSTEM_PACKAGES.put("pcdos", "com.winlator");
+        SYSTEM_PACKAGES.put("pgm", "com.retroarch");
+        SYSTEM_PACKAGES.put("pgm2", "com.retroarch");
         SYSTEM_PACKAGES.put("retroarch", "com.retroarch");
     }
 
