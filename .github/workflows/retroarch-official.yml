@@ -1,0 +1,32 @@
+name: RetroArch oficial (download e publicacao)
+
+# Baixa o APK OFICIAL do RetroArch (libretro buildbot, versao fixada) e
+# publica como artefato "RetroArch-apk" — nada recompilado, binario oficial.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'   # toda segunda confere se saiu versao nova
+
+env:
+  RA_VERSION: 1.22.2
+
+jobs:
+  retroarch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar RetroArch Android oficial (aarch64 + armv7)
+        run: |
+          mkdir -p retroarch
+          base="https://buildbot.libretro.com/stable/\${{ env.RA_VERSION }}/android"
+          curl -fsSL "\$base/RetroArch_aarch64.apk" -o retroarch/RetroArch-\${{ env.RA_VERSION }}-arm64.apk \
+            || echo "AVISO: aarch64 falhou"
+          curl -fsSL "\$base/RetroArch_neon.apk" -o retroarch/RetroArch-\${{ env.RA_VERSION }}-armv7-neon.apk \
+            || echo "AVISO: armv7 falhou"
+          ls -la retroarch
+
+      - name: Publicar APKs como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetroArch-apk
+          path: retroarch/*.apk
+          if-no-files-found: error
