@@ -65,6 +65,21 @@ jobs:
           fi
           exit $rc
 
+      - name: Publicar log no repositorio (feedback sem login)
+        if: failure()
+        run: |
+          git config user.name "ci-log"
+          git config user.email "ci-log@users.noreply.github.com"
+          git fetch origin main || true
+          mkdir -p logs
+          cp build-\${{ matrix.abi }}.log logs/build-\${{ matrix.abi }}-run\${{ github.run_number }}.log || true
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            git add logs
+            git commit -m "CI: log de build \${{ matrix.abi }} (run \${{ github.run_number }})" || break
+            git push origin HEAD:main && break || sleep 5
+          done
+
       - name: Subir log de build como artefato
         if: always()
         uses: actions/upload-artifact@v4
