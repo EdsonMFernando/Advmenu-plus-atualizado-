@@ -106,5 +106,12 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     que o Advmenu usa no tema (`art/background_hbmame.jpg`)
 - [ ] Fase 5 (build verde)
 
+- [ ] Fase 5 (build verde) — CI pronto e atualizado: o workflow
+  `.github/workflows/hbm-port-build.yml` (manual, aba Actions) baixa o
+  vendor fixado e compila `hbmcore + hbmemu + hbmosd + hbmfrontend` E o
+  `libmain.so` do APK avulso (`-DHBM_APK_GLUE=ON`) com o clang do NDK
+  em arm64-v8a e armeabi-v7a, subindo o log de erros como artefato para
+  corrigir por lotes
+
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
 arquivos do port 0.106 (funcionando) NAO sao tocados por este projeto.
