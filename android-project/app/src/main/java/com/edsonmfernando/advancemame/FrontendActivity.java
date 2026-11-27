@@ -1089,6 +1089,23 @@ public class FrontendActivity extends Activity {
             mapTarget = -1;
             return true;
         }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START && systemsMode
+                && carousel != null && carousel.getVisibility() == View.VISIBLE) {
+            // START: aperta uma vez = LIGA; aperta de novo = DESLIGA
+            toggleCurrentSystem();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START && emuListMode && list != null) {
+            int pos = list.getSelectedItemPosition();
+            if (pos >= 0 && pos < adapter.getCount()) {
+                String k = adapter.romAt(pos);
+                setEmuEnabled(k, !emuEnabled(k));
+                adapter.load(this);
+                list.setSelection(pos);
+                updateCount(pos);
+            }
+            return true;
+        }
         if (carousel != null && carousel.getVisibility() == View.VISIBLE) {
             int act = actionForKey(keyCode);
             if (act == 0 || act == 2) { carousel.move(-1); return true; }
