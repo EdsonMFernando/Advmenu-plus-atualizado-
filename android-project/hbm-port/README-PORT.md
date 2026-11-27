@@ -58,15 +58,8 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
     o <SDL2/SDL.h> do SDL vendored e exposto por link `sdl2-shim/SDL2` gerado
     pelo proprio CMake na arvore de build
 
-- [~] Fase 4 (glue) — ALCANCADA: `hbm-port/hbm-main.cpp` (entrypoint
-  `hbm_main` que prepara HOME/chdir e repassa para o main do OSD SDL,
-  compilado com `-Dmain=hbmame_main`, mesmo esquema do port 0.106) +
-  alvo `hbmmain` no CMakeLists e alvo de conveniencia `hbm-port-all`
-- [ ] Fase 5 (build verde) — CI pronto: o workflow
-  `.github/workflows/hbm-port-build.yml` (manual, aba Actions) baixa o
-  vendor fixado e compila `hbmcore + hbmosd + hbmmain` com o clang do NDK
-  em arm64-v8a e armeabi-v7a, subindo o log de erros como artefato para
-  corrigir por lotes
+- [ ] Fase 4 (glue)
+- [ ] Fase 5 (build verde)
 
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
 arquivos do port 0.106 (funcionando) NAO sao tocados por este projeto.
