@@ -61,6 +61,14 @@ EXTRA_FAM = {
     "atari": "atari", "sega": "sega", "nintendo": "nintendo", "sony": "sony",
     "palm": "computer", "wince": "microsoft", "megajet": "sega",
     "wondermega": "sega", "teradrive": "sega",
+    "corrida": "racing", "outrun": "racing", "daytona": "racing",
+    "segarally": "racing", "cruisn": "racing", "ridgeracer": "racing",
+    "harddrivin": "racing", "tiro": "shooting", "lightgun": "shooting",
+    "timecrisis": "shooting", "hotd": "shooting", "virtuacop": "shooting",
+    "pointblank": "shooting", "opwolf": "shooting", "atarixl": "atari",
+    "atari800": "atari", "megacd": "sega", "32x": "sega", "pce": "arcade",
+    "sufamiturbo": "snes", "ereader": "nintendo", "nsw": "nintendo",
+    "psxone": "sony", "playstation": "sony", "fliperama": "arcade",
 }
 
 FAMS.update({
@@ -89,6 +97,14 @@ FIXED = {
     "fba": "fighter", "fbneo": "fighter", "arcade": "arcadeguy",
     "switch": "hero", "switch2": "hero", "wii": "hero", "wiiu": "hero",
     "gamecube": "knight", "gc": "knight", "3ds": "cap", "nds": "cap",
+    "corrida": "racer", "outrun": "racer", "daytona": "racer",
+    "segarally": "racer", "cruisn": "racer", "ridgeracer": "racer",
+    "harddrivin": "racer", "tiro": "marine", "lightgun": "marine",
+    "timecrisis": "marine", "hotd": "marine", "virtuacop": "marine",
+    "pointblank": "marine", "opwolf": "marine", "fliperama": "arcadeguy",
+    "atarixl": "marine", "atari800": "marine", "megacd": "racer",
+    "32x": "racer", "pce": "cap", "sufamiturbo": "hero", "ereader": "cap",
+    "nsw": "hero", "psxone": "cyborg", "playstation": "heroine",
 }
 
 KINDS = [

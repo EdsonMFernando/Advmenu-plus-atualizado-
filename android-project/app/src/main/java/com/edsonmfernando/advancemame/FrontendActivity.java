@@ -374,6 +374,31 @@ public class FrontendActivity extends Activity {
         SYSTEM_FOLDERS.put("megajet", "Mega Jet");
         SYSTEM_FOLDERS.put("wondermega", "Wondermega");
         SYSTEM_FOLDERS.put("teradrive", "Teradrive");
+        SYSTEM_FOLDERS.put("corrida", "Simulador de Corrida (arcade)");
+        SYSTEM_FOLDERS.put("outrun", "OutRun (corrida)");
+        SYSTEM_FOLDERS.put("daytona", "Daytona USA (corrida)");
+        SYSTEM_FOLDERS.put("segarally", "Sega Rally (corrida)");
+        SYSTEM_FOLDERS.put("cruisn", "Cruis'n USA (corrida)");
+        SYSTEM_FOLDERS.put("ridgeracer", "Ridge Racer (corrida)");
+        SYSTEM_FOLDERS.put("harddrivin", "Hard Drivin' (corrida)");
+        SYSTEM_FOLDERS.put("tiro", "Simulador de Tiro (fliperama)");
+        SYSTEM_FOLDERS.put("lightgun", "Pistola (Light Gun)");
+        SYSTEM_FOLDERS.put("timecrisis", "Time Crisis (tiro)");
+        SYSTEM_FOLDERS.put("hotd", "House of the Dead (tiro)");
+        SYSTEM_FOLDERS.put("virtuacop", "Virtua Cop (tiro)");
+        SYSTEM_FOLDERS.put("pointblank", "Point Blank (tiro)");
+        SYSTEM_FOLDERS.put("opwolf", "Operation Wolf (tiro)");
+        SYSTEM_FOLDERS.put("atarixl", "Atari XL/XE");
+        SYSTEM_FOLDERS.put("atari800", "Atari 800");
+        SYSTEM_FOLDERS.put("megacd", "Mega CD");
+        SYSTEM_FOLDERS.put("32x", "Mega Drive 32X");
+        SYSTEM_FOLDERS.put("pce", "PC Engine");
+        SYSTEM_FOLDERS.put("sufamiturbo", "Sufami Turbo");
+        SYSTEM_FOLDERS.put("ereader", "e-Reader");
+        SYSTEM_FOLDERS.put("nsw", "Nintendo Switch");
+        SYSTEM_FOLDERS.put("psxone", "PS One");
+        SYSTEM_FOLDERS.put("playstation", "PlayStation (todos)");
+        SYSTEM_FOLDERS.put("fliperama", "Fliperama (arcade)");
     }
 
     /**

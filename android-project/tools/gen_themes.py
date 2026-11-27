@@ -31,30 +31,42 @@ FAMS = {
     "computer":  ((90, 70, 30), (13, 11, 5), (255, 210, 120)),
     "mugen":     ((120, 20, 80), (11, 3, 11), (255, 100, 200)),
     "openbor":   ((150, 80, 20), (15, 9, 3), (255, 190, 90)),
+    "racing":    ((200, 30, 30), (14, 4, 4), (255, 220, 60)),
+    "shooting":  ((25, 70, 40), (4, 11, 6), (255, 240, 150)),
 }
 
 def fam_for(k):
     if k.startswith("pinball"): return "pinball"
+    if k in ("corrida", "outrun", "daytona", "segarally", "cruisn",
+             "ridgeracer", "harddrivin"): return "racing"
+    if k in ("tiro", "lightgun", "timecrisis", "hotd", "virtuacop",
+             "pointblank", "opwolf"): return "shooting"
     if k in ("mame", "fba", "fbneo", "finalburn", "arcade", "cps1", "cps2", "cps3",
              "zinc", "model1", "model2", "model3", "naomi", "naomi2", "atomiswave",
              "stv", "lindbergh", "daphne", "neogeo", "neogeocd", "neogeopocket",
              "neogeopocketcolor", "ngpc", "taitotypex", "typex", "nesicaxlive",
-             "nesica", "coinops", "pcengine", "turbografx", "turbografx16",
-             "supergrafx", "pcfx"): return "arcade"
+             "nesica", "coinops", "pcengine", "pce", "pcecd", "turbografx",
+             "turbografx16", "tg16", "supergrafx", "pcfx", "fliperama"): return "arcade"
     if k in ("gb", "gameboy", "gbc", "gba"): return "gameboy"
     if k in ("nes", "famicom", "fds"): return "nes"
-    if k in ("snes", "virtualboy"): return "snes"
-    if k == "n64": return "n64"
-    if k in ("nds", "3ds"): return "nds"
-    if k in ("mastersystem", "sms", "megadrive", "genesis", "sega32x", "segacd",
-             "gamegear", "sg1000", "dreamcast", "saturn"): return "sega"
-    if k in ("psx", "ps1", "ps2", "ps3", "ps4", "ps5"): return "sony"
+    if k in ("snes", "sfc", "sufami", "sufamiturbo", "satellaview", "virtualboy"): return "snes"
+    if k == "n64" or k == "n64dd": return "n64"
+    if k in ("nds", "n3ds", "3ds"): return "nds"
+    if k in ("mastersystem", "sms", "megadrive", "genesis", "sega32x", "32x",
+             "segacd", "megacd", "gamegear", "sg1000", "sc3000", "dreamcast",
+             "saturn", "gp32", "gp2x", "pico", "megajet", "wondermega",
+             "teradrive", "sega"): return "sega"
+    if k in ("psx", "ps1", "psxone", "ps2", "ps3", "ps4", "ps5", "playstation",
+             "sony"): return "sony"
     if k in ("psp", "psvita", "vita"): return "psp"
-    if k.startswith("atari") or k == "astrocade": return "atari"
+    if k.startswith("atari") or k == "astrocade" or k == "xegs": return "atari"
     if k in ("xbox", "xbox360", "xbla", "pc", "windows", "winlator", "dos", "pcdos"): return "microsoft"
     if k == "mugen": return "mugen"
     if k == "openbor": return "openbor"
-    return "retroarch" if k == "retroarch" else "computer"
+    if k in ("switch", "switch2", "nsw", "nintendo", "gmaster", "gamepock",
+             "gameandwatch", "pokemini", "ereader"): return "nintendo"
+    if k == "retroarch" or k == "pico8" or k == "tic80": return "retroarch"
+    return "computer"
 
 def outline_poly(d, pts, fill, width=10):
     d.polygon(pts, fill=(12, 10, 16, 255))
@@ -184,19 +196,23 @@ def make(key):
     img.save(p, "JPEG", quality=82, optimize=True, progressive=True)
     return p
 
+def system_keys_from_java():
+    # fonte da verdade: SYSTEM_FOLDERS no FrontendActivity.java
+    import re
+    java = ("/workspace/github__EdsonMFernando__Advmenu-plus-atualizado-/"
+            "android-project/app/src/main/java/com/edsonmfernando/advancemame/"
+            "FrontendActivity.java")
+    src = open(java, encoding="utf-8").read()
+    keys, seen = [], set()
+    for k in re.findall(r'SYSTEM_FOLDERS\.put\("([^"]+)"', src):
+        if k not in seen and k != "hbmame":
+            seen.add(k)
+            keys.append(k)
+    return keys
+
+
 def main():
-    keys = """atari2600 a2600 atari5200 atari7800 atari8bit atarilynx atarijaguar colecovision
-intellivision vectrex mastersystem sms megadrive genesis sega32x segacd gamegear nes
-famicom snes n64 gameboy gb gbc gba nds 3ds psx ps1 ps2 psp psvita vita dreamcast
-saturn neogeo neogeopocket wonderswan wonderswancolor switch switch2 gamecube gc wii
-wiiu virtualboy fds ps3 ps4 ps5 xbox xbox360 xbla sg1000 pcengine turbografx
-turbografx16 supergrafx pcfx neogeocd neogeopocketcolor ngpc 3do megaduck supervision
-gamate pv1000 astrocade openbor mugen teknoparrot taitotypex typex fba fbneo finalburn
-mame cps1 cps2 cps3 zinc model1 model2 model3 naomi naomi2 atomiswave stv lindbergh
-daphne pinball pinballfx pinballfx2 pinballfx3 pinballarcade futurepinball arcade
-nesicaxlive nesica coinops retroarch amiga amigacd32 c64 c128 vic20 amstradcpc cpc msx
-msx2 spectrum zxspectrum zx81 dos pcdos macintosh apple2 atarist x68000 pc88 pc98
-scummvm pc windows winlator""".split()
+    keys = system_keys_from_java()
     seen, n, tot = set(), 0, 0
     for k in keys:
         if k in seen or k == "hbmame":
