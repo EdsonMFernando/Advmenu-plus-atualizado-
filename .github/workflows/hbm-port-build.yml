@@ -34,12 +34,12 @@ jobs:
           cmake -G Ninja -B build/${{ matrix.abi }} -S android-project/hbm-port \
             -DCMAKE_TOOLCHAIN_FILE="$NDK_ROOT/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=${{ matrix.abi }} -DANDROID_PLATFORM=android-24 \
-            -DCMAKE_BUILD_TYPE=Release -DHBM_APK_GLUE=ON
+            -DCMAKE_BUILD_TYPE=Release -DHBM_APK_GLUE=ON -DHBM_LIBRETRO=ON
 
       - name: Compilar libs do port + libmain.so do APK HBMAME
         run: |
           set +e
-          cmake --build build/${{ matrix.abi }} --target hbmcore hbmemu hbmosd hbmfrontend main -j 2 \
+          cmake --build build/${{ matrix.abi }} --target hbmcore hbmemu hbmosd hbmfrontend main hbmame_libretro -j 2 \
             > build-${{ matrix.abi }}.log 2>&1
           rc=$?
           tail -n 400 build-${{ matrix.abi }}.log

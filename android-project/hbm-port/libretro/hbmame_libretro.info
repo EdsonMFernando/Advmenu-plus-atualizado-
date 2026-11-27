@@ -1,0 +1,11 @@
+software = "HBMAME (Advmenu Plus port)"
+corename = "HBMAME 0.289 (port nativo)"
+display_name = "HBMAME (Advmenu Plus)"
+manufacturer = "HBMAME project / port Advmenu Plus Android"
+categories = "Emulator"
+systemname = "Arcade (homebrew/hacks)"
+database = "HBMAME"
+license = "GPLv2+"
+display_version = "0.289.6"
+supports_no_game = "false"
+firmware_count = 0

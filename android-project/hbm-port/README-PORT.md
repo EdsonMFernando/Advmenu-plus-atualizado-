@@ -113,5 +113,14 @@ devices). Nao ha atalho de "colar": e preciso portar o nucleo novo.
   em arm64-v8a e armeabi-v7a, subindo o log de erros como artefato para
   corrigir por lotes
 
+- [~] Fase 2.6 (core libretro proprio) — PARTE 1 ALCANCADA: o
+  `hbm-port/libretro/hbmame_libretro.cpp` implementa a API retro_*
+  obrigatoria (load_game por caminho, video XRGB8888 320x240@60, audio
+  48000 Hz, input poll/state, diretorios system/saves e log do frontend) e
+  o alvo `hbmame_libretro` (SHARED, `-DHBM_LIBRETRO=ON` padrao) gera o
+  `libretro_hbmame.so` que o RetroArch carrega; `.info` do core incluido.
+  PARTE 2 (proximo passo): OSD libretro, acionando hbmemu + hbmfrontend
+  para o video/audio/input real dos drivers HBMAME
+
 Toda mudanca de codigo fica em `#ifdef __ANDROID__` como no port atual; os
 arquivos do port 0.106 (funcionando) NAO sao tocados por este projeto.

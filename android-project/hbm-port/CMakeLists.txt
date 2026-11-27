@@ -282,3 +282,22 @@ if(HBM_APK_GLUE)
         EGL GLESv2 android log m
         c++_static c++abi)
 endif()
+
+# Fase 2.6 (parte 1): CORE LIBRETRO PROPRIETARIO do HBMAME (para o RetroArch).
+# Esqueleto verde da API retro_* (libretro/libretro.cpp, header minimo
+# proprio); linka hbmcore com --whole-archive para ja carregar a infra do
+# nucleo. A parte 2 (OSD libretro) aciona hbmemu/hbmosd/hbmfrontend e troca
+# o padrao de teste pelo video real dos drivers homebrew/hacks.
+option(HBM_LIBRETRO "Gera o core libretro_hbmame.so para o RetroArch" ON)
+if(HBM_LIBRETRO)
+    add_library(hbmame_libretro SHARED libretro/hbmame_libretro.cpp)
+    target_include_directories(hbmame_libretro PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/libretro"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated")
+    target_link_libraries(hbmame_libretro PRIVATE
+        -Wl,--whole-archive
+        hbmcore
+        -Wl,--no-whole-archive
+        log m
+        c++_static c++abi)
+endif()
