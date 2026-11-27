@@ -207,6 +207,58 @@ target_include_directories(hbmemu PRIVATE
 target_compile_definitions(hbmemu PRIVATE
     OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
 
+# Fase 5: DRIVERS do subtarget hbmame (src/mame: devices + drivers). E o
+# coracao do link: sem ele o hbmfrontend nao resolve o registro dos drivers
+# (construtores estaticos) e o libmain.so nao linka. Mesma arvore de includes
+# do frontend; o MAME moderno nao separa devices de drivers nesta pasta.
+file(GLOB_RECURSE HBM_MAME_SOURCES CONFIGURE_DEPENDS
+    "${HBM_DIR}/src/mame/*.cpp")
+add_library(hbmdrivers STATIC ${HBM_MAME_SOURCES})
+add_dependencies(hbmdrivers hbmgen-emu)
+target_include_directories(hbmdrivers PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    "${EMU_GEN_DIR}"
+    "${EMU_GEN_DIR}/layout"
+    "${HBM_DIR}/src/osd"
+    "${HBM_DIR}/src/emu"
+    "${HBM_DIR}/src/mame"
+    "${HBM_DIR}/src/mame/includes"
+    "${HBM_DIR}/src/devices"
+    "${HBM_DIR}/src/frontend/mame"
+    "${HBM_DIR}/src/lib"
+    "${HBM_DIR}/src/lib/netlist"
+    "${HBM_DIR}/src/lib/util"
+    "${HBM_DIR}/src/lib/formats"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdl2-shim"
+    "${CMAKE_CURRENT_LIST_DIR}/../app/src/main/cpp/SDL2/include"
+    "${HBM_DIR}/3rdparty"
+    "${HBM_DIR}/3rdparty/sol2"
+    "${HBM_DIR}/3rdparty/lua/src"
+    "${HBM_DIR}/3rdparty/flac/include"
+    "${HBM_DIR}/3rdparty/zstd/lib"
+    "${HBM_DIR}/3rdparty/expat/lib"
+    "${HBM_DIR}/3rdparty/utf8proc"
+    "${HBM_DIR}/3rdparty/nanosvg/src"
+    "${HBM_DIR}/3rdparty/lzma/C"
+    "${HBM_DIR}/3rdparty/aes128cbc"
+    "${HBM_DIR}/3rdparty/aes192cbc"
+    "${HBM_DIR}/3rdparty/aes256cbc"
+    "${HBM_DIR}/3rdparty/libjpeg"
+    "${HBM_DIR}/3rdparty/expat"
+    "${HBM_DIR}/3rdparty/pugixml/src"
+    "${HBM_DIR}/3rdparty/softfloat3/include"
+    "${HBM_DIR}/3rdparty/glm"
+    "${HBM_DIR}/3rdparty/rapidjson/include"
+    "${HBM_DIR}/3rdparty/zlib"
+    "${HBM_DIR}/3rdparty/bgfx/include"
+    "${HBM_DIR}/3rdparty/bx/include"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/dear-imgui"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty"
+    "${HBM_DIR}/3rdparty/bgfx/examples/common"
+    "${HBM_DIR}/3rdparty/bgfx/3rdparty/khronos")
+target_compile_definitions(hbmdrivers PRIVATE
+    OSD_SDL USE_OPENGL=0 USE_BGFX=1 BX_CONFIG_DEBUG=0)
+
 # Fase 4 (parte 1): frontend do MAME moderno (src/frontend/mame) — o menu
 # interno (lista de sistemas/jogos) e a glue principal. Ordem de includes
 # IGUAL ao frontend.lua upstream (frontend/mame antes de lib/util — o
@@ -276,7 +328,7 @@ if(HBM_APK_GLUE)
         HBM_ANDROID_DATADIR="/data/data/com.edsonmfernando.hbmame/files")
     target_link_libraries(main PRIVATE
         -Wl,--whole-archive
-        hbmfrontend hbmemu hbmosd hbmcore
+        hbmfrontend hbmdrivers hbmemu hbmosd hbmcore
         -Wl,--no-whole-archive
         SDL2::SDL2-static
         EGL GLESv2 android log m

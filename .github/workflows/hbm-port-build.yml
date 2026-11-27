@@ -6,6 +6,13 @@ name: HBMAME port (CI)
 # Android, com o clang do NDK; sobe o log de erros como artefato para
 # corrigir por lotes.
 on:
+  push:
+    paths:
+      - "android-project/hbm-port/**"
+      - "android-project-hbm/**"
+      - "android-project/tools/sync-hbmame.sh"
+      - "patches-hbm/**"
+      - ".github/workflows/hbm-port-build.yml"
   workflow_dispatch:
 
 jobs:
@@ -39,7 +46,7 @@ jobs:
       - name: Compilar libs do port + libmain.so do APK HBMAME
         run: |
           set +e
-          cmake --build build/${{ matrix.abi }} --target hbmcore hbmemu hbmosd hbmfrontend main hbmame_libretro -j 2 \
+          cmake --build build/${{ matrix.abi }} --target hbmcore hbmemu hbmosd hbmfrontend hbmdrivers main hbmame_libretro -j 4 \
             > build-${{ matrix.abi }}.log 2>&1
           rc=$?
           tail -n 400 build-${{ matrix.abi }}.log
