@@ -488,6 +488,25 @@ Voce tambem pode escolher a ROM por Intent (o launcher normal abre a lista do fr
 adb shell am start -n com.edsonmfernando.advancemame/.MainActivity --es rom nomedarom
 ```
 
+## Downloads prontos (GitHub Actions)
+
+Tudo sai compilado/empacotado pelo GitHub Actions — voce nao compila nada:
+
+| Artefato | Workflow | O que e |
+|---|---|---|
+| **Advmenu-Plus-apk** | Build APK (a cada push) | O front-end Advmenu Plus + MAME 0.106 embutido |
+| **HBMAME-Android-apk** | HBMAME port (CI) | O emulador HBMAME 0.289 AVULSO (standalone) |
+| **hbmame-libmain-<abi>** | HBMAME port (CI) | libmain.so do HBMAME + **libretro_hbmame.so** (core do RetroArch) |
+| **hbm-port-log-<abi>** | HBMAME port (CI) | Log de compilacao do port |
+| **RetroArch-apk** | RetroArch oficial | APK OFICIAL do RetroArch (1.22.2, arm64+armv7) |
+| **Eden-apk** | Emuladores da comunidade | Eden (Switch) mais recente |
+| **ps3-android-*** | Emuladores da comunidade | RPCS3-Android (alpha-7), APS3E (2.43), ARMSX3 (PS2, 1.7.3) |
+
+O HBMAME port (CI) roda automaticamente a cada mudanca no port
+(`hbm-port/`, `android-project-hbm/`, `patches-hbm/`). O guia completo de
+nucleos/BIOS/instalacao do core HBMAME no RetroArch esta em
+`retroarch-setup/README.md`.
+
 ## Configuracao (advmame.rc / advmenu.rc / .ini) — tudo dentro do codigo
 
 A configuracao padrao do emulador e do menu esta ESCRITA NO CODIGO-FONTE, na classe
