@@ -3087,7 +3087,8 @@ public class FrontendActivity extends Activity {
                 return cached;
             }
             File img = mediaFile(rom, IMAGE_EXTS,
-                    act.systemGamesMode && act.currentSystem != null ? act.currentSystem.key : null);
+                    FrontendActivity.this.systemGamesMode && FrontendActivity.this.currentSystem != null
+                            ? FrontendActivity.this.currentSystem.key : null);
             if (img == null) {
                 return null;
             }
