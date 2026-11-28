@@ -65,20 +65,20 @@ jobs:
           fi
           exit $rc
 
-      - name: Publicar log no repositorio (feedback sem login)
+      - name: Publicar log no repositorio (branch logs, sem corrida)
         if: failure()
         run: |
+          cp build-\${{ matrix.abi }}.log /tmp/build.log
+          git checkout --orphan tmplog-\${{ matrix.abi }}
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git clean -fdx >/dev/null 2>&1 || true
+          mkdir -p logs
+          cp /tmp/build.log logs/build-\${{ matrix.abi }}-run\${{ github.run_number }}.log
           git config user.name "ci-log"
           git config user.email "ci-log@users.noreply.github.com"
-          git fetch origin main || true
-          mkdir -p logs
-          cp build-\${{ matrix.abi }}.log logs/build-\${{ matrix.abi }}-run\${{ github.run_number }}.log || true
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main || true
-            git add logs
-            git commit -m "CI: log de build \${{ matrix.abi }} (run \${{ github.run_number }})" || break
-            git push origin HEAD:main && break || sleep 5
-          done
+          git add logs
+          git commit -m "CI: log de build \${{ matrix.abi }} (run \${{ github.run_number }})"
+          git push origin HEAD:logs-\${{ matrix.abi }} --force
 
       - name: Subir log de build como artefato
         if: always()
