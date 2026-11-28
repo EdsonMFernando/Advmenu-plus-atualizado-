@@ -2614,6 +2614,28 @@ public class FrontendActivity extends Activity {
         return null;
     }
 
+    /**
+     * Midia com SUBPASTA por sistema (estilo bases grandes tipo EmuMovies):
+     * procura primeiro em snapshot/<sistema>/<rom>.<ext> em todas as raizes
+     * de snapshot; se nao achar, cai na busca plana de sempre.
+     */
+    private File mediaFile(String rom, String[] exts, String sysKey) {
+        if (sysKey != null && sysKey.length() > 0) {
+            for (File dir : snapDirs) {
+                File sub = new File(dir, sysKey);
+                if (sub.isDirectory()) {
+                    for (String ext : exts) {
+                        File f = new File(sub, rom + ext);
+                        if (f.isFile()) {
+                            return f;
+                        }
+                    }
+                }
+            }
+        }
+        return mediaFile(rom, exts);
+    }
+
     private Bitmap decodeCover(File f, int maxPx) {
         try {
             BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -2668,11 +2690,12 @@ public class FrontendActivity extends Activity {
             if (rom == null) {
                 return;
             }
-            File video = mediaFile(rom, VIDEO_EXTS);
+            String sysKey = currentSystem != null ? currentSystem.key : null;
+            File video = mediaFile(rom, VIDEO_EXTS, sysKey);
             if (video != null) {
                 playVideo(video);
             } else {
-                showImage(mediaFile(rom, IMAGE_EXTS));
+                showImage(mediaFile(rom, IMAGE_EXTS, sysKey));
             }
             updateCount(adapter.selected);
         }
@@ -2708,14 +2731,14 @@ public class FrontendActivity extends Activity {
                     @Override
                     public boolean onError(MediaPlayer mp, int what, int extra) {
                         clear(false);
-                        showImage(mediaFile(currentRom, IMAGE_EXTS));
+                        showImage(mediaFile(currentRom, IMAGE_EXTS, currentSystem != null ? currentSystem.key : null));
                         return true;
                     }
                 });
                 player.prepareAsync();
             } catch (Throwable t) {
                 clear(false);
-                showImage(mediaFile(currentRom, IMAGE_EXTS));
+                showImage(mediaFile(currentRom, IMAGE_EXTS, currentSystem != null ? currentSystem.key : null));
             }
         }
 
@@ -3054,7 +3077,8 @@ public class FrontendActivity extends Activity {
             if (cached != null) {
                 return cached;
             }
-            File img = mediaFile(rom, IMAGE_EXTS);
+            File img = mediaFile(rom, IMAGE_EXTS,
+                    act.systemGamesMode && act.currentSystem != null ? act.currentSystem.key : null);
             if (img == null) {
                 return null;
             }
