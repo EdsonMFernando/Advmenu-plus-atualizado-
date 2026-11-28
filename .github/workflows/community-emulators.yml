@@ -1,0 +1,59 @@
+name: Emuladores da comunidade (Eden e PS3 Android)
+
+# Baixa os APKs MAIS RECENTES dos projetos da comunidade e publica como
+# artefatos — nada recompilado, binarios oficiais de cada projeto:
+#  - Eden (Switch 1): git.eden-emu.dev (Forgejo API, release latest)
+#  - PS3 Android (RPCS3 forks / RPCSX / PS3 Native): repos conhecidos do
+#    GitHub que publicam releases; itens que falharem sao pulados (melhor
+#    esforco, os projetos sao experimentais e mudam de lugar).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 3'
+
+jobs:
+  eden:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar Eden mais recente (Forgejo releases)
+        run: |
+          mkdir -p out
+          url=$(curl -fsSL "https://git.eden-emu.dev/api/v1/repos/eden-emu/eden/releases/latest" \
+            | grep -oE '"browser_download_url":"[^"]+\.apk"' \
+            | grep -oE 'https[^"]+' | head -n 1)
+          echo "Eden: $url"
+          [ -n "$url" ] && curl -fsSL "$url" -o out/eden-latest.apk || echo "AVISO: Eden falhou"
+          ls -la out || true
+
+      - name: Publicar artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: Eden-apk
+          path: out/*.apk
+          if-no-files-found: ignore
+
+  ps3-android:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        repo:
+          - "retronx-team/rpcsx"          # RPCSX Android (melhor esforco)
+          - "RPCS3-Android/rpcs3-android" # fork RPCS3 Android (melhor esforco)
+    steps:
+      - name: Baixar release mais recente de \${{ matrix.repo }}
+        run: |
+          mkdir -p out
+          api="https://api.github.com/repos/\${{ matrix.repo }}/releases/latest"
+          url=$(curl -fsSL "$api" \
+            | grep -oE '"browser_download_url":"[^"]+\.(apk|APK)"' \
+            | grep -oE 'https[^"]+' | head -n 1) || true
+          echo "PS3 Android (\${{ matrix.repo }}): $url"
+          [ -n "$url" ] && curl -fsSL "$url" -o "out/\${{ matrix.repo }}-latest.apk" || echo "AVISO: sem release"
+
+      - name: Publicar artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: ps3-android-\${{ matrix.repo }}
+          path: out/*.apk
+          if-no-files-found: ignore
