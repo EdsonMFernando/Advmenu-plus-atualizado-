@@ -103,6 +103,9 @@ public class FrontendActivity extends Activity {
             {"hu.magicpixel.Zaccaria", "Zaccaria Pinball (Magic Pixel) — pinball"},
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
+            {"rpcsx", "RPCSX — PlayStation 3 (Android, experimental)"},
+            {"ps3native", "PS3 Native — PlayStation 3 (Android, experimental)"},
+            {"rpcs3", "RPCS3 Android (fork comunidade) — PlayStation 3"},
             {"org.vita3k.emulator", "Vita3K — PS Vita"},
             {"org.openbor.engine", "OpenBOR — beat'em ups"},
             {"xyz.aethersx2.android", "AetherSX2 — PlayStation 2"},
@@ -2343,6 +2346,13 @@ public class FrontendActivity extends Activity {
             String xen = findEmuByPrefixes(xb);
             if (xen != null) {
                 pkg = xen;
+            }
+        }
+        if ("ps3".equals(sysKey)) {
+            String[] ps3 = {"rpcs3", "rpcsx", "ps3native", "ps3"};
+            String ps3emu = findEmuByPrefixes(ps3);
+            if (ps3emu != null) {
+                pkg = ps3emu;
             }
         }
         if ("ps4".equals(sysKey)) {
