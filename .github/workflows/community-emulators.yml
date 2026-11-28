@@ -38,8 +38,9 @@ jobs:
     strategy:
       matrix:
         repo:
-          - "retronx-team/rpcsx"          # RPCSX Android (melhor esforco)
-          - "RPCS3-Android/rpcs3-android" # fork RPCS3 Android (melhor esforco)
+          - "RPCS3-Android/rpcs3-android"  # RPCS3 Android (alpha-7+)
+          - "aenu1/aps3e"                  # APS3E (PS3 Android, atualizado)
+          - "ARMSX2/ARMSX3"                # ARMSX3 (PS2 Android, armv8)
     steps:
       - name: Baixar release mais recente de \${{ matrix.repo }}
         run: |

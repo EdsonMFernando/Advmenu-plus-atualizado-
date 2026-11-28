@@ -104,6 +104,8 @@ public class FrontendActivity extends Activity {
             {"dev.eden.eden_emulator", "Eden — Nintendo Switch"},
             {"net.rpcs3.rpcs3", "RPCS3 — PlayStation 3"},
             {"rpcsx", "RPCSX — PlayStation 3 (Android, experimental)"},
+            {"aps3e", "APS3E — PlayStation 3 (Android)"},
+            {"armsx3", "ARMSX3 — PlayStation 2 (Android)"},
             {"ps3native", "PS3 Native — PlayStation 3 (Android, experimental)"},
             {"rpcs3", "RPCS3 Android (fork comunidade) — PlayStation 3"},
             {"org.vita3k.emulator", "Vita3K — PS Vita"},
@@ -2348,8 +2350,15 @@ public class FrontendActivity extends Activity {
                 pkg = xen;
             }
         }
+        if ("ps2".equals(sysKey)) {
+            String[] ps2 = {"aethersx2", "armsx3", "ps2"};
+            String ps2emu = findEmuByPrefixes(ps2);
+            if (ps2emu != null) {
+                pkg = ps2emu;
+            }
+        }
         if ("ps3".equals(sysKey)) {
-            String[] ps3 = {"rpcs3", "rpcsx", "ps3native", "ps3"};
+            String[] ps3 = {"rpcs3", "aps3e", "rpcsx", "ps3native", "ps3"};
             String ps3emu = findEmuByPrefixes(ps3);
             if (ps3emu != null) {
                 pkg = ps3emu;
