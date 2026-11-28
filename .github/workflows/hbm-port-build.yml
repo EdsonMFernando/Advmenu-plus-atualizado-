@@ -15,6 +15,9 @@ on:
       - ".github/workflows/hbm-port-build.yml"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   hbmport:
     strategy:
@@ -65,20 +68,28 @@ jobs:
           fi
           exit $rc
 
-      - name: Publicar log no repositorio (branch logs, sem corrida)
+      - name: Publicar log via API (sem git client)
         if: failure()
+        env:
+          GH_TOKEN: \${{ github.token }}
         run: |
-          cp build-\${{ matrix.abi }}.log /tmp/build.log
-          git checkout --orphan tmplog-\${{ matrix.abi }}
-          git rm -rf --cached . >/dev/null 2>&1 || true
-          git clean -fdx >/dev/null 2>&1 || true
-          mkdir -p logs
-          cp /tmp/build.log logs/build-\${{ matrix.abi }}-run\${{ github.run_number }}.log
-          git config user.name "ci-log"
-          git config user.email "ci-log@users.noreply.github.com"
-          git add logs
-          git commit -m "CI: log de build \${{ matrix.abi }} (run \${{ github.run_number }})"
-          git push origin HEAD:logs-\${{ matrix.abi }} --force
+          b64=$(base64 -w0 build-\${{ matrix.abi }}.log)
+          path="logs/build-\${{ matrix.abi }}-run\${{ github.run_number }}.log"
+          for i in 1 2 3 4 5; do
+            sha=$(curl -fsSL -H "Authorization: Bearer \$GH_TOKEN" \
+              "https://api.github.com/repos/\${{ github.repository }}/contents/\$path?ref=main" \
+              | grep -oE '"sha": *"[0-9a-f]+"' | grep -oE '[0-9a-f]{40}' || echo "")
+            body=$(printf '{"message":"CI log run %s","content":"%s","branch":"main"%s}' \
+              "\${{ github.run_number }}" "\$b64" \\
+              "$( [ -n "\$sha" ] && printf ',"sha":"%s"' "\$sha" )")
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+              -H "Authorization: Bearer \$GH_TOKEN" \
+              "https://api.github.com/repos/\${{ github.repository }}/contents/\$path" \
+              -d "\$body")
+            [ "\$code" = "200" ] || [ "\$code" = "201" ] && break
+            sleep 3
+          done
+          echo "upload rc=\$code"
 
       - name: Subir log de build como artefato
         if: always()
